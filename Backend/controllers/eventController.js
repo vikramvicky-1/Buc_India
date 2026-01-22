@@ -5,7 +5,19 @@ const { cloudinary } = require('../middleware/cloudinaryConfig');
 const getEvents = async (req, res) => {
   try {
     const events = await Event.find().sort({ eventDate: -1 });
-    res.json(events);
+    const eventsWithCounts = await Promise.all(events.map(async (event) => {
+      const registrationCount = await Registration.countDocuments({ 
+        $or: [
+          { eventId: event._id },
+          { eventId: event._id.toString() }
+        ]
+      });
+      return {
+        ...event.toObject(),
+        registrationCount
+      };
+    }));
+    res.json(eventsWithCounts);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

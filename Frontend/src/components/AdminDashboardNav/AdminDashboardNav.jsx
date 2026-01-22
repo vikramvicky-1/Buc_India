@@ -3,15 +3,24 @@ import { Routes, Route, NavLink, useNavigate } from "react-router-dom";
 import DashboardHome from "../DashboardHome/DashboardHome";
 import EventManagement from "../EventManagement/EventManagement";
 import ViewRegistrations from "../ViewRegistrations/ViewRegistrations";
+import { authService } from "../../services/api";
 const logo = "/logo copy copy.jpg";
 import "./AdminDashboardNav.css";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("buc_admin_authenticated");
-    navigate("/admin/login");
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      localStorage.removeItem("buc_admin_authenticated");
+      navigate("/admin/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Still remove local auth state and redirect
+      localStorage.removeItem("buc_admin_authenticated");
+      navigate("/admin/login");
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Registration = require('../models/Registration');
 const { cloudinary } = require('../middleware/cloudinaryConfig');
 
@@ -34,7 +35,7 @@ const createRegistration = async (req, res) => {
 
     // Check for duplicates within the same event
     const duplicate = await Registration.findOne({
-      eventId,
+      eventId: eventId === 'community' ? 'community' : mongoose.Types.ObjectId.createFromHexString(eventId),
       $or: [
         { email },
         { phone },
@@ -54,7 +55,7 @@ const createRegistration = async (req, res) => {
     }
 
     const registration = new Registration({
-      eventId,
+      eventId: eventId === 'community' ? 'community' : mongoose.Types.ObjectId.createFromHexString(eventId),
       fullName,
       email,
       phone,
@@ -106,7 +107,19 @@ const createRegistration = async (req, res) => {
 const getRegistrations = async (req, res) => {
   try {
     const { eventId } = req.query;
-    const filter = eventId && eventId !== 'all' ? { eventId } : {};
+    let filter = {};
+    if (eventId && eventId !== 'all') {
+      if (eventId === 'community') {
+        filter = { eventId: 'community' };
+      } else {
+        filter = { 
+          $or: [
+            { eventId: eventId },
+            { eventId: mongoose.Types.ObjectId.createFromHexString(eventId) }
+          ]
+        };
+      }
+    }
     let registrations = await Registration.find(filter)
       .populate('eventId', 'title eventDate')
       .sort({ registeredAt: -1 });

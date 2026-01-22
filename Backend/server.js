@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: [process.env.FRONTEND_URL, "http://localhost:3000", "http://localhost:5173", "http://localhost:5174"].filter(Boolean),
     credentials: true,
   }),
 );
@@ -53,14 +53,27 @@ mongoose
     }
 
     // Create initial admin if not exists
-    const adminCount = await Admin.countDocuments();
-    if (adminCount === 0) {
-      const admin = new Admin({
-        username: process.env.ADMIN_USERNAME || "admin",
-        password: process.env.ADMIN_PASSWORD || "admin123",
+    const adminUsername = process.env.ADMIN_USERNAME || "bucindia";
+    const adminPassword = process.env.ADMIN_PASSWORD || "Admin@bucindia@2026";
+    
+    let admin = await Admin.findOne({ username: adminUsername });
+    if (!admin) {
+      admin = new Admin({
+        username: adminUsername,
+        password: adminPassword,
       });
       await admin.save();
-      console.log("Initial admin created");
+      console.log(`Initial admin (${adminUsername}) created`);
+    } else {
+      // Optional: Update password if needed
+      admin.password = adminPassword;
+      await admin.save();
+      console.log(`Admin (${adminUsername}) password updated`);
+    }
+
+    // Clean up old admin if it exists and is different
+    if (adminUsername !== "admin") {
+      await Admin.deleteOne({ username: "admin" });
     }
   })
   .catch((err) => console.error("Could not connect to MongoDB", err));
