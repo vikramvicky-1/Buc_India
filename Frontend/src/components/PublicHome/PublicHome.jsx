@@ -19,7 +19,6 @@ const PublicHome = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
-  const [registrations, setRegistrations] = useState([]);
   const [pastLimit, setPastLimit] = useState(6);
   const [loading, setLoading] = useState(false);
 
@@ -33,11 +32,7 @@ const PublicHome = () => {
 
   const loadEvents = async () => {
     try {
-      const [allEvents, allRegistrations] = await Promise.all([
-        eventService.getAll(),
-        registrationService.getAll(),
-      ]);
-      setRegistrations(allRegistrations);
+      const allEvents = await eventService.getAll();
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -64,14 +59,6 @@ const PublicHome = () => {
     } catch (error) {
       console.error("Failed to load events", error);
     }
-  };
-
-  const getRegistrationCount = (eventId) => {
-    return registrations.filter(
-      (reg) =>
-        (typeof reg.eventId === "object" ? reg.eventId?._id : reg.eventId) ===
-        eventId,
-    ).length;
   };
 
   const handleShare = (e, eventId) => {
@@ -182,7 +169,7 @@ const PublicHome = () => {
                     <div className="flex items-center gap-4 mb-4">
                       <div className="flex items-center text-xs font-medium text-gray-400 bg-white/5 px-2 py-1 rounded-md border border-white/5">
                         <Users className="w-3 h-3 text-orange-500 mr-1.5" />
-                        {getRegistrationCount(event._id)} Registered
+                        {event.registrationCount || 0} Registered
                       </div>
                     </div>
                     <button

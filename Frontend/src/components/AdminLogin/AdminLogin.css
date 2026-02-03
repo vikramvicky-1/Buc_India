@@ -122,3 +122,32 @@
   color: #888;
   font-size: 12px;
 }
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 45px !important;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: #ff6600;
+}

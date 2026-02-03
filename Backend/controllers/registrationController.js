@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Registration = require('../models/Registration');
 const { cloudinary } = require('../middleware/cloudinaryConfig');
 
@@ -37,13 +38,24 @@ const createRegistration = async (req, res) => {
       }
     }
 
+    // Phone validation (exactly 10 digits)
+    if (phone && !/^\d{10}$/.test(phone)) {
+      return res.status(400).json({ message: 'Phone number must be exactly 10 digits' });
+    }
+    
+    // Emergency contact phone validation (only for event registrations)
+    if (eventId !== 'community' && emergencyContactPhone && !/^\d{10}$/.test(emergencyContactPhone)) {
+      return res.status(400).json({ message: 'Emergency contact phone number must be exactly 10 digits' });
+    }
+
     // Check for duplicates within the same event
     const duplicateQuery = { eventId };
+    
     const duplicateFields = [];
     if (email) duplicateFields.push({ email });
     if (phone) duplicateFields.push({ phone });
-    if (bikeRegistrationNumber) duplicateFields.push({ bikeRegistrationNumber });
-    if (licenseNumber) duplicateFields.push({ licenseNumber });
+    if (bikeRegistrationNumber && eventId !== 'community') duplicateFields.push({ bikeRegistrationNumber });
+    if (licenseNumber && eventId !== 'community') duplicateFields.push({ licenseNumber });
     
     const duplicate = duplicateFields.length > 0 
       ? await Registration.findOne({ ...duplicateQuery, $or: duplicateFields })
@@ -150,7 +162,14 @@ const createRegistration = async (req, res) => {
 const getRegistrations = async (req, res) => {
   try {
     const { eventId } = req.query;
-    const filter = eventId && eventId !== 'all' ? { eventId } : {};
+    let filter = {};
+    if (eventId && eventId !== 'all') {
+      if (eventId === 'community') {
+        filter = { eventId: 'community' };
+      } else {
+        filter = { eventId: eventId };
+      }
+    }
     let registrations = await Registration.find(filter)
       .populate('eventId', 'title eventDate')
       .sort({ registeredAt: -1 });
