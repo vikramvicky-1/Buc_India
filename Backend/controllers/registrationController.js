@@ -97,16 +97,29 @@ const createRegistration = async (req, res) => {
             registrationData.requestedGears = typeof requestedGears === 'string' 
               ? JSON.parse(requestedGears) 
               : requestedGears;
+            console.log('Riding gears saved:', registrationData.requestedGears);
           } catch (e) {
+            console.error('Error parsing riding gears:', e);
             registrationData.requestedGears = {};
           }
+        } else {
+          registrationData.requestedGears = {};
         }
+      } else {
+        registrationData.requestRidingGears = false;
+        registrationData.requestedGears = {};
       }
     }
 
     const registration = new Registration(registrationData);
 
     const newRegistration = await registration.save();
+    console.log('Registration saved successfully:', {
+      id: newRegistration._id,
+      eventId: newRegistration.eventId,
+      requestRidingGears: newRegistration.requestRidingGears,
+      requestedGears: newRegistration.requestedGears
+    });
     res.status(201).json(newRegistration);
   } catch (error) {
     console.error('Registration Error:', error);

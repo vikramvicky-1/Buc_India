@@ -22,52 +22,40 @@ const registrationSchema = new mongoose.Schema({
     required: true
   },
   dateOfBirth: {
-    type: Date,
-    required: true
+    type: Date
   },
   bloodGroup: {
-    type: String,
-    required: true
+    type: String
   },
   address: {
-    type: String,
-    required: true
+    type: String
   },
   city: {
-    type: String,
-    required: true
+    type: String
   },
   state: {
-    type: String,
-    required: true
+    type: String
   },
   pincode: {
-    type: String,
-    required: true
+    type: String
   },
   emergencyContactName: {
-    type: String,
-    required: true
+    type: String
   },
   emergencyContactPhone: {
-    type: String,
-    required: true
+    type: String
   },
   bikeModel: {
-    type: String,
-    required: true
+    type: String
   },
   bikeRegistrationNumber: {
-    type: String,
-    required: true
+    type: String
   },
   licenseNumber: {
-    type: String,
-    required: true
+    type: String
   },
   anyMedicalCondition: {
-    type: String,
-    required: true
+    type: String
   },
   tShirtSize: {
     type: String

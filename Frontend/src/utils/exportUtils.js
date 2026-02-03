@@ -72,6 +72,24 @@ export const exportToExcel = (registrations, getEventName, selectedFields = null
           row[column.label] = value || '';
         }
       }
+      // Handle riding gears
+      else if (column.key === 'requestRidingGears') {
+        row[column.label] = value === true ? 'Yes' : 'No';
+      }
+      else if (column.key === 'requestedGears') {
+        if (!value || typeof value !== 'object') {
+          row[column.label] = '';
+        } else {
+          const gears = [];
+          if (value.helmet) gears.push('Helmet');
+          if (value.gloves) gears.push('Gloves');
+          if (value.jacket) gears.push('Jacket');
+          if (value.boots) gears.push('Boots');
+          if (value.kneeGuards) gears.push('Knee Guards');
+          if (value.elbowGuards) gears.push('Elbow Guards');
+          row[column.label] = gears.length > 0 ? gears.join(', ') : '';
+        }
+      }
       // Handle date fields
       else if (keyLower.includes('date') || keyLower.includes('at')) {
         if (value) {
@@ -150,6 +168,24 @@ export const exportToPDF = (registrations, getEventName, selectedFields = null, 
         return '[Image Attached]';
       }
       return value;
+    }
+    
+    // Handle riding gears
+    if (columnKey === 'requestRidingGears') {
+      return value === true ? 'Yes' : 'No';
+    }
+    if (columnKey === 'requestedGears') {
+      if (!value || typeof value !== 'object') {
+        return '-';
+      }
+      const gears = [];
+      if (value.helmet) gears.push('Helmet');
+      if (value.gloves) gears.push('Gloves');
+      if (value.jacket) gears.push('Jacket');
+      if (value.boots) gears.push('Boots');
+      if (value.kneeGuards) gears.push('Knee Guards');
+      if (value.elbowGuards) gears.push('Elbow Guards');
+      return gears.length > 0 ? gears.join(', ') : '-';
     }
     
     // Handle date fields
