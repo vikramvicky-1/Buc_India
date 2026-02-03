@@ -49,6 +49,15 @@ const PublicRegister = () => {
     bloodGroup: "",
     anyMedicalCondition: "",
     tShirtSize: "",
+    requestRidingGears: false,
+    requestedGears: {
+      helmet: false,
+      gloves: false,
+      jacket: false,
+      boots: false,
+      kneeGuards: false,
+      elbowGuards: false,
+    },
   });
 
   const [fieldErrors, setFieldErrors] = useState({});
@@ -164,6 +173,8 @@ const PublicRegister = () => {
     Object.keys(formData).forEach((key) => {
       if (key === "licenseImage") {
         data.append("licenseImage", formData.licenseImage);
+      } else if (key === "requestedGears") {
+        data.append("requestedGears", JSON.stringify(formData.requestedGears));
       } else {
         data.append(key, formData[key]);
       }
@@ -172,6 +183,11 @@ const PublicRegister = () => {
 
     try {
       await registrationService.create(data);
+      
+      // Store user email and phone for profile access
+      if (formData.email) localStorage.setItem("userEmail", formData.email);
+      if (formData.phone) localStorage.setItem("userPhone", formData.phone);
+      
       setShowSuccessOverlay(true);
       toast.success("Registration successful!");
     } catch (err) {
@@ -516,6 +532,55 @@ const PublicRegister = () => {
                     </span>
                   )}
                 </div>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <h3>Riding Gears Request</h3>
+              <div className="form-group">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="requestRidingGears"
+                    checked={formData.requestRidingGears}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        requestRidingGears: e.target.checked,
+                      })
+                    }
+                    className="w-5 h-5"
+                  />
+                  <span>Request riding gears for this event</span>
+                </label>
+                {formData.requestRidingGears && (
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {Object.keys(formData.requestedGears).map((gear) => (
+                      <label
+                        key={gear}
+                        className="flex items-center space-x-2 cursor-pointer bg-white/5 p-3 rounded-lg border border-white/10 hover:border-orange-500/50 transition-all"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.requestedGears[gear]}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              requestedGears: {
+                                ...formData.requestedGears,
+                                [gear]: e.target.checked,
+                              },
+                            })
+                          }
+                          className="w-4 h-4"
+                        />
+                        <span className="text-white capitalize">
+                          {gear.replace(/([A-Z])/g, " $1").trim()}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

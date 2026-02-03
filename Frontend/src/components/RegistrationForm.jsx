@@ -20,27 +20,9 @@ import {
 
 const RegistrationForm = ({ isOpen, onClose, type, eventTitle, eventId }) => {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
     phone: "",
-    dob: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-    bikeModel: "",
-    bikeYear: "",
-    bikeRegistrationNumber: "",
-    ridingExperience: "",
-    licenseNumber: "",
-    licenseProof: null,
-    emergencyContact: "",
-    emergencyPhone: "",
-    gender: "",
-    bloodGroup: "",
-    medicalCondition: "None",
-    tShirtSize: "L",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,32 +36,15 @@ const RegistrationForm = ({ isOpen, onClose, type, eventTitle, eventId }) => {
   }, []);
 
   const exportToExcel = () => {
+    if (type !== "community") return;
+    
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const fileName = `${type === "community" ? "community" : "event"}-registration-${timestamp}.xlsx`;
+    const fileName = `community-registration-${timestamp}.xlsx`;
 
     const row = {
-      Type: type,
-      EventTitle: type === "event" ? (eventTitle ?? "") : "",
-      FirstName: formData.firstName,
-      LastName: formData.lastName,
+      Name: formData.fullName,
       Email: formData.email,
       Phone: formData.phone,
-      DOB: formData.dob,
-      Address: formData.address,
-      City: formData.city,
-      State: formData.state,
-      Pincode: formData.pincode,
-      BikeModel: formData.bikeModel,
-      BikeYear: formData.bikeYear,
-      BikeRegistrationNumber: formData.bikeRegistrationNumber,
-      RidingExperience: formData.ridingExperience,
-      LicenseNumber: formData.licenseNumber,
-      EmergencyContact: formData.emergencyContact,
-      EmergencyPhone: formData.emergencyPhone,
-      BloodGroup: formData.bloodGroup,
-      Gender: formData.gender,
-      MedicalCondition: formData.medicalCondition,
-      TShirtSize: formData.tShirtSize,
       SubmittedAt: new Date().toLocaleString(),
     };
 
@@ -105,31 +70,13 @@ const RegistrationForm = ({ isOpen, onClose, type, eventTitle, eventId }) => {
   };
 
   const formatWhatsAppMessage = () => {
-    const title =
-      type === "community"
-        ? "New Community Registration"
-        : `Event Registration - ${eventTitle}`;
-    return `*${title}*
+    if (type !== "community") return "";
+    return `*New Community Registration*
 
 *Personal Information:*
-Name: ${formData.firstName} ${formData.lastName}
+Name: ${formData.fullName}
 Email: ${formData.email}
 Phone: ${formData.phone}
-DOB: ${formData.dob}
-
-*Address:*
-${formData.address}
-${formData.city}, ${formData.state}
-
-*Motorcycle Information:*
-Bike: ${formData.bikeModel} (${formData.bikeYear})
-Registration Number: ${formData.bikeRegistrationNumber}
-Riding Experience: ${formData.ridingExperience}
-License Number: ${formData.licenseNumber}
-
-*Emergency Contact:*
-Name: ${formData.emergencyContact}
-Phone: ${formData.emergencyPhone}
 
 Registration completed successfully!`;
   };
@@ -138,15 +85,8 @@ Registration completed successfully!`;
     e.preventDefault();
     setError("");
 
-    if (formData.phone === formData.emergencyPhone) {
-      setError("Phone number and emergency contact number must be different.");
-      return;
-    }
-
-    const birthDate = new Date(formData.dob);
-    const age = new Date().getFullYear() - birthDate.getFullYear();
-    if (age < 18) {
-      setError("You must be at least 18 years old to register.");
+    if (!formData.fullName || !formData.email || !formData.phone) {
+      setError("Please fill all fields.");
       return;
     }
 
@@ -154,28 +94,16 @@ Registration completed successfully!`;
 
     try {
       const data = new FormData();
-      data.append("eventId", eventId || "community"); // Fallback for community registration
-      data.append("fullName", `${formData.firstName} ${formData.lastName}`);
+      data.append("eventId", "community");
+      data.append("fullName", formData.fullName);
       data.append("email", formData.email);
       data.append("phone", formData.phone);
-      data.append("dateOfBirth", formData.dob);
-      data.append("bloodGroup", formData.bloodGroup);
-      data.append("address", formData.address);
-      data.append("city", formData.city);
-      data.append("state", formData.state);
-      data.append("pincode", formData.pincode);
-      data.append("emergencyContactName", formData.emergencyContact);
-      data.append("emergencyContactPhone", formData.emergencyPhone);
-      data.append("bikeModel", formData.bikeModel);
-      data.append("bikeRegistrationNumber", formData.bikeRegistrationNumber);
-      data.append("licenseNumber", formData.licenseNumber);
-      data.append("anyMedicalCondition", formData.medicalCondition);
-      data.append("tShirtSize", formData.tShirtSize);
-      if (formData.licenseProof) {
-        data.append("licenseImage", formData.licenseProof);
-      }
 
       await registrationService.create(data);
+
+      // Store user email and phone for profile access
+      if (formData.email) localStorage.setItem("userEmail", formData.email);
+      if (formData.phone) localStorage.setItem("userPhone", formData.phone);
 
       const message = formatWhatsAppMessage();
       const whatsappUrl = `https://wa.me/918867718080?text=${encodeURIComponent(message)}`;
@@ -190,27 +118,9 @@ Registration completed successfully!`;
 
       setTimeout(() => {
         setFormData({
-          firstName: "",
-          lastName: "",
+          fullName: "",
           email: "",
           phone: "",
-          dob: "",
-          address: "",
-          city: "",
-          state: "",
-          pincode: "",
-          bikeModel: "",
-          bikeYear: "",
-          bikeRegistrationNumber: "",
-          ridingExperience: "",
-          licenseNumber: "",
-          licenseProof: null,
-          emergencyContact: "",
-          emergencyPhone: "",
-          gender: "",
-          bloodGroup: "",
-          medicalCondition: "None",
-          tShirtSize: "L",
         });
         setShowSuccess(false);
         setIsSubmitting(false);
@@ -264,7 +174,7 @@ Registration completed successfully!`;
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-5xl mx-auto px-6 py-6">
+          <div className="max-w-2xl mx-auto px-6 py-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="bg-green-500/10 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg text-sm text-center font-medium">
                 <ShieldCheck className="h-4 w-4 inline-block mr-2" />
@@ -279,78 +189,16 @@ Registration completed successfully!`;
               <div>
                 <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
                   <User className="h-5 w-5 text-orange-500 mr-2" />
-                  Personal Information
+                  Join Community
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <input
                     type="text"
-                    name="firstName"
-                    placeholder="First Name"
-                    value={formData.firstName}
+                    name="fullName"
+                    placeholder="Full Name"
+                    value={formData.fullName}
                     onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="lastName"
-                    placeholder="Last Name"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <div className="flex flex-col">
-                    <label className="text-xs text-gray-400 mb-1 ml-1">
-                      Date of Birth (Must be 18+)
-                    </label>
-                    <input
-                      type="date"
-                      name="dob"
-                      max={maxDate}
-                      value={formData.dob}
-                      onChange={handleInputChange}
-                      className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none w-full"
-                      required
-                    />
-                  </div>
-                  <select
-                    name="bloodGroup"
-                    value={formData.bloodGroup}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-orange-500 focus:outline-none"
-                    required
-                  >
-                    <option value="">Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                  </select>
-                  <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-orange-500 focus:outline-none"
-                    required
-                  >
-                    <option value="">Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="nottosay">Prefer not to say</option>
-                  </select>
-
-                  <input
-                    type="tel"
-                    name="phone"
-                    placeholder="Phone Number"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
                     required
                   />
                   <input
@@ -359,196 +207,16 @@ Registration completed successfully!`;
                     placeholder="Email Address"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <MapPin className="h-5 w-5 text-orange-500 mr-2" />
-                  Address Information
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <input
-                    type="text"
-                    name="address"
-                    placeholder="Street Address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className="md:col-span-1 bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="city"
-                    placeholder="City"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="state"
-                    placeholder="State"
-                    value={formData.state}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="pincode"
-                    placeholder="Pincode"
-                    value={formData.pincode}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <Stethoscope className="h-5 w-5 text-orange-500 mr-2" />
-                  Health & Requirements
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    name="medicalCondition"
-                    placeholder="Any Medical Condition? (Type 'None' if none)"
-                    value={formData.medicalCondition}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <select
-                    name="tShirtSize"
-                    value={formData.tShirtSize}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-orange-500 focus:outline-none"
-                    required
-                  >
-                    <option value="">Select T-Shirt Size</option>
-                    <option value="S">Small (S)</option>
-                    <option value="M">Medium (M)</option>
-                    <option value="L">Large (L)</option>
-                    <option value="XL">Extra Large (XL)</option>
-                    <option value="XXL">Double XL (XXL)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <Bike className="h-5 w-5 text-orange-500 mr-2" />
-                  Motorcycle Information
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <input
-                    type="text"
-                    name="bikeModel"
-                    placeholder="Bike Make & Model"
-                    value={formData.bikeModel}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <input
-                    type="number"
-                    name="bikeYear"
-                    placeholder="Year"
-                    value={formData.bikeYear}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="bikeRegistrationNumber"
-                    placeholder="Registration Number"
-                    value={formData.bikeRegistrationNumber}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <select
-                    name="ridingExperience"
-                    value={formData.ridingExperience}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-orange-500 focus:outline-none"
-                    required
-                  >
-                    <option value="">Riding Experience</option>
-                    <option value="beginner">Beginner (0-2 years)</option>
-                    <option value="intermediate">
-                      Intermediate (3-5 years)
-                    </option>
-                    <option value="experienced">
-                      Experienced (6-10 years)
-                    </option>
-                    <option value="expert">Expert (10+ years)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <CreditCard className="h-5 w-5 text-orange-500 mr-2" />
-                  License Details
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    name="licenseNumber"
-                    placeholder="Driving License Number"
-                    value={formData.licenseNumber}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                    required
-                  />
-                  <div className="flex flex-col">
-                    <label className="text-xs text-gray-400 mb-1 ml-1 flex items-center">
-                      <ImageIcon className="h-3 w-3 mr-1" />
-                      Upload License Proof (Photo)
-                    </label>
-                    <input
-                      type="file"
-                      name="licenseProof"
-                      accept="image/*"
-                      onChange={handleInputChange}
-                      className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white text-sm file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500/10 file:text-orange-500 hover:file:bg-orange-500/20"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <Phone className="h-5 w-5 text-orange-500 mr-2" />
-                  Emergency Contact
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    name="emergencyContact"
-                    placeholder="Emergency Contact Name"
-                    value={formData.emergencyContact}
-                    onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
                     required
                   />
                   <input
                     type="tel"
-                    name="emergencyPhone"
-                    placeholder="Emergency Contact Phone"
-                    value={formData.emergencyPhone}
+                    name="phone"
+                    placeholder="Mobile Number"
+                    value={formData.phone}
                     onChange={handleInputChange}
-                    className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
                     required
                   />
                 </div>
@@ -575,11 +243,7 @@ Registration completed successfully!`;
                   ) : (
                     <>
                       <UserPlus className="h-5 w-5" />
-                      <span>
-                        {type === "community"
-                          ? "Join Community"
-                          : "Register for Event"}
-                      </span>
+                      <span>Join Community</span>
                     </>
                   )}
                 </button>

@@ -70,4 +70,30 @@ export const registrationService = {
   },
 };
 
+export const profileService = {
+  get: async (email, phone) => {
+    const params = {};
+    if (email) params.email = email;
+    if (phone) params.phone = phone;
+    const response = await api.get("/profile", { params });
+    return response.data;
+  },
+  createOrUpdate: async (formData) => {
+    const response = await api.post("/profile", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+  update: async (formData) => {
+    const response = await api.put("/profile", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+};
+
 export default api;

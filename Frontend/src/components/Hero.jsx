@@ -1,17 +1,9 @@
 import React from 'react';
 import { ArrowRight, Users, Calendar, Shield } from 'lucide-react';
-import gsap from 'gsap';
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
-
-gsap.registerPlugin(ScrollToPlugin);
 
 const Hero = () => {
   const scrollToEvents = () => {
-    gsap.to(window, {
-      duration: 1,
-      scrollTo: { y: "#events", offsetY: 80 },
-      ease: 'power3.inOut'
-    });
+    window.location.href = "/events";
   };
 
   return (

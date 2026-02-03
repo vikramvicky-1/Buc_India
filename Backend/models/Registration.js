@@ -74,11 +74,23 @@ const registrationSchema = new mongoose.Schema({
   },
   licenseImage: {
     type: String,
-    required: true
+    default: ''
   },
   licenseImagePublicId: {
     type: String,
-    required: true
+    default: ''
+  },
+  requestRidingGears: {
+    type: Boolean,
+    default: false
+  },
+  requestedGears: {
+    helmet: { type: Boolean, default: false },
+    gloves: { type: Boolean, default: false },
+    jacket: { type: Boolean, default: false },
+    boots: { type: Boolean, default: false },
+    kneeGuards: { type: Boolean, default: false },
+    elbowGuards: { type: Boolean, default: false }
   },
   registeredAt: {
     type: Date,
