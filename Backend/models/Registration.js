@@ -68,6 +68,14 @@ const registrationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  profileImage: {
+    type: String,
+    default: ''
+  },
+  profileImagePublicId: {
+    type: String,
+    default: ''
+  },
   requestRidingGears: {
     type: Boolean,
     default: false

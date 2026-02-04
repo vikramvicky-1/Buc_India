@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Download, Trash2, X, AlertTriangle } from "lucide-react";
+import { Download, Trash2, X, AlertTriangle, RefreshCw } from "lucide-react";
 import { eventService, registrationService } from "../../services/api";
 import { exportToExcel, exportToPDF } from "../../utils/exportUtils";
 import "./ViewRegistrations.css";
@@ -494,6 +494,14 @@ const ViewRegistrations = () => {
               Clear Filters
             </button>
           )}
+          <button
+            onClick={loadData}
+            className="refresh-button"
+            title="Refresh Data"
+            disabled={isLoading}
+          >
+            <RefreshCw size={20} className={isLoading ? "animate-spin" : ""} />
+          </button>
           <button
             onClick={() => handleExportClick("excel")}
             className="export-button excel"

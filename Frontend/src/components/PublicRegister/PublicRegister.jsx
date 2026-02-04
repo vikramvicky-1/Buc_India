@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { eventService, registrationService } from "../../services/api";
+import { eventService, registrationService, profileService } from "../../services/api";
 import {
   User,
   Mail,
@@ -30,6 +30,7 @@ const PublicRegister = () => {
   const [submitting, setSubmitting] = useState(false);
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const [error, setError] = useState("");
+  const [profileData, setProfileData] = useState(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -45,6 +46,7 @@ const PublicRegister = () => {
     bikeRegistrationNumber: "",
     licenseNumber: "",
     licenseImage: null,
+    profileImage: null,
     dateOfBirth: "",
     bloodGroup: "",
     anyMedicalCondition: "",
@@ -69,8 +71,56 @@ const PublicRegister = () => {
   }, []);
 
   useEffect(() => {
+    const userLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+    if (!userLoggedIn) {
+      toast.info("Please sign up or login to register for an event");
+      navigate("/signup");
+      return;
+    }
+    
+    // Prefill data from localStorage and fetch profile if available
+    const userEmail = localStorage.getItem("userEmail");
+    const userPhone = localStorage.getItem("userPhone");
+    
+    const fetchProfile = async () => {
+      if (userEmail || userPhone) {
+        try {
+          const profile = await profileService.get(userEmail, userPhone);
+          if (profile) {
+            setProfileData(profile);
+            setFormData(prev => ({
+              ...prev,
+              fullName: profile.fullName || prev.fullName,
+              email: profile.email || prev.email,
+              phone: profile.phone || prev.phone,
+              address: profile.address || prev.address,
+              city: profile.city || prev.city,
+              state: profile.state || prev.state,
+              pincode: profile.pincode || prev.pincode,
+              dateOfBirth: profile.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().split('T')[0] : prev.dateOfBirth,
+              bloodGroup: profile.bloodGroup || prev.bloodGroup,
+              bikeModel: profile.bikeModel || prev.bikeModel,
+              bikeRegistrationNumber: profile.bikeRegistrationNumber || prev.bikeRegistrationNumber,
+              licenseNumber: profile.licenseNumber || prev.licenseNumber,
+              emergencyContactName: profile.emergencyContactName || prev.emergencyContactName,
+              emergencyContactPhone: profile.emergencyContactPhone || prev.emergencyContactPhone,
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching profile:", err);
+          // Just fall back to localStorage if profile fetch fails
+          setFormData(prev => ({
+            ...prev,
+            email: userEmail || prev.email,
+            phone: userPhone || prev.phone
+          }));
+        }
+      }
+    };
+
+    fetchProfile();
     loadEvent();
-  }, [eventId]);
+  }, [eventId, navigate]);
 
   const loadEvent = async () => {
     if (eventId === "community") {
@@ -97,6 +147,8 @@ const PublicRegister = () => {
     const { name, value, files } = e.target;
     if (name === "licenseImage") {
       setFormData((prev) => ({ ...prev, licenseImage: files[0] }));
+    } else if (name === "profileImage") {
+      setFormData((prev) => ({ ...prev, profileImage: files[0] }));
     } else if (name === "phone" || name === "emergencyContactPhone") {
       // Only allow digits and restrict to 10
       const numericValue = value.replace(/\D/g, "").slice(0, 10);
@@ -135,8 +187,12 @@ const PublicRegister = () => {
       }
     });
 
-    if (!formData.licenseImage) {
+    if (!formData.licenseImage && (!profileData || !profileData.licenseImage)) {
       errors.licenseImage = "Driving License image is mandatory";
+    }
+
+    if (!formData.profileImage && (!profileData || !profileData.profileImage)) {
+      errors.profileImage = "Profile picture is mandatory";
     }
 
     // Age validation (18+)
@@ -189,6 +245,8 @@ const PublicRegister = () => {
     Object.keys(formData).forEach((key) => {
       if (key === "licenseImage") {
         data.append("licenseImage", formData.licenseImage);
+      } else if (key === "profileImage") {
+        data.append("profileImage", formData.profileImage);
       } else if (key === "requestedGears") {
         data.append("requestedGears", JSON.stringify(formData.requestedGears));
       } else {
@@ -247,16 +305,29 @@ const PublicRegister = () => {
 
         <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 md:p-10 border border-white/10 shadow-2xl">
           <form onSubmit={handleSubmit} className="registration-form">
-            <div className="bg-green-500/10 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg text-sm text-center font-medium mb-6">
-              <ShieldCheck size={20} className="inline-block mr-2" />
-              Privacy Assurance: Your information is protected by
-              industry-standard encryption. We maintain strict confidentiality
-              and will never share your personal data with third parties without
-              your explicit consent.
-            </div>
             {error && <div className="error-message">{error}</div>}
             <div className="form-section">
               <h3>Personal Information</h3>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Profile Picture *</label>
+                  <input
+                    type="file"
+                    name="profileImage"
+                    accept="image/*"
+                    onChange={handleInputChange}
+                    className={fieldErrors.profileImage ? "input-error" : ""}
+                  />
+                  {formData.profileImage ? (
+                    <p className="file-selected">✓ New profile picture selected</p>
+                  ) : profileData?.profileImage ? (
+                    <p className="file-selected text-green-500">✓ Using existing profile picture</p>
+                  ) : null}
+                  {fieldErrors.profileImage && (
+                    <span className="field-error">{fieldErrors.profileImage}</span>
+                  )}
+                </div>
+              </div>
               <div className="form-row">
                 <div className="form-group">
                   <label>Full Name *</label>
@@ -543,9 +614,11 @@ const PublicRegister = () => {
                     onChange={handleInputChange}
                     className={fieldErrors.licenseImage ? "input-error" : ""}
                   />
-                  {formData.licenseImage && (
-                    <p className="file-selected">✓ File selected</p>
-                  )}
+                  {formData.licenseImage ? (
+                    <p className="file-selected">✓ New license proof selected</p>
+                  ) : profileData?.licenseImage ? (
+                    <p className="file-selected text-green-500">✓ Using existing license proof</p>
+                  ) : null}
                   {fieldErrors.licenseImage && (
                     <span className="field-error">
                       {fieldErrors.licenseImage}

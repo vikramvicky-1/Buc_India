@@ -79,6 +79,12 @@ export const registrationService = {
     });
     return response.data;
   },
+  getByUser: async (email, phone) => {
+    const response = await api.get("/registrations/user", {
+      params: { email, phone },
+    });
+    return response.data;
+  },
   delete: async (id) => {
     const response = await api.delete(`/registrations/${id}`);
     return response.data;

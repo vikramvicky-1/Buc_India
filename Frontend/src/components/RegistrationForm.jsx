@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { toast } from "react-toastify";
-import { registrationService } from "../services/api";
+import { registrationService, profileService } from "../services/api";
 import {
   User,
   Mail,
@@ -16,18 +17,23 @@ import {
   Image as ImageIcon,
   ShieldCheck,
   Stethoscope,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 const RegistrationForm = ({ isOpen, onClose, type, eventTitle, eventId }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
+    password: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const maxDate = useMemo(() => {
     const date = new Date();
@@ -85,7 +91,7 @@ Registration completed successfully!`;
     e.preventDefault();
     setError("");
 
-    if (!formData.fullName || !formData.email || !formData.phone) {
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.password) {
       setError("Please fill all fields.");
       return;
     }
@@ -98,34 +104,32 @@ Registration completed successfully!`;
       data.append("fullName", formData.fullName);
       data.append("email", formData.email);
       data.append("phone", formData.phone);
+      data.append("password", formData.password);
 
-      await registrationService.create(data);
+      await profileService.createOrUpdate(data);
 
       // Store user email and phone for profile access
       if (formData.email) localStorage.setItem("userEmail", formData.email);
       if (formData.phone) localStorage.setItem("userPhone", formData.phone);
+      localStorage.setItem("userLoggedIn", "true");
 
-      const message = formatWhatsAppMessage();
-      const whatsappUrl = `https://wa.me/918867718080?text=${encodeURIComponent(message)}`;
+      // Dispatch event to notify other components (like Header)
+      window.dispatchEvent(new Event("user-login-change"));
 
-      exportToExcel();
       setShowSuccess(true);
-      toast.success("Registration successful!");
-
-      setTimeout(() => {
-        window.open(whatsappUrl, "_blank");
-      }, 1000);
+      toast.success("Login successful!");
 
       setTimeout(() => {
         setFormData({
           fullName: "",
           email: "",
           phone: "",
+          password: "",
         });
         setShowSuccess(false);
         setIsSubmitting(false);
         onClose();
-      }, 3000);
+      }, 2000);
     } catch (err) {
       console.error("Registration error:", err);
       const errorMessage = err.response?.data?.message || "Registration failed. Please try again.";
@@ -144,12 +148,11 @@ Registration completed successfully!`;
           <Check className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h3 className="text-2xl font-bold text-white mb-2">
             {type === "community"
-              ? "Registration Successful!"
+              ? "Login Successful!"
               : "Event Registration Complete!"}
           </h3>
           <p className="text-gray-300">
-            Your registration details have been saved to Excel and are being
-            sent to WhatsApp. You will be redirected automatically.
+            Welcome to the community! You can now access your profile and register for events.
           </p>
         </div>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
@@ -162,7 +165,7 @@ Registration completed successfully!`;
           <h3 className="text-2xl font-bold text-white flex items-center">
             <UserPlus className="h-6 w-6 text-orange-500 mr-2" />
             {type === "community"
-              ? "Join Community"
+              ? "Sign Up"
               : `Register for ${eventTitle}`}
           </h3>
           <button
@@ -176,10 +179,6 @@ Registration completed successfully!`;
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto px-6 py-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="bg-green-500/10 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg text-sm text-center font-medium">
-                <ShieldCheck className="h-4 w-4 inline-block mr-2" />
-                Privacy Assurance: Your information is protected by industry-standard encryption. We maintain strict confidentiality and will never share your personal data with third parties without your explicit consent.
-              </div>
               {error && (
                 <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-lg text-sm text-center">
                   {error}
@@ -189,7 +188,7 @@ Registration completed successfully!`;
               <div>
                 <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
                   <User className="h-5 w-5 text-orange-500 mr-2" />
-                  Join Community
+                  Sign Up
                 </h4>
                 <div className="space-y-4">
                   <input
@@ -219,14 +218,43 @@ Registration completed successfully!`;
                     className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
                     required
                   />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none pr-12"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 flex items-start space-x-3">
-                <ShieldCheck className="h-6 w-6 text-blue-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  <span className="text-blue-400 font-medium">Privacy Assurance:</span> Your information is protected by industry-standard encryption. We maintain strict confidentiality and will never share your personal data with third parties without your explicit consent.
-                </p>
+              <div className="text-center text-gray-400 text-sm">
+                Already a member?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    navigate("/login");
+                  }}
+                  className="text-orange-500 hover:text-orange-400 font-semibold"
+                >
+                  Login
+                </button>
               </div>
 
               <div className="text-center pt-6">
@@ -243,7 +271,7 @@ Registration completed successfully!`;
                   ) : (
                     <>
                       <UserPlus className="h-5 w-5" />
-                      <span>Join Community</span>
+                      <span>Sign Up</span>
                     </>
                   )}
                 </button>

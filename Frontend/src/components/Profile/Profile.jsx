@@ -11,13 +11,19 @@ import {
   Save,
   X,
   Shield,
+  ShieldCheck,
   FileText,
   Loader2,
   Camera,
   AlertCircle,
+  LogOut,
+  Clock,
+  ChevronRight,
+  Image as ImageIcon,
+  Eye,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { profileService } from "../../services/api";
+import { profileService, registrationService } from "../../services/api";
 import Header from "../Header.jsx";
 import Footer from "../Footer.jsx";
 import "./Profile.css";
@@ -29,6 +35,10 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const [profileImagePreview, setProfileImagePreview] = useState(null);
+  const [licenseImage, setLicenseImage] = useState(null);
+  const [licenseImagePreview, setLicenseImagePreview] = useState(null);
+  const [registeredEvents, setRegisteredEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
 
   const [profileData, setProfileData] = useState({
     fullName: "",
@@ -46,6 +56,7 @@ const Profile = () => {
     emergencyContactName: "",
     emergencyContactPhone: "",
     profileImage: "",
+    licenseImage: "",
   });
 
   const [originalData, setOriginalData] = useState({});
@@ -68,6 +79,10 @@ const Profile = () => {
         if (profile.profileImage) {
           setProfileImagePreview(profile.profileImage);
         }
+        if (profile.licenseImage) {
+          setLicenseImagePreview(profile.licenseImage);
+        }
+        loadRegisteredEvents(userEmail, userPhone);
       } else {
         // If no user data, show empty form
         toast.info("Please complete your profile information");
@@ -83,12 +98,32 @@ const Profile = () => {
     }
   };
 
+  const loadRegisteredEvents = async (email, phone) => {
+    setLoadingEvents(true);
+    try {
+      const registrations = await registrationService.getByUser(email, phone);
+      setRegisteredEvents(registrations);
+    } catch (error) {
+      console.error("Error loading registered events:", error);
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProfileData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "phone" || name === "emergencyContactPhone") {
+      const numericValue = value.replace(/\D/g, "").slice(0, 10);
+      setProfileData((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+    } else {
+      setProfileData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleImageChange = (e) => {
@@ -98,6 +133,18 @@ const Profile = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfileImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLicenseImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setLicenseImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLicenseImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -114,6 +161,18 @@ const Profile = () => {
 
       if (!userEmail || !userPhone) {
         toast.error("Email and phone are required");
+        setSaving(false);
+        return;
+      }
+
+      if (profileData.phone && profileData.phone.length !== 10) {
+        toast.error("Mobile number must be exactly 10 digits");
+        setSaving(false);
+        return;
+      }
+
+      if (profileData.emergencyContactPhone && profileData.emergencyContactPhone.length !== 10) {
+        toast.error("Emergency contact phone must be exactly 10 digits");
         setSaving(false);
         return;
       }
@@ -136,12 +195,16 @@ const Profile = () => {
       if (profileImage) {
         formData.append("profileImage", profileImage);
       }
+      if (licenseImage) {
+        formData.append("licenseImage", licenseImage);
+      }
 
       const updatedProfile = await profileService.createOrUpdate(formData);
       setProfileData(updatedProfile);
       setOriginalData(updatedProfile);
       setIsEditing(false);
       setProfileImage(null);
+      setLicenseImage(null);
       
       // Update localStorage
       if (updatedProfile.email) localStorage.setItem("userEmail", updatedProfile.email);
@@ -161,7 +224,18 @@ const Profile = () => {
     setProfileData(originalData);
     setIsEditing(false);
     setProfileImage(null);
+    setLicenseImage(null);
     setProfileImagePreview(originalData.profileImage || null);
+    setLicenseImagePreview(originalData.licenseImage || null);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("userLoggedIn");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userPhone");
+    window.dispatchEvent(new Event("user-login-change"));
+    toast.success("Logged out successfully");
+    navigate("/");
   };
 
   if (loading) {
@@ -193,6 +267,14 @@ const Profile = () => {
       <Header />
       <div className="min-h-screen bg-black pt-24 pb-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Privacy Assurance Banner */}
+          <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 mb-6 flex items-start space-x-3">
+            <ShieldCheck className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-300 leading-relaxed">
+              <span className="text-green-400 font-semibold">Privacy Assurance:</span> Your information is protected by industry-standard encryption. We maintain strict confidentiality and will never share your personal data with third parties without your explicit consent.
+            </p>
+          </div>
+
           {/* Profile Header Card */}
           <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl mb-6">
             <div className="p-6 md:p-8">
@@ -254,13 +336,22 @@ const Profile = () => {
                 {/* Action Buttons */}
                 <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
                   {!isEditing ? (
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="flex items-center justify-center space-x-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                      <span>Edit</span>
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center justify-center space-x-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center justify-center space-x-2 bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white px-4 py-2 rounded-lg text-sm font-medium border border-red-600/30 transition-all duration-200"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    </>
                   ) : (
                     <>
                       <button
@@ -323,6 +414,7 @@ const Profile = () => {
                     isEditing={isEditing}
                     type="email"
                     placeholder="Enter your email"
+                    readOnly={true}
                   />
                   <ProfileField
                     label="Mobile Number"
@@ -442,6 +534,74 @@ const Profile = () => {
                     placeholder="Enter license number"
                     fullWidth
                   />
+                  <div className="md:col-span-2">
+                    <label className="flex items-center text-gray-300 mb-2 text-sm font-medium">
+                      <ImageIcon className="w-4 h-4 mr-2 text-orange-500" />
+                      Driving License Image
+                    </label>
+                    {isEditing ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-center w-full">
+                          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-800/50 hover:bg-gray-800 transition-all">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <Camera className="w-8 h-8 mb-3 text-gray-400" />
+                              <p className="mb-2 text-sm text-gray-400">
+                                <span className="font-semibold">Click to upload</span> or drag and drop
+                              </p>
+                              <p className="text-xs text-gray-500">PNG, JPG or JPEG</p>
+                            </div>
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={handleLicenseImageChange}
+                            />
+                          </label>
+                        </div>
+                        {licenseImagePreview && (
+                          <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-700">
+                            <img
+                              src={licenseImagePreview}
+                              alt="License Preview"
+                              className="w-full h-full object-contain bg-black"
+                            />
+                            <button
+                              onClick={() => {
+                                setLicenseImage(null);
+                                setLicenseImagePreview(null);
+                              }}
+                              className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                        {licenseImagePreview ? (
+                          <div className="flex flex-col items-center">
+                            <img
+                              src={licenseImagePreview}
+                              alt="Driving License"
+                              className="max-h-48 rounded-lg object-contain bg-black mb-3"
+                            />
+                            <a 
+                              href={licenseImagePreview} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-orange-500 hover:text-orange-400 text-sm font-medium flex items-center"
+                            >
+                              <Eye className="w-4 h-4 mr-1.5" />
+                              View Full Image
+                            </a>
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-sm italic">No license image uploaded</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -475,6 +635,73 @@ const Profile = () => {
                   />
                 </div>
               </div>
+
+              {/* Registered Events Card */}
+              <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6 md:p-8 shadow-xl">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="p-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white">My Registered Events</h2>
+                </div>
+                
+                {loadingEvents ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+                  </div>
+                ) : registeredEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-4">
+                    {registeredEvents.map((reg) => (
+                      <div key={reg._id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-orange-500/50 transition-all group">
+                        <div className="flex items-center space-x-4">
+                          <div className="p-3 bg-orange-500/10 rounded-lg group-hover:bg-orange-500/20 transition-colors">
+                            <Bike className="w-6 h-6 text-orange-500" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-white">
+                              {reg.eventId === 'community' ? 'Community Membership' : (reg.eventId?.title || 'Event Registration')}
+                            </h3>
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                              <div className="flex items-center text-gray-400 text-sm">
+                                <Calendar className="w-3.5 h-3.5 mr-1.5 text-orange-500" />
+                                <span>{reg.eventId?.eventDate ? new Date(reg.eventId.eventDate).toLocaleDateString() : new Date(reg.registeredAt).toLocaleDateString()}</span>
+                              </div>
+                              {reg.bikeModel && (
+                                <div className="flex items-center text-gray-400 text-sm">
+                                  <Bike className="w-3.5 h-3.5 mr-1.5 text-orange-500" />
+                                  <span>{reg.bikeModel}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between md:justify-end gap-3">
+                          <span className="px-3 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded-full border border-green-500/20">
+                            Confirmed
+                          </span>
+                          <button 
+                            onClick={() => navigate("/events")}
+                            className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-white/5 rounded-2xl border border-dashed border-white/10">
+                    <AlertCircle className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                    <p className="text-gray-400">No events registered yet.</p>
+                    <button 
+                      onClick={() => navigate("/events")}
+                      className="mt-4 text-orange-500 hover:text-orange-400 font-semibold"
+                    >
+                      Explore Events
+                    </button>
+                  </div>
+                )}
+              </div>
           </div>
         </div>
       </div>
@@ -495,6 +722,7 @@ const ProfileField = ({
   placeholder,
   options,
   fullWidth = false,
+  readOnly = false,
 }) => {
   return (
     <div className={fullWidth ? "md:col-span-2" : ""}>
@@ -502,7 +730,7 @@ const ProfileField = ({
         {Icon && <Icon className="w-4 h-4 mr-2 text-orange-500" />}
         {label}
       </label>
-      {isEditing ? (
+      {isEditing && !readOnly ? (
         type === "textarea" ? (
           <textarea
             name={name}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   User,
   Mail,
@@ -12,6 +13,7 @@ import {
 import { toast } from "react-toastify";
 
 const Registration = () => {
+  const navigate = useNavigate();
   const freeFeatures = [
     "Access to all group rides across India",
     "Monthly newsletter with riding tips",
@@ -87,9 +89,12 @@ const Registration = () => {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
-          <button className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-12 py-4 rounded-lg font-semibold text-lg hover:from-green-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 flex items-center space-x-2">
+          <button 
+            onClick={() => navigate("/signup")}
+            className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-12 py-4 rounded-lg font-semibold text-lg hover:from-green-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
+          >
             <UserPlus className="h-5 w-5" />
-            <span>Join Community - FREE!</span>
+            <span>Sign Up - FREE!</span>
           </button>
         </div>
       </div>

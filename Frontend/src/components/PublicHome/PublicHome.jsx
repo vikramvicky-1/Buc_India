@@ -9,10 +9,38 @@ import {
   Share2,
   Users,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
-import { eventService, registrationService } from "../../services/api";
+import { eventService, registrationService, profileService } from "../../services/api";
 import { toast } from "react-toastify";
 import "./PublicHome.css";
+
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText, loading }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+      <div className="bg-gray-900 rounded-2xl p-8 max-w-md w-full border border-orange-500/30 shadow-2xl">
+        <h3 className="text-2xl font-bold text-white mb-4">{title}</h3>
+        <p className="text-gray-300 mb-8 leading-relaxed">{message}</p>
+        <div className="flex gap-4">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-semibold transition-colors border border-white/10"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PublicHome = () => {
   const navigate = useNavigate();
@@ -21,6 +49,10 @@ const PublicHome = () => {
   const [pastEvents, setPastEvents] = useState([]);
   const [pastLimit, setPastLimit] = useState(6);
   const [loading, setLoading] = useState(false);
+  const [registrationLoading, setRegistrationLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     loadEvents();
@@ -30,7 +62,75 @@ const PublicHome = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const isProfileComplete = (profile) => {
+    const requiredFields = [
+      "fullName", "email", "phone", "address", "city", "state", 
+      "pincode", "dateOfBirth", "bloodGroup", "bikeModel", 
+      "bikeRegistrationNumber", "licenseNumber", 
+      "emergencyContactName", "emergencyContactPhone",
+      "profileImage", "licenseImage"
+    ];
+    return requiredFields.every(field => profile[field] && profile[field].toString().trim() !== "");
+  };
+
+  const handleRegisterClick = async (event) => {
+    const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+    if (!isLoggedIn) {
+      toast.info("Please Sign Up / Login first to register for events");
+      navigate("/signup");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userEmail = localStorage.getItem("userEmail");
+      const userPhone = localStorage.getItem("userPhone");
+      const profile = await profileService.get(userEmail, userPhone);
+
+      if (isProfileComplete(profile)) {
+        setSelectedEvent(event);
+        setShowConfirmModal(true);
+      } else {
+        setShowCompleteProfileModal(true);
+      }
+    } catch (error) {
+      console.error("Error checking profile:", error);
+      setShowCompleteProfileModal(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmRegistration = async () => {
+    if (!selectedEvent) return;
+    setRegistrationLoading(true);
+    try {
+      const userEmail = localStorage.getItem("userEmail");
+      const userPhone = localStorage.getItem("userPhone");
+      const profile = await profileService.get(userEmail, userPhone);
+
+      const data = new FormData();
+      Object.keys(profile).forEach(key => {
+        if (key !== '_id' && key !== '__v' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'profileImage' && key !== 'profileImagePublicId') {
+          data.append(key, profile[key]);
+        }
+      });
+      data.append("eventId", selectedEvent._id);
+      
+      await registrationService.create(data);
+      toast.success(`Successfully registered for ${selectedEvent.title}!`);
+      setShowConfirmModal(false);
+      loadEvents(); // Refresh counts
+    } catch (error) {
+      console.error("Registration failed:", error);
+      toast.error(error.response?.data?.message || "Registration failed");
+    } finally {
+      setRegistrationLoading(false);
+    }
+  };
+
   const loadEvents = async () => {
+    setLoading(true);
     try {
       const allEvents = await eventService.getAll();
       const today = new Date();
@@ -58,6 +158,8 @@ const PublicHome = () => {
       setPastEvents(past);
     } catch (error) {
       console.error("Failed to load events", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -133,7 +235,11 @@ const PublicHome = () => {
           </div>
         </div>
 
-        {displayedEvents.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
+          </div>
+        ) : displayedEvents.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {displayedEvents.map((event) => (
@@ -207,7 +313,7 @@ const PublicHome = () => {
 
                     {activeTab === "upcoming" ? (
                       <button
-                        onClick={() => navigate(`/event-register/${event._id}`)}
+                        onClick={() => handleRegisterClick(event)}
                         className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center group/btn"
                       >
                         Register Now
@@ -242,6 +348,25 @@ const PublicHome = () => {
             </p>
           </div>
         )}
+
+        <ConfirmationModal
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={confirmRegistration}
+          title="Confirm Registration"
+          message={`Are you sure you want to register for ${selectedEvent?.title}? Your profile details will be used for registration.`}
+          confirmText="Confirm"
+          loading={registrationLoading}
+        />
+
+        <ConfirmationModal
+          isOpen={showCompleteProfileModal}
+          onClose={() => setShowCompleteProfileModal(false)}
+          onConfirm={() => navigate("/profile")}
+          title="Complete Your Profile"
+          message="To register for events, you must fully update your profile including personal information, bike details, and emergency contacts."
+          confirmText="Update Profile"
+        />
       </div>
     </section>
   );

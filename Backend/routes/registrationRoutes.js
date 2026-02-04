@@ -4,8 +4,9 @@ const { createRegistration, getRegistrations, deleteRegistration } = require('..
 const { protect } = require('../middleware/authMiddleware');
 const { upload } = require('../middleware/cloudinaryConfig');
 
-router.post('/', upload.fields([{ name: 'licenseImage', maxCount: 1 }]), createRegistration);
+router.post('/', upload.fields([{ name: 'licenseImage', maxCount: 1 }, { name: 'profileImage', maxCount: 1 }]), createRegistration);
 router.get('/', protect, getRegistrations);
+router.get('/user', getRegistrations);
 router.delete('/:id', protect, deleteRegistration);
 
 module.exports = router;

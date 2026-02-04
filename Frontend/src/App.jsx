@@ -14,6 +14,9 @@ import Events from "./components/PublicHome/PublicHome.jsx";
 import PublicRegister from "./components/PublicRegister/PublicRegister.jsx";
 import AdminProtectedRoute from "./components/AdminProtectedRoute.jsx";
 import Profile from "./components/Profile/Profile.jsx";
+import LoginForm from "./components/LoginForm.jsx";
+import SignUpForm from "./components/SignUpForm.jsx";
+import YourEvents from "./components/YourEvents.jsx";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -79,7 +82,9 @@ function App() {
           <Route path="/safety" element={<SafetyPage />} />
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/event-register/:eventId" element={<PublicRegister />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/signup" element={<SignUpForm />} />
+          <Route path="/your-events" element={<YourEvents />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route 
             path="/admin/*" 

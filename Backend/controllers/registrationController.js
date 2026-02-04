@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Registration = require('../models/Registration');
+const User = require('../models/User');
 const { cloudinary } = require('../middleware/cloudinaryConfig');
 
 const createRegistration = async (req, res) => {
@@ -19,9 +20,32 @@ const createRegistration = async (req, res) => {
       requestedGears
     } = req.body;
 
+    // Check if user already has images in their profile
+    const existingUser = await User.findOne({ 
+      $or: [
+        { email: email?.toLowerCase() },
+        { phone: phone }
+      ]
+    });
+
     // License image is only required for event registrations, not community registrations
-    if (eventId !== 'community' && (!req.files || !req.files.licenseImage)) {
-      return res.status(400).json({ message: 'Driving license image is mandatory' });
+    if (eventId !== 'community') {
+      const hasUploadedLicense = req.files && req.files.licenseImage;
+      const hasExistingLicense = existingUser && existingUser.licenseImage;
+      
+      if (!hasUploadedLicense && !hasExistingLicense) {
+        return res.status(400).json({ message: 'Driving license image is mandatory' });
+      }
+    }
+
+    // Profile image is mandatory for event registrations
+    if (eventId !== 'community') {
+      const hasUploadedProfile = req.files && req.files.profileImage;
+      const hasExistingProfile = existingUser && existingUser.profileImage;
+
+      if (!hasUploadedProfile && !hasExistingProfile) {
+        return res.status(400).json({ message: 'Profile picture is mandatory' });
+      }
     }
 
     // Check age (18+) - only for event registrations
@@ -67,13 +91,15 @@ const createRegistration = async (req, res) => {
       return res.status(400).json({ message: `${field} is already registered` });
     }
 
-    const registration = new Registration({
+    const registrationData = {
       eventId,
       fullName,
       email,
       phone,
       licenseImage: '',
-      licenseImagePublicId: ''
+      licenseImagePublicId: '',
+      profileImage: '',
+      profileImagePublicId: ''
     };
 
     // For event registrations, include all fields
@@ -95,6 +121,17 @@ const createRegistration = async (req, res) => {
       if (req.files && req.files.licenseImage) {
         registrationData.licenseImage = req.files.licenseImage[0].path;
         registrationData.licenseImagePublicId = req.files.licenseImage[0].filename;
+      } else if (existingUser && existingUser.licenseImage) {
+        registrationData.licenseImage = existingUser.licenseImage;
+        registrationData.licenseImagePublicId = existingUser.licenseImagePublicId;
+      }
+
+      if (req.files && req.files.profileImage) {
+        registrationData.profileImage = req.files.profileImage[0].path;
+        registrationData.profileImagePublicId = req.files.profileImage[0].filename;
+      } else if (existingUser && existingUser.profileImage) {
+        registrationData.profileImage = existingUser.profileImage;
+        registrationData.profileImagePublicId = existingUser.profileImagePublicId;
       }
 
       // Only add riding gears for event registrations
@@ -157,20 +194,28 @@ const createRegistration = async (req, res) => {
 
 const getRegistrations = async (req, res) => {
   try {
-    const { eventId } = req.query;
+    const { eventId, email, phone } = req.query;
     let filter = {};
+    
     if (eventId && eventId !== 'all') {
       if (eventId === 'community') {
-        filter = { eventId: 'community' };
+        filter.eventId = 'community';
       } else {
-        filter = { 
-          $or: [
-            { eventId: eventId },
-            { eventId: mongoose.Types.ObjectId.createFromHexString(eventId) }
-          ]
-        };
+        filter.$or = [
+          { eventId: eventId },
+          { eventId: mongoose.Types.ObjectId.createFromHexString(eventId) }
+        ];
       }
     }
+
+    if (email) {
+      filter.email = email.toLowerCase();
+    }
+
+    if (phone) {
+      filter.phone = phone;
+    }
+
     let registrations = await Registration.find(filter)
       .populate('eventId', 'title eventDate')
       .sort({ registeredAt: -1 });

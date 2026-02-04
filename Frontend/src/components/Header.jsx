@@ -12,17 +12,29 @@ import {
   User,
 } from "lucide-react";
 import RegistrationForm from "./RegistrationForm.jsx";
+import buclogo from "../../public/logo.jpg";
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("userLoggedIn") === "true",
+  );
 
   useEffect(() => {
     const handler = () => setShowRegistrationForm(true);
+    const loginHandler = () =>
+      setIsLoggedIn(localStorage.getItem("userLoggedIn") === "true");
+
     window.addEventListener("open-registration", handler);
-    return () => window.removeEventListener("open-registration", handler);
+    window.addEventListener("user-login-change", loginHandler);
+
+    return () => {
+      window.removeEventListener("open-registration", handler);
+      window.removeEventListener("user-login-change", loginHandler);
+    };
   }, []);
 
   const handleNavigation = (path) => {
@@ -44,13 +56,19 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-4">
-            <div className="flex flex-col justify-center">
-              <h1
-                className="text-xl font-bold text-white cursor-pointer"
-                onClick={() => handleNavigation("/")}
-              >
-                BUC_India
-              </h1>
+            <div>
+              <img className="rounded-full h-14" src={buclogo} alt="buclogo" />
+            </div>
+            <div className="flex flex-col  items-center justify-center">
+              <div className="flex">
+                <h1
+                  className="text-xl font-bold text-white cursor-pointer"
+                  onClick={() => handleNavigation("/")}
+                >
+                  BUC_India
+                </h1>
+              </div>
+
               <p className="text-xs text-gray-400 leading-tight mt-1">
                 Ride Together, Stand Together
               </p>
@@ -75,22 +93,27 @@ const Header = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
-            <button
-              type="button"
-              onClick={() => handleNavigation("/profile")}
-              className="flex items-center space-x-2 text-gray-300 hover:text-orange-500 transition-colors duration-200"
-            >
-              <User className="h-5 w-5" />
-              <span>Profile</span>
-            </button>
-            <button
-              type="button"
-              className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-1.5 rounded-md font-semibold text-sm hover:from-orange-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
-              style={{ lineHeight: 1.2 }}
-              onClick={() => setShowRegistrationForm(true)}
-            >
-              Join Community
-            </button>
+            {isLoggedIn ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleNavigation("/profile")}
+                  className="flex items-center space-x-2 text-gray-300 hover:text-orange-500 transition-colors duration-200"
+                >
+                  <User className="h-5 w-5" />
+                  <span>Profile</span>
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-1.5 rounded-md font-semibold text-sm hover:from-orange-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
+                style={{ lineHeight: 1.2 }}
+                onClick={() => handleNavigation("/signup")}
+              >
+                Sign Up
+              </button>
+            )}
           </div>
 
           <button
@@ -122,25 +145,30 @@ const Header = () => {
                   <span>{item.name}</span>
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => handleNavigation("/profile")}
-                className="flex items-center space-x-3 text-gray-300 hover:text-orange-500 transition-colors duration-200 text-left"
-              >
-                <User className="h-5 w-5" />
-                <span>Profile</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  setShowRegistrationForm(true);
-                }}
-                className="bg-gradient-to-r from-orange-400 to-red-500 text-white px-4 py-2 rounded-md font-semibold text-sm mt-4 w-full flex items-center justify-center"
-                style={{ lineHeight: 1.2 }}
-              >
-                Join Community
-              </button>
+              {isLoggedIn ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleNavigation("/profile")}
+                    className="flex items-center space-x-3 text-gray-300 hover:text-orange-500 transition-colors duration-200 text-left"
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Profile</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleNavigation("/signup");
+                  }}
+                  className="bg-gradient-to-r from-orange-400 to-red-500 text-white px-4 py-2 rounded-md font-semibold text-sm mt-4 w-full flex items-center justify-center"
+                  style={{ lineHeight: 1.2 }}
+                >
+                  Sign Up
+                </button>
+              )}
             </nav>
           </div>
         )}
