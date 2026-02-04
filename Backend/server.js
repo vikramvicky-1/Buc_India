@@ -8,6 +8,7 @@ const Admin = require("./models/Admin");
 const authRoutes = require("./routes/authRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const registrationRoutes = require("./routes/registrationRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 const app = express();
 
@@ -104,6 +105,7 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/registrations", registrationRoutes);
+app.use("/api/profile", profileRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

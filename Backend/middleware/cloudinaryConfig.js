@@ -8,7 +8,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const storage = new CloudinaryStorage({
+// Storage for event banners and license images
+const eventStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'buc_india_events',
@@ -17,6 +18,17 @@ const storage = new CloudinaryStorage({
   }
 });
 
-const upload = multer({ storage: storage });
+// Storage for profile images
+const profileStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'buc_india_profiles',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }]
+  }
+});
 
-module.exports = { cloudinary, upload };
+const upload = multer({ storage: eventStorage });
+const profileUpload = multer({ storage: profileStorage });
+
+module.exports = { cloudinary, upload, profileUpload };

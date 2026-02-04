@@ -14,23 +14,28 @@ const createRegistration = async (req, res) => {
       emergencyContactName, emergencyContactPhone,
       bikeModel, bikeRegistrationNumber, licenseNumber, 
       anyMedicalCondition,
-      tShirtSize 
+      tShirtSize,
+      requestRidingGears,
+      requestedGears
     } = req.body;
 
-    if (!req.files || !req.files.licenseImage) {
+    // License image is only required for event registrations, not community registrations
+    if (eventId !== 'community' && (!req.files || !req.files.licenseImage)) {
       return res.status(400).json({ message: 'Driving license image is mandatory' });
     }
 
-    // Check age (18+)
-    const dob = new Date(dateOfBirth);
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-      age--;
-    }
-    if (age < 18) {
-      return res.status(400).json({ message: 'You must be at least 18 years old to register' });
+    // Check age (18+) - only for event registrations
+    if (eventId !== 'community' && dateOfBirth) {
+      const dob = new Date(dateOfBirth);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+      if (age < 18) {
+        return res.status(400).json({ message: 'You must be at least 18 years old to register' });
+      }
     }
 
     // Phone validation (exactly 10 digits)
@@ -43,7 +48,7 @@ const createRegistration = async (req, res) => {
 
     // Check for duplicates within the same event
     const duplicate = await Registration.findOne({
-      eventId: eventId === 'community' ? 'community' : mongoose.Types.ObjectId.createFromHexString(eventId),
+      eventId,
       $or: [
         { email },
         { phone },
@@ -63,28 +68,66 @@ const createRegistration = async (req, res) => {
     }
 
     const registration = new Registration({
-      eventId: eventId === 'community' ? 'community' : mongoose.Types.ObjectId.createFromHexString(eventId),
+      eventId,
       fullName,
       email,
       phone,
-      dateOfBirth,
-      bloodGroup,
-      address,
-      city,
-      state,
-      pincode,
-      emergencyContactName,
-      emergencyContactPhone,
-      bikeModel,
-      bikeRegistrationNumber,
-      licenseNumber,
-      anyMedicalCondition,
-      tShirtSize,
-      licenseImage: req.files.licenseImage[0].path,
-      licenseImagePublicId: req.files.licenseImage[0].filename
-    });
+      licenseImage: '',
+      licenseImagePublicId: ''
+    };
+
+    // For event registrations, include all fields
+    if (eventId !== 'community') {
+      registrationData.dateOfBirth = dateOfBirth;
+      registrationData.bloodGroup = bloodGroup;
+      registrationData.address = address;
+      registrationData.city = city;
+      registrationData.state = state;
+      registrationData.pincode = pincode;
+      registrationData.emergencyContactName = emergencyContactName;
+      registrationData.emergencyContactPhone = emergencyContactPhone;
+      registrationData.bikeModel = bikeModel;
+      registrationData.bikeRegistrationNumber = bikeRegistrationNumber;
+      registrationData.licenseNumber = licenseNumber;
+      registrationData.anyMedicalCondition = anyMedicalCondition;
+      registrationData.tShirtSize = tShirtSize;
+      
+      if (req.files && req.files.licenseImage) {
+        registrationData.licenseImage = req.files.licenseImage[0].path;
+        registrationData.licenseImagePublicId = req.files.licenseImage[0].filename;
+      }
+
+      // Only add riding gears for event registrations
+      if (requestRidingGears === 'true' || requestRidingGears === true) {
+        registrationData.requestRidingGears = true;
+        if (requestedGears) {
+          try {
+            registrationData.requestedGears = typeof requestedGears === 'string' 
+              ? JSON.parse(requestedGears) 
+              : requestedGears;
+            console.log('Riding gears saved:', registrationData.requestedGears);
+          } catch (e) {
+            console.error('Error parsing riding gears:', e);
+            registrationData.requestedGears = {};
+          }
+        } else {
+          registrationData.requestedGears = {};
+        }
+      } else {
+        registrationData.requestRidingGears = false;
+        registrationData.requestedGears = {};
+      }
+    }
+
+    const registration = new Registration(registrationData);
 
     const newRegistration = await registration.save();
+    console.log('Registration saved successfully:', {
+      id: newRegistration._id,
+      eventId: newRegistration.eventId,
+      requestRidingGears: newRegistration.requestRidingGears,
+      requestedGears: newRegistration.requestedGears
+    });
     res.status(201).json(newRegistration);
   } catch (error) {
     console.error('Registration Error:', error);

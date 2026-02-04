@@ -300,6 +300,9 @@ const ViewRegistrations = () => {
   const getDynamicColumns = () => {
     // Fields to exclude from display
     const excludeFields = ["_id", "eventId", "licenseImagePublicId", "licenseImage", "__v", "createdAt", "updatedAt"];
+    
+    // Fields to include with special formatting
+    const specialFields = ["requestRidingGears", "requestedGears"];
 
     // If we have registrations, extract columns from the first one
     if (filteredRegistrations.length > 0) {
@@ -408,6 +411,23 @@ const ViewRegistrations = () => {
           // Not a valid date
         }
       }
+    }
+
+    // Handle riding gears fields
+    if (column.key === "requestRidingGears") {
+      return value === true ? "Yes" : "No";
+    }
+
+    if (column.key === "requestedGears") {
+      if (!value || typeof value !== "object") return "-";
+      const gears = [];
+      if (value.helmet) gears.push("Helmet");
+      if (value.gloves) gears.push("Gloves");
+      if (value.jacket) gears.push("Jacket");
+      if (value.boots) gears.push("Boots");
+      if (value.kneeGuards) gears.push("Knee Guards");
+      if (value.elbowGuards) gears.push("Elbow Guards");
+      return gears.length > 0 ? gears.join(", ") : "-";
     }
 
     // For regular fields, return the value or '-'

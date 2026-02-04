@@ -22,63 +22,63 @@ const registrationSchema = new mongoose.Schema({
     required: true
   },
   dateOfBirth: {
-    type: Date,
-    required: true
+    type: Date
   },
   bloodGroup: {
-    type: String,
-    required: true
+    type: String
   },
   address: {
-    type: String,
-    required: true
+    type: String
   },
   city: {
-    type: String,
-    required: true
+    type: String
   },
   state: {
-    type: String,
-    required: true
+    type: String
   },
   pincode: {
-    type: String,
-    required: true
+    type: String
   },
   emergencyContactName: {
-    type: String,
-    required: true
+    type: String
   },
   emergencyContactPhone: {
-    type: String,
-    required: true
+    type: String
   },
   bikeModel: {
-    type: String,
-    required: true
+    type: String
   },
   bikeRegistrationNumber: {
-    type: String,
-    required: true
+    type: String
   },
   licenseNumber: {
-    type: String,
-    required: true
+    type: String
   },
   anyMedicalCondition: {
-    type: String,
-    required: true
+    type: String
   },
   tShirtSize: {
     type: String
   },
   licenseImage: {
     type: String,
-    required: true
+    default: ''
   },
   licenseImagePublicId: {
     type: String,
-    required: true
+    default: ''
+  },
+  requestRidingGears: {
+    type: Boolean,
+    default: false
+  },
+  requestedGears: {
+    helmet: { type: Boolean, default: false },
+    gloves: { type: Boolean, default: false },
+    jacket: { type: Boolean, default: false },
+    boots: { type: Boolean, default: false },
+    kneeGuards: { type: Boolean, default: false },
+    elbowGuards: { type: Boolean, default: false }
   },
   registeredAt: {
     type: Date,

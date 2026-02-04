@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Menu,
   X,
@@ -8,14 +9,13 @@ import {
   Camera,
   MessageSquare,
   Shield,
+  User,
 } from "lucide-react";
 import RegistrationForm from "./RegistrationForm.jsx";
-import gsap from "gsap";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-
-gsap.registerPlugin(ScrollToPlugin);
 
 const Header = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
@@ -25,24 +25,18 @@ const Header = () => {
     return () => window.removeEventListener("open-registration", handler);
   }, []);
 
-  const scrollToSection = (e, href) => {
-    e.preventDefault();
-    const target = href.startsWith("#") ? href : `#${href}`;
-    gsap.to(window, {
-      duration: 1,
-      scrollTo: { y: target, offsetY: 80 },
-      ease: "power3.inOut",
-    });
+  const handleNavigation = (path) => {
+    navigate(path);
     setIsMenuOpen(false);
   };
 
   const navigation = [
-    { name: "Home", href: "#home", icon: Bike },
-    { name: "Events", href: "#events", icon: Calendar },
-    { name: "Gallery", href: "#gallery", icon: Camera },
-    { name: "Members", href: "#members", icon: Users },
-    { name: "Safety", href: "#safety", icon: Shield },
-    { name: "Forum", href: "#forum", icon: MessageSquare },
+    { name: "Home", path: "/", icon: Bike },
+    { name: "Events", path: "/events", icon: Calendar },
+    { name: "Gallery", path: "/gallery", icon: Camera },
+    { name: "Members", path: "/members", icon: Users },
+    { name: "Safety", path: "/safety", icon: Shield },
+    { name: "Forum", path: "/forum", icon: MessageSquare },
   ];
 
   return (
@@ -50,16 +44,10 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-4">
-            <img
-              src="/logo copy copy.jpg"
-              alt="Bikers Unity Calls Logo"
-              className="h-16 w-16 object-cover rounded-full cursor-pointer"
-              onClick={(e) => scrollToSection(e, "#home")}
-            />
             <div className="flex flex-col justify-center">
               <h1
                 className="text-xl font-bold text-white cursor-pointer"
-                onClick={(e) => scrollToSection(e, "#home")}
+                onClick={() => handleNavigation("/")}
               >
                 BUC_India
               </h1>
@@ -71,19 +59,30 @@ const Header = () => {
 
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
-              <a
+              <button
                 key={item.name}
-                href={item.href}
-                onClick={(e) => scrollToSection(e, item.href)}
-                className="flex items-center space-x-2 text-gray-300 hover:text-orange-500 transition-colors duration-200"
+                onClick={() => handleNavigation(item.path)}
+                className={`flex items-center space-x-2 transition-colors duration-200 ${
+                  location.pathname === item.path
+                    ? "text-orange-500"
+                    : "text-gray-300 hover:text-orange-500"
+                }`}
               >
                 <item.icon className="h-4 w-4" />
                 <span>{item.name}</span>
-              </a>
+              </button>
             ))}
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
+            <button
+              type="button"
+              onClick={() => handleNavigation("/profile")}
+              className="flex items-center space-x-2 text-gray-300 hover:text-orange-500 transition-colors duration-200"
+            >
+              <User className="h-5 w-5" />
+              <span>Profile</span>
+            </button>
             <button
               type="button"
               className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-1.5 rounded-md font-semibold text-sm hover:from-orange-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
@@ -110,16 +109,27 @@ const Header = () => {
           <div className="md:hidden py-4 border-t border-gray-700">
             <nav className="flex flex-col space-y-4">
               {navigation.map((item) => (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
-                  className="flex items-center space-x-3 text-gray-300 hover:text-orange-500 transition-colors duration-200"
-                  onClick={(e) => scrollToSection(e, item.href)}
+                  onClick={() => handleNavigation(item.path)}
+                  className={`flex items-center space-x-3 transition-colors duration-200 text-left ${
+                    location.pathname === item.path
+                      ? "text-orange-500"
+                      : "text-gray-300 hover:text-orange-500"
+                  }`}
                 >
                   <item.icon className="h-5 w-5" />
                   <span>{item.name}</span>
-                </a>
+                </button>
               ))}
+              <button
+                type="button"
+                onClick={() => handleNavigation("/profile")}
+                className="flex items-center space-x-3 text-gray-300 hover:text-orange-500 transition-colors duration-200 text-left"
+              >
+                <User className="h-5 w-5" />
+                <span>Profile</span>
+              </button>
               <button
                 type="button"
                 onClick={() => {

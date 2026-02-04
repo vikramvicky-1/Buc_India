@@ -13,6 +13,7 @@ import AdminDashboard from "./components/AdminDashboardNav/AdminDashboardNav.jsx
 import Events from "./components/PublicHome/PublicHome.jsx";
 import PublicRegister from "./components/PublicRegister/PublicRegister.jsx";
 import AdminProtectedRoute from "./components/AdminProtectedRoute.jsx";
+import Profile from "./components/Profile/Profile.jsx";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -21,11 +22,45 @@ const HomePage = () => (
     <Header />
     <Hero />
     <About />
+    <Footer />
+  </>
+);
+
+const EventsPage = () => (
+  <>
+    <Header />
     <Events />
-    <Registration />
+    <Footer />
+  </>
+);
+
+const GalleryPage = () => (
+  <>
+    <Header />
     <Gallery />
+    <Footer />
+  </>
+);
+
+const MembersPage = () => (
+  <>
+    <Header />
     <Members />
+    <Footer />
+  </>
+);
+
+const SafetyPage = () => (
+  <>
+    <Header />
     <Safety />
+    <Footer />
+  </>
+);
+
+const ForumPage = () => (
+  <>
+    <Header />
     <Forum />
     <Footer />
   </>
@@ -38,6 +73,12 @@ function App() {
         <ToastContainer position="top-center" autoClose={3000} theme="dark" />
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/members" element={<MembersPage />} />
+          <Route path="/safety" element={<SafetyPage />} />
+          <Route path="/forum" element={<ForumPage />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/event-register/:eventId" element={<PublicRegister />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route 
