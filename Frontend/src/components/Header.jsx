@@ -75,23 +75,6 @@ const Header = () => {
             </div>
           </div>
 
-          <nav className="hidden md:flex space-x-8">
-            {navigation.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => handleNavigation(item.path)}
-                className={`flex items-center space-x-2 transition-colors duration-200 ${
-                  location.pathname === item.path
-                    ? "text-orange-500"
-                    : "text-gray-300 hover:text-orange-500"
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.name}</span>
-              </button>
-            ))}
-          </nav>
-
           <div className="hidden md:flex items-center space-x-4">
             {isLoggedIn ? (
               <>
@@ -117,60 +100,83 @@ const Header = () => {
           </div>
 
           <button
-            className="md:hidden text-white"
+            className="text-white border border-white/20 rounded-md px-3 py-1 flex items-center gap-2 hover:bg-white/10 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             ) : (
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             )}
+            <span className="text-sm">Menu</span>
           </button>
         </div>
 
+        {/* Sidebar */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-700">
-            <nav className="flex flex-col space-y-4">
-              {navigation.map((item) => (
+          <>
+            <div
+              className="fixed inset-0 bg-black/70 z-[60]"
+              onClick={() => setIsMenuOpen(false)}
+            />
+            <aside className="fixed top-0 left-0 h-full w-72 bg-gray-950 border-r border-orange-500/20 z-[70] flex flex-col">
+              <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <img className="rounded-full h-10 w-10 object-cover" src={buclogo} alt="buclogo" />
+                  <div className="flex flex-col">
+                    <span className="text-white font-bold leading-tight">BUC_India</span>
+                    <span className="text-xs text-gray-400 leading-tight">Ride Together, Stand Together</span>
+                  </div>
+                </div>
                 <button
-                  key={item.name}
-                  onClick={() => handleNavigation(item.path)}
-                  className={`flex items-center space-x-3 transition-colors duration-200 text-left ${
-                    location.pathname === item.path
-                      ? "text-orange-500"
-                      : "text-gray-300 hover:text-orange-500"
-                  }`}
+                  className="text-white hover:bg-white/10 rounded-md p-2 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                  aria-label="Close menu"
                 >
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.name}</span>
+                  <X className="h-5 w-5" />
                 </button>
-              ))}
-              {isLoggedIn ? (
-                <>
+              </div>
+
+              <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+                {navigation.map((item) => (
+                  <button
+                    key={item.name}
+                    onClick={() => handleNavigation(item.path)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left ${
+                      location.pathname === item.path
+                        ? "bg-white/10 text-orange-400"
+                        : "text-gray-200 hover:text-orange-300 hover:bg-white/5"
+                    }`}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span className="font-medium">{item.name}</span>
+                  </button>
+                ))}
+              </nav>
+
+              <div className="p-3 border-t border-white/10">
+                {isLoggedIn ? (
                   <button
                     type="button"
                     onClick={() => handleNavigation("/profile")}
-                    className="flex items-center space-x-3 text-gray-300 hover:text-orange-500 transition-colors duration-200 text-left"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-200 hover:text-orange-300 hover:bg-white/5 transition-colors text-left"
                   >
                     <User className="h-5 w-5" />
-                    <span>Profile</span>
+                    <span className="font-medium">Profile</span>
                   </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    handleNavigation("/signup");
-                  }}
-                  className="bg-gradient-to-r from-orange-400 to-red-500 text-white px-4 py-2 rounded-md font-semibold text-sm mt-4 w-full flex items-center justify-center"
-                  style={{ lineHeight: 1.2 }}
-                >
-                  Sign Up
-                </button>
-              )}
-            </nav>
-          </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleNavigation("/signup")}
+                    className="w-full bg-gradient-to-r from-orange-400 to-red-500 text-white px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center"
+                    style={{ lineHeight: 1.2 }}
+                  >
+                    Sign Up
+                  </button>
+                )}
+              </div>
+            </aside>
+          </>
         )}
       </div>
 

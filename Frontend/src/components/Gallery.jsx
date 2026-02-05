@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Camera, Play, Upload, Heart, MessageCircle, Share2 } from 'lucide-react';
-import MediaUpload from './MediaUpload.jsx';
+import { Camera, Play, Heart, MessageCircle, Share2, Calendar as CalendarIcon, Tag } from 'lucide-react';
+import { galleryService } from '../services/api';
 
 const Gallery = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [selectedMedia, setSelectedMedia] = useState(null);
-  const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [playingVideos, setPlayingVideos] = useState(new Set());
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const categories = [
     { id: 'all', name: 'All Media' },
@@ -44,9 +45,27 @@ const Gallery = () => {
     return items;
   }, []);
 
-  const baseMediaItems = [];
+  const baseMediaItems = useMemo(
+    () =>
+      galleryItems.map((item) => ({
+        id: item._id,
+        type: 'image',
+        src: item.imageUrl,
+        title: item.eventName,
+        category: item.category || 'all',
+        author: 'BUC Admin',
+        eventDate: item.eventDate,
+        likes: 0,
+        comments: 0,
+        fromBackend: true,
+      })),
+    [galleryItems]
+  );
 
-  const mediaItems = useMemo(() => [...baseMediaItems, ...autoGalleryItems], [autoGalleryItems]);
+  const mediaItems = useMemo(
+    () => [...baseMediaItems, ...autoGalleryItems],
+    [baseMediaItems, autoGalleryItems]
+  );
 
   const filteredMedia = activeCategory === 'all' 
     ? mediaItems 
@@ -59,6 +78,32 @@ const Gallery = () => {
   useEffect(() => {
     setVisibleCount(INITIAL_COUNT);
   }, [activeCategory]);
+
+  useEffect(() => {
+    const fetchGalleryItems = async () => {
+      setLoading(true);
+      try {
+        const data = await galleryService.getAll();
+        setGalleryItems(data);
+      } catch (err) {
+        // Silent fallback: still show bundled/local gallery assets
+        console.warn('Gallery server unavailable; showing local gallery assets only.', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGalleryItems();
+  }, []);
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString();
+    } catch {
+      return date;
+    }
+  };
 
   return (
     <section id="gallery" className="relative py-20 overflow-hidden">
@@ -96,6 +141,8 @@ const Gallery = () => {
             </button>
           ))}
         </div>
+
+        {/* No server error messaging on public site */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayedMedia.map((item) => (
@@ -176,6 +223,22 @@ const Gallery = () => {
 
               <div className="p-4">
                 <div className="flex items-center justify-between">
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <Tag className="h-3 w-3 text-orange-500" />
+                      {item.category === 'all' ? 'All Media' :
+                        item.category === 'rides' ? 'Group Rides' :
+                        item.category === 'events' ? 'Events' :
+                        item.category === 'bikes' ? 'Member Bikes' :
+                        item.category === 'rallies' ? 'Rallies' : item.category}
+                    </span>
+                    {item.eventDate && (
+                      <span className="text-xs text-gray-400 flex items-center gap-1">
+                        <CalendarIcon className="h-3 w-3 text-orange-500" />
+                        {formatDate(item.eventDate)}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center space-x-4">
                     <button className="flex items-center space-x-1 text-gray-400 hover:text-red-500 transition-colors duration-200">
                       <Heart className="h-4 w-4" />
@@ -186,9 +249,6 @@ const Gallery = () => {
                       <span className="text-sm">{item.comments}</span>
                     </button>
                   </div>
-                  <button className="text-gray-400 hover:text-orange-500 transition-colors duration-200">
-                    <Share2 className="h-4 w-4" />
-                  </button>
                 </div>
               </div>
             </div>
@@ -254,10 +314,6 @@ const Gallery = () => {
           </div>
         )}
         
-        <MediaUpload
-          isOpen={showMediaUpload}
-          onClose={() => setShowMediaUpload(false)}
-        />
       </div>
     </section>
   );

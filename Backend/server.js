@@ -9,6 +9,7 @@ const authRoutes = require("./routes/authRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const registrationRoutes = require("./routes/registrationRoutes");
 const profileRoutes = require("./routes/profileRoutes");
+const galleryRoutes = require("./routes/galleryRoutes");
 
 const app = express();
 
@@ -75,28 +76,28 @@ mongoose
       );
     }
 
-    // Create initial admin if not exists
+    // Create initial admin(s) if not exists
+    // Keep backward compatibility: many deployments previously used username "admin"
     const adminUsername = process.env.ADMIN_USERNAME || "bucindia";
     const adminPassword = process.env.ADMIN_PASSWORD || "Admin@bucindia@2026";
-    
-    let admin = await Admin.findOne({ username: adminUsername });
-    if (!admin) {
-      admin = new Admin({
-        username: adminUsername,
-        password: adminPassword,
-      });
-      await admin.save();
-      console.log(`Initial admin (${adminUsername}) created`);
-    } else {
-      // Optional: Update password if needed
-      admin.password = adminPassword;
-      await admin.save();
-      console.log(`Admin (${adminUsername}) password updated`);
-    }
 
-    // Clean up old admin if it exists and is different
+    const ensureAdminUser = async (username) => {
+      let admin = await Admin.findOne({ username });
+      if (!admin) {
+        admin = new Admin({ username, password: adminPassword });
+        await admin.save();
+        console.log(`Initial admin (${username}) created`);
+      } else {
+        admin.password = adminPassword;
+        await admin.save();
+        console.log(`Admin (${username}) password updated`);
+      }
+    };
+
+    // Ensure both the configured admin and legacy "admin" exist
+    await ensureAdminUser(adminUsername);
     if (adminUsername !== "admin") {
-      await Admin.deleteOne({ username: "admin" });
+      await ensureAdminUser("admin");
     }
   })
   .catch((err) => console.error("Could not connect to MongoDB", err));
@@ -106,6 +107,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/gallery", galleryRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

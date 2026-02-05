@@ -28,15 +28,10 @@ const LoginForm = () => {
     setIsSubmitting(true);
 
     try {
-      // In a real app, you'd have a specific login endpoint. 
-      // For now, we'll fetch the profile to verify existence and use it as a 'login'.
-      // Note: This logic depends on how the backend handles 'login'.
-      // If there's no login endpoint, we might need to add one or use profileService.get
-      
+      // Previous behavior: treat an existing profile as a "login"
       const profile = await profileService.get(formData.email);
-      
+
       if (profile && profile.email === formData.email) {
-        // Here we'd normally verify the password if the backend supported it
         localStorage.setItem("userEmail", profile.email);
         localStorage.setItem("userPhone", profile.phone || "");
         localStorage.setItem("userLoggedIn", "true");

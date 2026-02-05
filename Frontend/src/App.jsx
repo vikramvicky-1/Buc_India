@@ -24,6 +24,7 @@ const HomePage = () => (
   <>
     <Header />
     <Hero />
+    <Safety />
     <About />
     <Footer />
   </>

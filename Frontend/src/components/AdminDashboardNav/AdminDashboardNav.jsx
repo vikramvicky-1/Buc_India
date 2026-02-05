@@ -3,6 +3,7 @@ import { Routes, Route, NavLink, useNavigate } from "react-router-dom";
 import DashboardHome from "../DashboardHome/DashboardHome";
 import EventManagement from "../EventManagement/EventManagement";
 import ViewRegistrations from "../ViewRegistrations/ViewRegistrations";
+import GalleryManagement from "../GalleryManagement.jsx";
 import { authService } from "../../services/api";
 const logo = "/logo copy copy.jpg";
 import "./AdminDashboardNav.css";
@@ -43,6 +44,9 @@ const AdminDashboard = () => {
           <NavLink to="/admin/registrations" className="nav-link">
             Registrations
           </NavLink>
+          <NavLink to="/admin/gallery" className="nav-link">
+            Gallery
+          </NavLink>
         </div>
         <div className="nav-right">
           <a
@@ -64,6 +68,7 @@ const AdminDashboard = () => {
           <Route path="dashboard" element={<DashboardHome />} />
           <Route path="events" element={<EventManagement />} />
           <Route path="registrations" element={<ViewRegistrations />} />
+          <Route path="gallery" element={<GalleryManagement />} />
         </Routes>
       </main>
     </div>

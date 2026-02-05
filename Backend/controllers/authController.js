@@ -24,11 +24,14 @@ const login = async (req, res) => {
       { expiresIn: "24h" },
     );
 
-    // Set cookie
+    // Set cookie (optional for browser sessions).
+    // Important: secure cookies won't be set over plain http (local dev),
+    // so only force secure+sameSite=none in production.
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/", // Explicitly set path
     });
@@ -44,10 +47,11 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
     path: "/",
   });
   res.json({ message: "Logged out successfully" });

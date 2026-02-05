@@ -28,7 +28,18 @@ const profileStorage = new CloudinaryStorage({
   }
 });
 
+// Storage for gallery images
+const galleryStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'buc_india_gallery',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+    transformation: [{ width: 1400, height: 900, crop: 'limit' }]
+  }
+});
+
 const upload = multer({ storage: eventStorage });
 const profileUpload = multer({ storage: profileStorage });
+const galleryUpload = multer({ storage: galleryStorage });
 
-module.exports = { cloudinary, upload, profileUpload };
+module.exports = { cloudinary, upload, profileUpload, galleryUpload };
