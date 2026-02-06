@@ -32,9 +32,9 @@ const LoginForm = () => {
       const profile = await profileService.get(formData.email);
 
       if (profile && profile.email === formData.email) {
-        localStorage.setItem("userEmail", profile.email);
-        localStorage.setItem("userPhone", profile.phone || "");
-        localStorage.setItem("userLoggedIn", "true");
+        sessionStorage.setItem("userEmail", profile.email);
+        sessionStorage.setItem("userPhone", profile.phone || "");
+        sessionStorage.setItem("userLoggedIn", "true");
         window.dispatchEvent(new Event("user-login-change"));
         toast.success("Logged in successfully!");
         navigate("/profile");

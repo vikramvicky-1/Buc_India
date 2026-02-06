@@ -32,7 +32,7 @@ const AdminLogin = () => {
 
     try {
       await authService.login(username, password);
-      localStorage.setItem("buc_admin_authenticated", "true");
+      sessionStorage.setItem("buc_admin_authenticated", "true");
       navigate("/admin/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid username or password");

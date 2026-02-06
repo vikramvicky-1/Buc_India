@@ -11,11 +11,23 @@ import {
   CheckCircle,
   Loader2,
 } from "lucide-react";
-import { eventService, registrationService, profileService } from "../../services/api";
+import {
+  eventService,
+  registrationService,
+  profileService,
+} from "../../services/api";
 import { toast } from "react-toastify";
 import "./PublicHome.css";
 
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText, loading }) => {
+const ConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText,
+  loading,
+}) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
@@ -34,7 +46,11 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirm
             disabled={loading}
             className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : confirmText}
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              confirmText
+            )}
           </button>
         </div>
       </div>
@@ -51,7 +67,8 @@ const PublicHome = () => {
   const [loading, setLoading] = useState(false);
   const [registrationLoading, setRegistrationLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
+  const [showCompleteProfileModal, setShowCompleteProfileModal] =
+    useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
@@ -64,17 +81,30 @@ const PublicHome = () => {
 
   const isProfileComplete = (profile) => {
     const requiredFields = [
-      "fullName", "email", "phone", "address", "city", "state", 
-      "pincode", "dateOfBirth", "bloodGroup", "bikeModel", 
-      "bikeRegistrationNumber", "licenseNumber", 
-      "emergencyContactName", "emergencyContactPhone",
-      "profileImage", "licenseImage"
+      "fullName",
+      "email",
+      "phone",
+      "address",
+      "city",
+      "state",
+      "pincode",
+      "dateOfBirth",
+      "bloodGroup",
+      "bikeModel",
+      "bikeRegistrationNumber",
+      "licenseNumber",
+      "emergencyContactName",
+      "emergencyContactPhone",
+      "profileImage",
+      "licenseImage",
     ];
-    return requiredFields.every(field => profile[field] && profile[field].toString().trim() !== "");
+    return requiredFields.every(
+      (field) => profile[field] && profile[field].toString().trim() !== "",
+    );
   };
 
   const handleRegisterClick = async (event) => {
-    const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+    const isLoggedIn = sessionStorage.getItem("userLoggedIn") === "true";
     if (!isLoggedIn) {
       toast.info("Please Sign Up / Login first to register for events");
       navigate("/signup");
@@ -83,8 +113,8 @@ const PublicHome = () => {
 
     setLoading(true);
     try {
-      const userEmail = localStorage.getItem("userEmail");
-      const userPhone = localStorage.getItem("userPhone");
+      const userEmail = sessionStorage.getItem("userEmail");
+      const userPhone = sessionStorage.getItem("userPhone");
       const profile = await profileService.get(userEmail, userPhone);
 
       if (isProfileComplete(profile)) {
@@ -105,18 +135,25 @@ const PublicHome = () => {
     if (!selectedEvent) return;
     setRegistrationLoading(true);
     try {
-      const userEmail = localStorage.getItem("userEmail");
-      const userPhone = localStorage.getItem("userPhone");
+      const userEmail = sessionStorage.getItem("userEmail");
+      const userPhone = sessionStorage.getItem("userPhone");
       const profile = await profileService.get(userEmail, userPhone);
 
       const data = new FormData();
-      Object.keys(profile).forEach(key => {
-        if (key !== '_id' && key !== '__v' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'profileImage' && key !== 'profileImagePublicId') {
+      Object.keys(profile).forEach((key) => {
+        if (
+          key !== "_id" &&
+          key !== "__v" &&
+          key !== "createdAt" &&
+          key !== "updatedAt" &&
+          key !== "profileImage" &&
+          key !== "profileImagePublicId"
+        ) {
           data.append(key, profile[key]);
         }
       });
       data.append("eventId", selectedEvent._id);
-      
+
       await registrationService.create(data);
       toast.success(`Successfully registered for ${selectedEvent.title}!`);
       setShowConfirmModal(false);
@@ -193,7 +230,10 @@ const PublicHome = () => {
     activeTab === "upcoming" ? upcomingEvents : pastEvents.slice(0, pastLimit);
 
   return (
-    <section id="events" className="relative py-20 bg-black overflow-hidden">
+    <section
+      id="events"
+      className="relative pt-20 py-20 bg-black overflow-hidden"
+    >
       {/* Background decoration */}
       <div className="absolute inset-0 z-0 opacity-20">
         <div className="absolute top-0 left-0 w-96 h-96 bg-orange-600 rounded-full filter blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>

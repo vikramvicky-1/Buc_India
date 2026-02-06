@@ -13,7 +13,7 @@ const YourEvents = () => {
   const [pastEvents, setPastEvents] = useState([]);
 
   useEffect(() => {
-    const userLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+    const userLoggedIn = sessionStorage.getItem("userLoggedIn") === "true";
     if (!userLoggedIn) {
       navigate("/login");
       return;
@@ -24,8 +24,8 @@ const YourEvents = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const userEmail = localStorage.getItem("userEmail");
-      const userPhone = localStorage.getItem("userPhone");
+      const userEmail = sessionStorage.getItem("userEmail");
+      const userPhone = sessionStorage.getItem("userPhone");
       
       // Get all events
       const allEvents = await eventService.getAll();
@@ -66,24 +66,18 @@ const YourEvents = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-            <p className="text-gray-400">Loading your events...</p>
-          </div>
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading your events...</p>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
-      <Header />
-      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 w-full">
-        <div className="mb-12 text-center sm:text-left">
+    <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-12 w-full">
+      <div className="mb-12 text-center sm:text-left">
           <h1 className="text-4xl font-bold text-white mb-4">Your Events</h1>
           <p className="text-gray-400">Manage your registrations and view ride history</p>
         </div>
@@ -138,10 +132,8 @@ const YourEvents = () => {
           </div>
         )}
       </div>
-      <Footer />
-    </div>
-  );
-};
+    );
+  };
 
 const EventCard = ({ event, isPast }) => {
   const navigate = useNavigate();

@@ -61,9 +61,44 @@ const deleteGalleryItem = async (req, res) => {
   }
 };
 
+const updateGalleryItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { eventName, eventDate, category } = req.body;
+    
+    const item = await GalleryItem.findById(id);
+    if (!item) {
+      return res.status(404).json({ message: 'Gallery item not found' });
+    }
+
+    item.eventName = eventName || item.eventName;
+    item.eventDate = eventDate || item.eventDate;
+    item.category = category || item.category;
+
+    if (req.file) {
+      // Delete old image from Cloudinary
+      if (item.imagePublicId) {
+        try {
+          await cloudinary.uploader.destroy(item.imagePublicId);
+        } catch (err) {
+          console.error('Error deleting old image:', err);
+        }
+      }
+      item.imageUrl = req.file.path;
+      item.imagePublicId = req.file.filename;
+    }
+
+    const updated = await item.save();
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getGalleryItems,
   createGalleryItem,
   deleteGalleryItem,
+  updateGalleryItem,
 };
 

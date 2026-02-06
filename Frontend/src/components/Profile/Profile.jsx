@@ -68,9 +68,9 @@ const Profile = () => {
   const loadProfile = async () => {
     setLoading(true);
     try {
-      // Try to get email/phone from localStorage (set during registration)
-      const userEmail = localStorage.getItem("userEmail");
-      const userPhone = localStorage.getItem("userPhone");
+      // Try to get email/phone from sessionStorage (set during registration)
+      const userEmail = sessionStorage.getItem("userEmail");
+      const userPhone = sessionStorage.getItem("userPhone");
       
       if (userEmail || userPhone) {
         const profile = await profileService.get(userEmail, userPhone);
@@ -155,9 +155,9 @@ const Profile = () => {
     try {
       const formData = new FormData();
       
-      // Get email/phone from localStorage or form
-      const userEmail = localStorage.getItem("userEmail") || profileData.email;
-      const userPhone = localStorage.getItem("userPhone") || profileData.phone;
+      // Get email/phone from sessionStorage or form
+      const userEmail = sessionStorage.getItem("userEmail") || profileData.email;
+      const userPhone = sessionStorage.getItem("userPhone") || profileData.phone;
 
       if (!userEmail || !userPhone) {
         toast.error("Email and phone are required");
@@ -206,9 +206,9 @@ const Profile = () => {
       setProfileImage(null);
       setLicenseImage(null);
       
-      // Update localStorage
-      if (updatedProfile.email) localStorage.setItem("userEmail", updatedProfile.email);
-      if (updatedProfile.phone) localStorage.setItem("userPhone", updatedProfile.phone);
+      // Update sessionStorage
+      if (updatedProfile.email) sessionStorage.setItem("userEmail", updatedProfile.email);
+      if (updatedProfile.phone) sessionStorage.setItem("userPhone", updatedProfile.phone);
       
       toast.success("Profile updated successfully!");
     } catch (error) {
@@ -230,9 +230,9 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("userLoggedIn");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userPhone");
+    sessionStorage.removeItem("userLoggedIn");
+    sessionStorage.removeItem("userEmail");
+    sessionStorage.removeItem("userPhone");
     window.dispatchEvent(new Event("user-login-change"));
     toast.success("Logged out successfully");
     navigate("/");
@@ -240,16 +240,12 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-            <p className="text-gray-400">Loading profile...</p>
-          </div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading profile...</p>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
@@ -263,10 +259,8 @@ const Profile = () => {
   };
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-black pt-24 pb-12">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-black pt-24 pb-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Privacy Assurance Banner */}
           <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 mb-6 flex items-start space-x-3">
             <ShieldCheck className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
@@ -703,10 +697,8 @@ const Profile = () => {
                 )}
               </div>
           </div>
-        </div>
       </div>
-      <Footer />
-    </>
+    </div>
   );
 };
 

@@ -10,7 +10,7 @@ const api = axios.create({
 
 // Add interceptor to include token in headers if available
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("buc_admin_token");
+  const token = sessionStorage.getItem("buc_admin_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -21,14 +21,14 @@ export const authService = {
   login: async (username, password) => {
     const response = await api.post("/auth/login", { username, password });
     if (response.data.token) {
-      localStorage.setItem("buc_admin_token", response.data.token);
+      sessionStorage.setItem("buc_admin_token", response.data.token);
     }
     return response.data;
   },
   logout: async () => {
     const response = await api.post("/auth/logout");
-    localStorage.removeItem("buc_admin_token");
-    localStorage.removeItem("buc_admin_authenticated");
+    sessionStorage.removeItem("buc_admin_token");
+    sessionStorage.removeItem("buc_admin_authenticated");
     return response.data;
   },
   checkAuth: async () => {
@@ -71,6 +71,14 @@ export const galleryService = {
   },
   create: async (formData) => {
     const response = await api.post("/gallery", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+  update: async (id, formData) => {
+    const response = await api.put(`/gallery/${id}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

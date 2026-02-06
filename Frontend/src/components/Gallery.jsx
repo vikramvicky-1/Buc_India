@@ -1,45 +1,60 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Camera, Play, Heart, MessageCircle, Share2, Calendar as CalendarIcon, Tag } from 'lucide-react';
-import { galleryService } from '../services/api';
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Camera,
+  Play,
+  Heart,
+  MessageCircle,
+  Share2,
+  Calendar as CalendarIcon,
+  Tag,
+} from "lucide-react";
+import { galleryService } from "../services/api";
 
 const Gallery = () => {
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState("all");
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [playingVideos, setPlayingVideos] = useState(new Set());
   const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const categories = [
-    { id: 'all', name: 'All Media' },
-    { id: 'rides', name: 'Group Rides' },
-    { id: 'events', name: 'Events' },
-    { id: 'bikes', name: 'Member Bikes' },
-    { id: 'rallies', name: 'Rallies' }
+    { id: "all", name: "All Media" },
+    { id: "rides", name: "Group Rides" },
+    { id: "events", name: "Events" },
+    { id: "bikes", name: "Member Bikes" },
+    { id: "rallies", name: "Rallies" },
   ];
 
   const autoGalleryItems = useMemo(() => {
-    const modules = import.meta.glob('../assets/gallery/**/*.{png,jpg,jpeg,webp,mp4,webm,mov}', { eager: true });
+    const modules = import.meta.glob(
+      "../assets/gallery/**/*.{png,jpg,jpeg,webp,mp4,webm,mov}",
+      { eager: true },
+    );
     const items = Object.entries(modules).map(([path, mod], index) => {
-      const parts = path.split('/');
+      const parts = path.split("/");
       const filename = parts[parts.length - 1];
-      const title = filename.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '');
+      const title = filename.replace(/[-_]/g, " ").replace(/\.[^.]+$/, "");
       const isVideo = /\.(mp4|webm|mov)$/i.test(filename);
       const normalizedPath = path.toLowerCase();
       const lowerFile = filename.toLowerCase();
-      let category = 'rides';
-      if (normalizedPath.includes('/rallies/')) category = 'rallies';
-      else if (normalizedPath.includes('/rides/') || normalizedPath.includes('/group-rides/')) category = 'rides';
-      else if (lowerFile.includes('rally')) category = 'rallies';
-      else if (lowerFile.includes('ride')) category = 'rides';
+      let category = "rides";
+      if (normalizedPath.includes("/rallies/")) category = "rallies";
+      else if (
+        normalizedPath.includes("/rides/") ||
+        normalizedPath.includes("/group-rides/")
+      )
+        category = "rides";
+      else if (lowerFile.includes("rally")) category = "rallies";
+      else if (lowerFile.includes("ride")) category = "rides";
       return {
         id: 1000 + index,
-        type: isVideo ? 'video' : 'image',
+        type: isVideo ? "video" : "image",
         src: mod.default,
         title,
         category,
         likes: Math.floor(Math.random() * 100) + 10,
         comments: Math.floor(Math.random() * 30),
-        author: 'BUC Team'
+        author: "BUC Team",
       };
     });
     return items;
@@ -49,27 +64,32 @@ const Gallery = () => {
     () =>
       galleryItems.map((item) => ({
         id: item._id,
-        type: 'image',
+        type: "image",
         src: item.imageUrl,
         title: item.eventName,
-        category: item.category || 'all',
-        author: 'BUC Admin',
+        category: item.category || "all",
+        author: "BUC Admin",
         eventDate: item.eventDate,
         likes: 0,
         comments: 0,
         fromBackend: true,
       })),
-    [galleryItems]
+    [galleryItems],
   );
 
-  const mediaItems = useMemo(
-    () => [...baseMediaItems, ...autoGalleryItems],
-    [baseMediaItems, autoGalleryItems]
-  );
+  const mediaItems = useMemo(() => {
+    const combined = [...baseMediaItems, ...autoGalleryItems];
+    return combined.sort((a, b) => {
+      const dateA = a.eventDate ? new Date(a.eventDate) : new Date(0);
+      const dateB = b.eventDate ? new Date(b.eventDate) : new Date(0);
+      return dateB - dateA;
+    });
+  }, [baseMediaItems, autoGalleryItems]);
 
-  const filteredMedia = activeCategory === 'all' 
-    ? mediaItems 
-    : mediaItems.filter(item => item.category === activeCategory);
+  const filteredMedia =
+    activeCategory === "all"
+      ? mediaItems
+      : mediaItems.filter((item) => item.category === activeCategory);
 
   const INITIAL_COUNT = 6;
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
@@ -87,7 +107,10 @@ const Gallery = () => {
         setGalleryItems(data);
       } catch (err) {
         // Silent fallback: still show bundled/local gallery assets
-        console.warn('Gallery server unavailable; showing local gallery assets only.', err);
+        console.warn(
+          "Gallery server unavailable; showing local gallery assets only.",
+          err,
+        );
       } finally {
         setLoading(false);
       }
@@ -97,7 +120,7 @@ const Gallery = () => {
   }, []);
 
   const formatDate = (date) => {
-    if (!date) return '';
+    if (!date) return "";
     try {
       return new Date(date).toLocaleDateString();
     } catch {
@@ -106,7 +129,7 @@ const Gallery = () => {
   };
 
   return (
-    <section id="gallery" className="relative py-20 overflow-hidden">
+    <section id="gallery" className="relative pt-20 py-20 overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
           src="https://images.pexels.com/photos/1119796/pexels-photo-1119796.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
@@ -115,14 +138,18 @@ const Gallery = () => {
         />
         <div className="absolute inset-0 bg-black/90"></div>
       </div>
-      
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Community <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">Gallery</span>
+            Community{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
+              Gallery
+            </span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Relive the memories and share your adventures with the community. From epic rides to unforgettable events.
+            Relive the memories and share your adventures with the community.
+            From epic rides to unforgettable events.
           </p>
         </div>
 
@@ -133,8 +160,8 @@ const Gallery = () => {
               onClick={() => setActiveCategory(category.id)}
               className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
                 activeCategory === category.id
-                  ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700'
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
+                  : "bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700"
               }`}
             >
               {category.name}
@@ -152,7 +179,7 @@ const Gallery = () => {
               onClick={() => setSelectedMedia(item)}
             >
               <div className="relative">
-                {item.type === 'video' ? (
+                {item.type === "video" ? (
                   <video
                     src={item.src}
                     className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
@@ -163,11 +190,13 @@ const Gallery = () => {
                       const video = e.currentTarget;
                       if (video.paused) {
                         video.play().then(() => {
-                          setPlayingVideos(prev => new Set(prev).add(item.id));
+                          setPlayingVideos((prev) =>
+                            new Set(prev).add(item.id),
+                          );
                         });
                       } else {
                         video.pause();
-                        setPlayingVideos(prev => {
+                        setPlayingVideos((prev) => {
                           const newSet = new Set(prev);
                           newSet.delete(item.id);
                           return newSet;
@@ -175,7 +204,7 @@ const Gallery = () => {
                       }
                     }}
                     onEnded={() => {
-                      setPlayingVideos(prev => {
+                      setPlayingVideos((prev) => {
                         const newSet = new Set(prev);
                         newSet.delete(item.id);
                         return newSet;
@@ -189,8 +218,8 @@ const Gallery = () => {
                     className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 )}
-                
-                {item.type === 'video' && (
+
+                {item.type === "video" && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all duration-300">
                     <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 group-hover:scale-110 transition-transform duration-200">
                       {playingVideos.has(item.id) ? (
@@ -215,7 +244,9 @@ const Gallery = () => {
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="text-white font-semibold mb-2">{item.title}</h3>
+                    <h3 className="text-white font-semibold mb-2">
+                      {item.title}
+                    </h3>
                     <p className="text-gray-300 text-sm">by {item.author}</p>
                   </div>
                 </div>
@@ -226,11 +257,17 @@ const Gallery = () => {
                   <div className="flex flex-col space-y-1">
                     <span className="text-xs text-gray-400 flex items-center gap-1">
                       <Tag className="h-3 w-3 text-orange-500" />
-                      {item.category === 'all' ? 'All Media' :
-                        item.category === 'rides' ? 'Group Rides' :
-                        item.category === 'events' ? 'Events' :
-                        item.category === 'bikes' ? 'Member Bikes' :
-                        item.category === 'rallies' ? 'Rallies' : item.category}
+                      {item.category === "all"
+                        ? "All Media"
+                        : item.category === "rides"
+                          ? "Group Rides"
+                          : item.category === "events"
+                            ? "Events"
+                            : item.category === "bikes"
+                              ? "Member Bikes"
+                              : item.category === "rallies"
+                                ? "Rallies"
+                                : item.category}
                     </span>
                     {item.eventDate && (
                       <span className="text-xs text-gray-400 flex items-center gap-1">
@@ -267,10 +304,16 @@ const Gallery = () => {
         )}
 
         {selectedMedia && (
-          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setSelectedMedia(null)}>
-            <div className="max-w-4xl w-full bg-gray-900 rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedMedia(null)}
+          >
+            <div
+              className="max-w-4xl w-full bg-gray-900 rounded-lg overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="relative">
-                {selectedMedia.type === 'video' ? (
+                {selectedMedia.type === "video" ? (
                   <video
                     src={selectedMedia.src}
                     className="w-full h-96 object-cover"
@@ -293,7 +336,9 @@ const Gallery = () => {
                 </button>
               </div>
               <div className="p-6">
-                <h3 className="text-2xl font-bold text-white mb-2">{selectedMedia.title}</h3>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {selectedMedia.title}
+                </h3>
                 <p className="text-gray-300 mb-4">by {selectedMedia.author}</p>
                 <div className="flex items-center space-x-6">
                   <button className="flex items-center space-x-2 text-gray-400 hover:text-red-500 transition-colors duration-200">
@@ -313,7 +358,6 @@ const Gallery = () => {
             </div>
           </div>
         )}
-        
       </div>
     </section>
   );

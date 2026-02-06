@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { galleryService } from "../services/api";
 import { toast } from "react-toastify";
-import { Image as ImageIcon, Calendar, Tag, Eye, Trash2, PlusCircle, X } from "lucide-react";
+import { Image as ImageIcon, Calendar, Tag, Eye, Trash2, PlusCircle, X, Edit2, AlertTriangle } from "lucide-react";
+import "./EventManagement/EventManagement.css";
 
 const categories = [
   { id: "all", label: "All Media" },
@@ -16,6 +17,9 @@ const GalleryManagement = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [formData, setFormData] = useState({
     eventName: "",
     eventDate: "",
@@ -65,12 +69,27 @@ const GalleryManagement = () => {
     });
     setImageFile(null);
     setImagePreview(null);
+    setIsEditing(false);
+    setEditId(null);
+  };
+
+  const handleEdit = (item) => {
+    setIsEditing(true);
+    setEditId(item._id);
+    setFormData({
+      eventName: item.eventName,
+      eventDate: item.eventDate ? item.eventDate.split("T")[0] : "",
+      category: item.category || "all",
+    });
+    setImagePreview(item.imageUrl);
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!imageFile) {
+    if (!isEditing && !imageFile) {
       toast.error("Please select an image to upload");
       return;
     }
@@ -83,26 +102,35 @@ const GalleryManagement = () => {
     data.append("eventName", formData.eventName);
     data.append("eventDate", formData.eventDate);
     data.append("category", formData.category);
-    data.append("image", imageFile);
+    if (imageFile) {
+      data.append("image", imageFile);
+    }
 
     setSubmitting(true);
     try {
-      await galleryService.create(data);
-      toast.success("Image added to gallery");
+      if (isEditing) {
+        await galleryService.update(editId, data);
+        toast.success("Gallery item updated successfully");
+      } else {
+        await galleryService.create(data);
+        toast.success("Image added to gallery");
+      }
       resetForm();
       loadItems();
     } catch (error) {
-      console.error("Failed to upload gallery image", error);
-      toast.error(error.response?.data?.message || "Failed to upload image");
+      console.error("Failed to save gallery item", error);
+      toast.error(error.response?.data?.message || "Failed to save item");
     } finally {
       setSubmitting(false);
     }
   };
 
+  const confirmDelete = (id) => {
+    setShowDeleteConfirm(id);
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this image?")) {
-      return;
-    }
+    setShowDeleteConfirm(null);
     try {
       await galleryService.delete(id);
       toast.success("Gallery image deleted");
@@ -146,7 +174,7 @@ const GalleryManagement = () => {
 
       <div className="event-form-container">
         <div className="event-form">
-          <h2>Add Image to BUC Gallery</h2>
+          <h2>{isEditing ? "Edit Gallery Item" : "Add Image to BUC Gallery"}</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
@@ -189,12 +217,12 @@ const GalleryManagement = () => {
                 </select>
               </div>
               <div className="form-group">
-                <label>Image *</label>
+                <label>Image {isEditing ? "(Leave blank to keep current)" : "*"}</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  required
+                  required={!isEditing}
                 />
                 {imagePreview && (
                   <div className="mt-2 relative w-full h-32 rounded-lg overflow-hidden border border-gray-700">
@@ -214,7 +242,7 @@ const GalleryManagement = () => {
                 className="submit-button"
                 disabled={submitting}
               >
-                {submitting ? "Uploading..." : "Upload to Gallery"}
+                {submitting ? (isEditing ? "Updating..." : "Uploading...") : (isEditing ? "Update Gallery Item" : "Upload to Gallery")}
               </button>
               <button
                 type="button"
@@ -222,7 +250,7 @@ const GalleryManagement = () => {
                 className="cancel-button"
                 disabled={submitting}
               >
-                Clear
+                {isEditing ? "Cancel" : "Clear"}
               </button>
             </div>
           </form>
@@ -286,18 +314,18 @@ const GalleryManagement = () => {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedItem(item);
+                      handleEdit(item);
                     }}
                     className="edit-button flex items-center gap-1"
                   >
-                    <Eye className="w-4 h-4" />
-                    View
+                    <Edit2 className="w-4 h-4" />
+                    Edit
                   </button>
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDelete(item._id);
+                      confirmDelete(item._id);
                     }}
                     className="delete-button flex items-center gap-1"
                   >
@@ -343,6 +371,37 @@ const GalleryManagement = () => {
                   {getCategoryLabel(selectedItem.category)}
                 </span>
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+          <div className="bg-gray-900 rounded-lg p-8 max-w-md w-full text-center border border-orange-500/30 shadow-2xl">
+            <div className="mb-6">
+              <div className="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-12 w-12 text-orange-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Confirm Delete</h3>
+              <p className="text-gray-300">
+                Are you sure you want to delete this image? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="flex-1 px-6 py-3 rounded-xl bg-gray-800 text-white font-bold hover:bg-gray-700 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(showDeleteConfirm)}
+                className="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

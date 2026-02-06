@@ -49,9 +49,9 @@ const SignUpForm = () => {
       await profileService.createOrUpdate(data);
 
       // Store user email and phone for profile access
-      localStorage.setItem("userEmail", formData.email);
-      localStorage.setItem("userPhone", formData.phone);
-      localStorage.setItem("userLoggedIn", "true");
+      sessionStorage.setItem("userEmail", formData.email);
+      sessionStorage.setItem("userPhone", formData.phone);
+      sessionStorage.setItem("userLoggedIn", "true");
 
       // Dispatch event to notify other components
       window.dispatchEvent(new Event("user-login-change"));

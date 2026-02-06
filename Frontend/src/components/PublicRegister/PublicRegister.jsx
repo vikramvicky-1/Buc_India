@@ -71,16 +71,16 @@ const PublicRegister = () => {
   }, []);
 
   useEffect(() => {
-    const userLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+    const userLoggedIn = sessionStorage.getItem("userLoggedIn") === "true";
     if (!userLoggedIn) {
       toast.info("Please sign up or login to register for an event");
       navigate("/signup");
       return;
     }
     
-    // Prefill data from localStorage and fetch profile if available
-    const userEmail = localStorage.getItem("userEmail");
-    const userPhone = localStorage.getItem("userPhone");
+    // Prefill data from sessionStorage and fetch profile if available
+    const userEmail = sessionStorage.getItem("userEmail");
+    const userPhone = sessionStorage.getItem("userPhone");
     
     const fetchProfile = async () => {
       if (userEmail || userPhone) {
@@ -259,8 +259,8 @@ const PublicRegister = () => {
       await registrationService.create(data);
       
       // Store user email and phone for profile access
-      if (formData.email) localStorage.setItem("userEmail", formData.email);
-      if (formData.phone) localStorage.setItem("userPhone", formData.phone);
+      if (formData.email) sessionStorage.setItem("userEmail", formData.email);
+      if (formData.phone) sessionStorage.setItem("userPhone", formData.phone);
       
       setShowSuccessOverlay(true);
       toast.success("Registration successful!");

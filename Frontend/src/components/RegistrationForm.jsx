@@ -109,9 +109,9 @@ Registration completed successfully!`;
       await profileService.createOrUpdate(data);
 
       // Store user email and phone for profile access
-      if (formData.email) localStorage.setItem("userEmail", formData.email);
-      if (formData.phone) localStorage.setItem("userPhone", formData.phone);
-      localStorage.setItem("userLoggedIn", "true");
+      if (formData.email) sessionStorage.setItem("userEmail", formData.email);
+      if (formData.phone) sessionStorage.setItem("userPhone", formData.phone);
+      sessionStorage.setItem("userLoggedIn", "true");
 
       // Dispatch event to notify other components (like Header)
       window.dispatchEvent(new Event("user-login-change"));

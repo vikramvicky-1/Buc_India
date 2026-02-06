@@ -1,75 +1,237 @@
-import React from 'react';
-import { ArrowRight, Users, Calendar, Shield } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import { ArrowRight, Users, Calendar, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  motion,
+  useInView,
+  useSpring,
+  useTransform,
+  animate,
+} from "framer-motion";
+
+const AnimatedNumber = ({ value, suffix = "" }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (inView) {
+      const controls = animate(0, value, {
+        duration: 2,
+        ease: "easeOut",
+        onUpdate: (latest) => {
+          if (ref.current) {
+            ref.current.textContent = Math.floor(latest) + suffix;
+          }
+        },
+      });
+      return () => controls.stop();
+    }
+  }, [value, inView, suffix]);
+
+  return <span ref={ref}>0{suffix}</span>;
+};
 
 const Hero = () => {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    sessionStorage.getItem("userLoggedIn") === "true",
+  );
+
+  useEffect(() => {
+    const loginHandler = () =>
+      setIsLoggedIn(sessionStorage.getItem("userLoggedIn") === "true");
+    window.addEventListener("user-login-change", loginHandler);
+    return () => window.removeEventListener("user-login-change", loginHandler);
+  }, []);
+
   const scrollToEvents = () => {
-    window.location.href = "/events";
+    navigate("/events");
+  };
+
+  const handleJoinClick = () => {
+    if (isLoggedIn) {
+      return;
+    } else {
+      navigate("/signup");
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  };
+
+  const statsVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
   };
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 z-0">
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+    >
+      <motion.div
+        initial={{ scale: 1.1, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 1.5 }}
+        className="absolute inset-0 z-0"
+      >
         <img
           src="https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
           alt="Motorcycle riders on the road"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/60"></div>
-      </div>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
+      </motion.div>
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+      >
         <div className="mb-6 sm:mb-8 pt-16 sm:pt-20 lg:pt-24">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-            <span className="block text-white px-2">
+          <motion.h1
+            variants={itemVariants}
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight tracking-tight"
+          >
+            <span className="block text-white bg-clip-text bg-gradient-to-r from-white via-orange-100 to-white px-2">
               Bikers Unity Calls
             </span>
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-6 sm:mb-8 max-w-2xl sm:max-w-3xl mx-auto px-2 leading-relaxed">
-            Where passion meets the pavement. Join a community of riders across India who share the love for the open road, 
-            adventure, and the unbreakable bonds forged on two wheels.
-          </p>
+          </motion.h1>
+          <motion.p
+            variants={itemVariants}
+            className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-6 sm:mb-8 max-w-2xl sm:max-w-3xl mx-auto px-2 leading-relaxed font-light"
+          >
+            Where passion meets the pavement. Join a community of riders across
+            India who share the love for the open road, adventure, and the
+            unbreakable bonds forged on two wheels.
+          </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 px-2">
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-orange-500/20">
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 px-2"
+        >
+          <motion.div
+            variants={statsVariants}
+            whileHover={{ y: -5, borderColor: "rgba(249, 115, 22, 0.4)" }}
+            className="bg-black/40 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-orange-500/20 transition-colors duration-300"
+          >
             <Users className="h-8 w-8 sm:h-12 sm:w-12 text-orange-500 mx-auto mb-3 sm:mb-4" />
-            <div className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">500+</div>
-            <div className="text-sm sm:text-base text-gray-300">Members</div>
-          </div>
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-orange-500/20">
+            <div className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
+              <AnimatedNumber value={500} suffix="+" />
+            </div>
+            <div className="text-sm sm:text-base text-gray-400 font-medium uppercase tracking-wider">
+              Members
+            </div>
+          </motion.div>
+          <motion.div
+            variants={statsVariants}
+            whileHover={{ y: -5, borderColor: "rgba(249, 115, 22, 0.4)" }}
+            className="bg-black/40 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-orange-500/20 transition-colors duration-300"
+          >
             <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-orange-500 mx-auto mb-3 sm:mb-4" />
-            <div className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">10+</div>
-            <div className="text-sm sm:text-base text-gray-300">Events This Year</div>
-          </div>
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-orange-500/20 sm:col-span-2 lg:col-span-1">
+            <div className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
+              <AnimatedNumber value={10} suffix="+" />
+            </div>
+            <div className="text-sm sm:text-base text-gray-400 font-medium uppercase tracking-wider">
+              Events This Year
+            </div>
+          </motion.div>
+          <motion.div
+            variants={statsVariants}
+            whileHover={{ y: -5, borderColor: "rgba(249, 115, 22, 0.4)" }}
+            className="bg-black/40 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-orange-500/20 sm:col-span-2 lg:col-span-1 transition-colors duration-300"
+          >
             <Shield className="h-8 w-8 sm:h-12 sm:w-12 text-orange-500 mx-auto mb-3 sm:mb-4" />
-            <div className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">4+</div>
-            <div className="text-sm sm:text-base text-gray-300">Years Strong</div>
-          </div>
-        </div>
+            <div className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
+              <AnimatedNumber value={4} suffix="+" />
+            </div>
+            <div className="text-sm sm:text-base text-gray-400 font-medium uppercase tracking-wider">
+              Years Strong
+            </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-2">
-          <button 
-            onClick={() => {
-              window.dispatchEvent(new Event('open-registration'));
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-2"
+        >
+          {!isLoggedIn && (
+            <motion.button
+              whileHover={{
+                scale: 1.05,
+                shadow: "0 10px 25px -5px rgba(249, 115, 22, 0.4)",
+              }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleJoinClick}
+              className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-red-600 text-white px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg transition-all duration-300 flex items-center justify-center space-x-2"
+            >
+              <span>Join Our Community</span>
+              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+            </motion.button>
+          )}
+          <motion.button
+            whileHover={{
+              scale: 1.05,
+              backgroundColor: "rgba(255, 255, 255, 1)",
+              color: "rgba(0, 0, 0, 1)",
             }}
-            className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2">
-            <span>Join Our Community</span>
-            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-          </button>
-          <button 
+            whileTap={{ scale: 0.95 }}
             onClick={scrollToEvents}
-            className="w-full sm:w-auto border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-black transition-all duration-200">
+            className={`w-full sm:w-auto border-2 border-white text-white px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg transition-all duration-300 ${isLoggedIn ? "bg-white/10" : ""}`}
+          >
             View Upcoming Rides
-          </button>
-        </div>
-      </div>
+          </motion.button>
+        </motion.div>
+      </motion.div>
 
-      <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-white rounded-full flex justify-center">
-          <div className="w-1 h-2 sm:h-3 bg-white rounded-full mt-1.5 sm:mt-2 animate-pulse"></div>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          delay: 2,
+          duration: 1,
+          repeat: Infinity,
+          repeatType: "reverse",
+        }}
+        className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2"
+      >
+        <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-white/30 rounded-full flex justify-center">
+          <motion.div
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="w-1 h-2 sm:h-3 bg-orange-500 rounded-full mt-1.5 sm:mt-2"
+          ></motion.div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 };

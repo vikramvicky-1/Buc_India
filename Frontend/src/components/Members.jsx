@@ -11,6 +11,9 @@ import {
 const Members = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
+  const [isLoggedIn] = useState(
+    sessionStorage.getItem("userLoggedIn") === "true",
+  );
 
   const members = [];
 
@@ -55,7 +58,7 @@ const Members = () => {
   };
 
   return (
-    <section id="members" className="relative py-20 overflow-hidden">
+    <section id="members" className="relative pt-20 py-20 overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
           src="https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
@@ -183,21 +186,25 @@ const Members = () => {
           </div>
         </div>
 
-        <div className="text-center mt-12">
-          <h3 className="text-2xl font-bold text-white mb-4">
-            Ready to Join Our Family?
-          </h3>
-          <p className="text-gray-300 mb-6">
-            Become part of a community that shares your passion for riding and
-            adventure.
-          </p>
-          <button 
-            onClick={() => window.dispatchEvent(new Event('open-registration'))}
-            className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-red-700 transition-all duration-200"
-          >
-            Start Your Membership
-          </button>
-        </div>
+        {!isLoggedIn && (
+          <div className="text-center mt-12">
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Ready to Join Our Family?
+            </h3>
+            <p className="text-gray-300 mb-6">
+              Become part of a community that shares your passion for riding and
+              adventure.
+            </p>
+            <button
+              onClick={() =>
+                window.dispatchEvent(new Event("open-registration"))
+              }
+              className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-red-700 transition-all duration-200"
+            >
+              Start Your Membership
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

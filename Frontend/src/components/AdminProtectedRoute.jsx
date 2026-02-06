@@ -12,7 +12,7 @@ const AdminProtectedRoute = ({ children }) => {
         setIsAuthenticated(true);
       } catch (error) {
         setIsAuthenticated(false);
-        localStorage.removeItem("buc_admin_authenticated");
+        sessionStorage.removeItem("buc_admin_authenticated");
       }
     };
     checkAuth();
