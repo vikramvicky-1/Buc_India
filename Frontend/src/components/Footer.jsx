@@ -312,19 +312,6 @@ const Footer = () => {
               <p className="text-gray-500 text-sm font-medium">
                 © 2026 Bikers Unity Calls. All rights reserved.
               </p>
-              <div className="flex items-center space-x-3 bg-gray-900/50 px-4 py-2 rounded-full border border-gray-800">
-                <span className="text-gray-200 text-xs font-bold tracking-widest">
-                  Designed and Developed
-                </span>
-                <img
-                  src={cortexLogo}
-                  alt="CORTEX Logo"
-                  className="h-8 object-contain"
-                />
-                <span className="text-gray-200 font-black text-xs tracking-tighter">
-                  CORTEX™
-                </span>
-              </div>
             </div>
             <div className="flex flex-wrap justify-center gap-8">
               {["Privacy Policy", "Terms of Service", "Code of Conduct"].map(
