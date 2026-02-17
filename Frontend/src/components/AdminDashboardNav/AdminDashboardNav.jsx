@@ -10,6 +10,7 @@ import DashboardHome from "../DashboardHome/DashboardHome";
 import EventManagement from "../EventManagement/EventManagement";
 import ViewRegistrations from "../ViewRegistrations/ViewRegistrations";
 import GalleryManagement from "../GalleryManagement.jsx";
+import ClubManagement from "../ClubManagement/ClubManagement.jsx";
 import { authService, profileService } from "../../services/api";
 import {
   LayoutDashboard,
@@ -88,6 +89,7 @@ const AdminDashboard = () => {
       icon: ClipboardList,
     },
     { path: "/admin/gallery", name: "Gallery", icon: ImageIcon },
+    { path: "/admin/clubs", name: "Clubs", icon: Bike },
   ];
 
   return (
@@ -208,6 +210,7 @@ const AdminDashboard = () => {
             <Route path="events" element={<EventManagement />} />
             <Route path="registrations" element={<ViewRegistrations />} />
             <Route path="gallery" element={<GalleryManagement />} />
+            <Route path="clubs" element={<ClubManagement />} />
           </Routes>
         </main>
       </div>

@@ -101,9 +101,11 @@ export const registrationService = {
     return response.data;
   },
   getAll: async (eventId) => {
-    const response = await api.get("/registrations", {
-      params: { eventId },
-    });
+    const params = {};
+    if (eventId && eventId !== "all") {
+      params.eventId = eventId;
+    }
+    const response = await api.get("/registrations", { params });
     return response.data;
   },
   getByUser: async (email, phone) => {
@@ -140,6 +142,55 @@ export const profileService = {
         "Content-Type": "multipart/form-data",
       },
     });
+    return response.data;
+  },
+};
+
+export const clubService = {
+  getPublic: async () => {
+    const response = await api.get("/clubs/public");
+    return response.data;
+  },
+  createRequest: async (formData) => {
+    const response = await api.post("/clubs", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+  getAllAdmin: async () => {
+    const response = await api.get("/clubs");
+    return response.data;
+  },
+  updateStatus: async (id, status) => {
+    const response = await api.patch(`/clubs/${id}/status`, { status });
+    return response.data;
+  },
+};
+
+export const clubMembershipService = {
+  getMyClub: async (email, phone) => {
+    const response = await api.get("/club-memberships/me", {
+      params: { email, phone },
+    });
+    return response.data;
+  },
+  join: async (clubId, email, phone) => {
+    const response = await api.post(`/club-memberships/${clubId}/join`, {
+      email,
+      phone,
+    });
+    return response.data;
+  },
+  leave: async (clubId, email, phone, reason) => {
+    const response = await api.post(`/club-memberships/${clubId}/leave`, {
+      email,
+      phone,
+      reason,
+    });
+    return response.data;
+  },
+  getAllAdmin: async () => {
+    const response = await api.get("/club-memberships");
     return response.data;
   },
 };

@@ -10,6 +10,8 @@ const eventRoutes = require("./routes/eventRoutes");
 const registrationRoutes = require("./routes/registrationRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const galleryRoutes = require("./routes/galleryRoutes");
+const clubRoutes = require("./routes/clubRoutes");
+const clubMembershipRoutes = require("./routes/clubMembershipRoutes");
 
 const app = express();
 
@@ -108,6 +110,8 @@ app.use("/api/events", eventRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/gallery", galleryRoutes);
+app.use("/api/clubs", clubRoutes);
+app.use("/api/club-memberships", clubMembershipRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

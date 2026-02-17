@@ -21,6 +21,8 @@ import SignUpForm from "./components/SignUpForm.jsx";
 import YourEvents from "./components/YourEvents.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import { ToastContainer } from "react-toastify";
+import Clubs from "./components/Clubs/Clubs.jsx";
+import CertificatePage from "./components/CertificatePage.jsx";
 import "react-toastify/dist/ReactToastify.css";
 
 const PublicLayout = () => (
@@ -45,7 +47,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900">
         <ToastContainer position="top-center" autoClose={3000} theme="dark" />
         <Routes>
           {/* Public Routes with Header and Footer */}
@@ -55,6 +57,8 @@ function App() {
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/members" element={<Members />} />
             <Route path="/forum" element={<Forum />} />
+            <Route path="/clubs" element={<Clubs />} />
+            <Route path="/certificate" element={<CertificatePage />} />
             <Route
               path="/profile"
               element={

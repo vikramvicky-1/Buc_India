@@ -83,9 +83,12 @@ const Header = () => {
     { name: "Home", path: "/", icon: Bike },
     { name: "Events", path: "/events", icon: Calendar },
     { name: "Gallery", path: "/gallery", icon: Camera },
+    { name: "Clubs", path: "/clubs", icon: Users },
     { name: "Members", path: "/members", icon: Users },
     { name: "Forum", path: "/forum", icon: MessageSquare },
-    ...(isLoggedIn ? [{ name: "Your Events", path: "/your-events", icon: Calendar }] : []),
+    ...(isLoggedIn
+      ? [{ name: "Your Events", path: "/your-events", icon: Calendar }]
+      : []),
   ];
 
   const getInitials = (name) => {
@@ -94,7 +97,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-black/90 backdrop-blur-md fixed w-full z-[100] border-b border-orange-500/30 shadow-lg shadow-orange-500/5">
+    <header className="bg-gradient-to-r from-slate-950/90 via-slate-900/90 to-orange-900/80 backdrop-blur-md fixed w-full z-[100] border-b border-orange-500/30 shadow-lg shadow-orange-500/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-3 sm:py-4">
           {/* Logo and Name Redesign */}

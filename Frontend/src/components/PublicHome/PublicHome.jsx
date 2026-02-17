@@ -232,31 +232,36 @@ const PublicHome = () => {
   return (
     <section
       id="events"
-      className="relative pt-20 py-20 bg-black overflow-hidden"
+      className="relative pt-24 pb-24 bg-gradient-to-b from-amber-50 via-orange-50 to-slate-100 overflow-hidden"
     >
       {/* Background decoration */}
-      <div className="absolute inset-0 z-0 opacity-20">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-orange-600 rounded-full filter blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-red-600 rounded-full filter blur-[100px] translate-x-1/2 translate-y-1/2"></div>
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute -top-24 -left-24 w-80 h-80 bg-orange-400/30 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-[-6rem] right-[-4rem] w-96 h-96 bg-red-400/30 rounded-full blur-3xl"></div>
+        <div className="absolute inset-x-0 top-40 h-32 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-3">
             {activeTab === "upcoming" ? "Upcoming" : "Past"}{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
               Events
             </span>
           </h2>
+          <p className="text-slate-600 max-w-2xl mx-auto">
+            Festival-style rides, breakfast meets and long hauls curated by BUC
+            and partner clubs across India.
+          </p>
 
           <div className="flex justify-center mt-8">
-            <div className="inline-flex p-1 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+            <div className="inline-flex p-1 bg-white/80 backdrop-blur-md rounded-xl border border-orange-100 shadow-sm">
               <button
                 onClick={() => setActiveTab("upcoming")}
                 className={`px-6 py-2.5 rounded-lg font-medium transition-all duration-300 ${
                   activeTab === "upcoming"
                     ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
-                    : "text-gray-400 hover:text-white"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 Upcoming
@@ -266,7 +271,7 @@ const PublicHome = () => {
                 className={`px-6 py-2.5 rounded-lg font-medium transition-all duration-300 ${
                   activeTab === "past"
                     ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
-                    : "text-gray-400 hover:text-white"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 Past Events
@@ -285,7 +290,7 @@ const PublicHome = () => {
               {displayedEvents.map((event) => (
                 <div
                   key={event._id}
-                  className="group relative bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-orange-500/50 transition-all duration-500 overflow-hidden flex flex-col"
+                  className="group relative bg-white rounded-2xl border border-orange-100 hover:border-orange-400/60 transition-all duration-500 overflow-hidden flex flex-col shadow-sm hover:shadow-xl"
                 >
                   <div className="h-48 w-full relative overflow-hidden">
                     <img
@@ -293,7 +298,7 @@ const PublicHome = () => {
                       alt={event.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent group-hover:from-black/30 transition-colors duration-500"></div>
 
                     {/* Date Badge */}
                     <div className="absolute bottom-4 left-4 bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg z-20">
@@ -307,15 +312,15 @@ const PublicHome = () => {
 
                   <div className="p-6 flex-grow flex flex-col">
                     <div className="mb-3">
-                      <h3 className="text-xl font-bold text-white group-hover:text-orange-500 transition-colors duration-300">
+                      <h3 className="text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors duration-300">
                         {event.title}
                       </h3>
                     </div>
 
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="flex items-center text-xs font-medium text-gray-400 bg-white/5 px-2 py-1 rounded-md border border-white/5">
+                      <div className="flex items-center text-xs font-medium text-orange-700 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-100">
                         <Users className="w-3 h-3 text-orange-500 mr-1.5" />
-                        {event.registrationCount || 0} Registered
+                        {event.registrationCount || 0} riders in
                       </div>
                     </div>
                     <button
@@ -326,12 +331,12 @@ const PublicHome = () => {
                       <Share2 size={16} />
                     </button>
 
-                    <p className="text-gray-400 text-sm mb-6 line-clamp-3">
+                    <p className="text-slate-600 text-sm mb-6 line-clamp-3">
                       {event.description}
                     </p>
 
                     <div className="space-y-3 mb-6 mt-auto">
-                      <div className="flex items-center text-gray-300 text-sm">
+                      <div className="flex items-center text-slate-700 text-sm">
                         <MapPin className="w-4 h-4 text-orange-500 mr-2 shrink-0" />
                         <span className="truncate">
                           Location: {event.location}
@@ -339,13 +344,13 @@ const PublicHome = () => {
                         {/* Share Button */}
                       </div>
 
-                      <div className="flex items-center text-gray-300 text-sm">
+                      <div className="flex items-center text-slate-700 text-sm">
                         <Flag className="w-4 h-4 text-orange-500 mr-2 shrink-0" />
                         <span className="truncate">
                           Meeting: {event.meetingPoint}
                         </span>
                       </div>
-                      <div className="flex items-center text-gray-300 text-sm">
+                      <div className="flex items-center text-slate-700 text-sm">
                         <Clock className="w-4 h-4 text-orange-500 mr-2 shrink-0" />
                         <span>{formatTime(event.eventTime)}</span>
                       </div>
@@ -360,7 +365,7 @@ const PublicHome = () => {
                         <ChevronRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                       </button>
                     ) : (
-                      <div className="w-full py-3 bg-white/5 text-gray-500 rounded-xl font-semibold border border-white/5 text-center cursor-not-allowed">
+                      <div className="w-full py-3 bg-slate-100 text-slate-400 rounded-xl font-semibold border border-slate-200 text-center cursor-not-allowed">
                         Registration Closed
                       </div>
                     )}
@@ -381,9 +386,9 @@ const PublicHome = () => {
             )}
           </>
         ) : (
-          <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10">
-            <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">
+          <div className="text-center py-20 bg-white/80 rounded-3xl border border-orange-100 shadow-sm">
+            <Calendar className="w-16 h-16 text-orange-400 mx-auto mb-4" />
+            <p className="text-slate-600 text-lg">
               No {activeTab} events found.
             </p>
           </div>

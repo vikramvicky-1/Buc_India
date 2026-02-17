@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Clock, MapPin, ChevronRight, AlertCircle, Loader2 } from "lucide-react";
 import { eventService, registrationService } from "../services/api";
-import Header from "./Header";
-import Footer from "./Footer";
+import { generateCertificate } from "../utils/certificateUtils";
 
 const YourEvents = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [registeredEvents, setRegisteredEvents] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
+  const [eventRegistrationMap, setEventRegistrationMap] = useState({});
 
   useEffect(() => {
     const userLoggedIn = sessionStorage.getItem("userLoggedIn") === "true";
@@ -45,15 +44,33 @@ const YourEvents = () => {
       
       // Let's try to get all registrations and filter by email/phone
       const registrations = await registrationService.getAll();
-      const userRegistrations = registrations.filter(r => r.email === userEmail || r.phone === userPhone);
-      
-      const userEventIds = userRegistrations.map(r => r.eventId);
-      const myEvents = allEvents.filter(e => userEventIds.includes(e._id) || e.eventId === "community");
+      const userRegistrations = registrations.filter(
+        (r) => r.email === userEmail || r.phone === userPhone,
+      );
+
+      // Build a map of eventId -> registration for quick lookup
+      const map = {};
+      userRegistrations.forEach((reg) => {
+        const key =
+          typeof reg.eventId === "object" && reg.eventId !== null
+            ? reg.eventId._id
+            : reg.eventId;
+        if (key && !map[key]) {
+          map[key] = reg;
+        }
+      });
+
+      const myEvents = allEvents.filter((e) => map[e._id]);
 
       const now = new Date();
-      const upcoming = myEvents.filter(e => new Date(e.date) >= now).sort((a, b) => new Date(a.date) - new Date(b.date));
-      const past = myEvents.filter(e => new Date(e.date) < now).sort((a, b) => new Date(b.date) - new Date(a.date));
+      const upcoming = myEvents
+        .filter((e) => new Date(e.eventDate) >= now)
+        .sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+      const past = myEvents
+        .filter((e) => new Date(e.eventDate) < now)
+        .sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate));
 
+      setEventRegistrationMap(map);
       setUpcomingEvents(upcoming);
       setPastEvents(past);
     } catch (error) {
@@ -109,7 +126,12 @@ const YourEvents = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {upcomingEvents.map((event) => (
-                    <EventCard key={event._id} event={event} isPast={false} />
+                    <EventCard
+                      key={event._id}
+                      event={event}
+                      isPast={false}
+                      registration={eventRegistrationMap[event._id]}
+                    />
                   ))}
                 </div>
               </section>
@@ -124,7 +146,12 @@ const YourEvents = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-75">
                   {pastEvents.map((event) => (
-                    <EventCard key={event._id} event={event} isPast={true} />
+                    <EventCard
+                      key={event._id}
+                      event={event}
+                      isPast={true}
+                      registration={eventRegistrationMap[event._id]}
+                    />
                   ))}
                 </div>
               </section>
@@ -135,9 +162,9 @@ const YourEvents = () => {
     );
   };
 
-const EventCard = ({ event, isPast }) => {
+const EventCard = ({ event, isPast, registration }) => {
   const navigate = useNavigate();
-  const date = new Date(event.date).toLocaleDateString("en-IN", {
+  const date = new Date(event.eventDate).toLocaleDateString("en-IN", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -147,7 +174,10 @@ const EventCard = ({ event, isPast }) => {
     <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-all group">
       <div className="h-48 relative overflow-hidden">
         <img
-          src={event.image || "https://images.unsplash.com/photo-1558981403-c5f91cbba527?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"}
+          src={
+            event.banner ||
+            "https://images.unsplash.com/photo-1558981403-c5f91cbba527?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+          }
           alt={event.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
@@ -169,20 +199,36 @@ const EventCard = ({ event, isPast }) => {
           </div>
           <div className="flex items-center text-gray-400 text-sm">
             <Clock className="w-4 h-4 mr-2 text-orange-500" />
-            <span>{event.time || "06:00 AM"}</span>
+            <span>{event.eventTime || "06:00 AM"}</span>
           </div>
           <div className="flex items-center text-gray-400 text-sm">
             <MapPin className="w-4 h-4 mr-2 text-orange-500" />
             <span className="line-clamp-1">{event.location || "Meeting point details in group"}</span>
           </div>
+          {event.certificateEnabled && registration && (
+            <div className="flex items-center text-emerald-400 text-xs font-semibold mt-1">
+              <span className="mr-2 inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
+              E‑Certificate available for this ride
+            </div>
+          )}
         </div>
-        <button 
-          onClick={() => navigate("/events")}
-          className="w-full py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center space-x-2"
-        >
-          <span>View Details</span>
-          <ChevronRight className="w-4 h-4" />
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button 
+            onClick={() => navigate("/events")}
+            className="w-full sm:flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center space-x-2"
+          >
+            <span>View Details</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          {event.certificateEnabled && registration && (
+            <button
+              onClick={() => generateCertificate(registration, event)}
+              className="w-full sm:flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>Download Certificate</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

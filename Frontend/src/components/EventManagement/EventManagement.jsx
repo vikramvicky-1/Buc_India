@@ -24,6 +24,7 @@ const EventManagement = () => {
     location: "",
     meetingPoint: "",
     isActive: true,
+    certificateEnabled: false,
   });
   const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
@@ -166,6 +167,7 @@ const EventManagement = () => {
       location: "",
       meetingPoint: "",
       isActive: true,
+      certificateEnabled: false,
     });
     setBannerFile(null);
     setBannerPreview(null);
@@ -183,6 +185,7 @@ const EventManagement = () => {
       location: event.location || "",
       meetingPoint: event.meetingPoint || "",
       isActive: event.isActive !== undefined ? event.isActive : true,
+      certificateEnabled: event.certificateEnabled !== undefined ? event.certificateEnabled : false,
     });
     setBannerPreview(event.banner);
     setShowForm(true);
@@ -339,6 +342,35 @@ const EventManagement = () => {
                 </p>
               </div>
 
+              <div className="form-group status-toggle-group">
+                <label className="toggle-label">E‑Certificate</label>
+                <div className="toggle-container">
+                  <span
+                    className={`status-text ${
+                      formData.certificateEnabled ? "active" : "inactive"
+                    }`}
+                  >
+                    {formData.certificateEnabled
+                      ? "Enabled for this event"
+                      : "Disabled"}
+                  </span>
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      name="certificateEnabled"
+                      checked={formData.certificateEnabled}
+                      onChange={handleInputChange}
+                    />
+                    <span className="slider round"></span>
+                  </label>
+                </div>
+                <p className="toggle-hint">
+                  When enabled, registered riders will be able to download a
+                  BUC India participation certificate for this event from
+                  their dashboard.
+                </p>
+              </div>
+
               <div className="form-actions">
                 <button type="submit" className="submit-button" disabled={submitLoading}>
                   {submitLoading ? "Processing..." : (editingEvent ? "Update Event" : "Create Event")}
@@ -448,13 +480,19 @@ const EventManagement = () => {
                     </span>
                   </div>
                 </div>
-                <div className="event-card-body">
+                  <div className="event-card-body">
                   <p className="event-description line-clamp-2">{event.description}</p>
                   <div className="event-stats">
                     <div className="stat-item" title="Total Registered">
                       <Users size={16} className="stat-icon text-blue-400" />
                       <span>{getRegistrationCount(event._id)} Registered</span>
                     </div>
+                    {event.certificateEnabled && (
+                      <div className="stat-item" title="E‑Certificate enabled">
+                        <CheckCircle size={16} className="stat-icon text-emerald-400" />
+                        <span>E‑Certificate On</span>
+                      </div>
+                    )}
                   </div>
                   <div className="event-details">
                     <div className="detail-item">

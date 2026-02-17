@@ -5,18 +5,17 @@ const { cloudinary } = require('../middleware/cloudinaryConfig');
 const getEvents = async (req, res) => {
   try {
     const events = await Event.find().sort({ eventDate: -1 });
-    const eventsWithCounts = await Promise.all(events.map(async (event) => {
-      const registrationCount = await Registration.countDocuments({ 
-        $or: [
-          { eventId: event._id },
-          { eventId: event._id.toString() }
-        ]
-      });
-      return {
-        ...event.toObject(),
-        registrationCount
-      };
-    }));
+    const eventsWithCounts = await Promise.all(
+      events.map(async (event) => {
+        const registrationCount = await Registration.countDocuments({
+          $or: [{ eventId: event._id }, { eventId: event._id.toString() }],
+        });
+        return {
+          ...event.toObject(),
+          registrationCount,
+        };
+      }),
+    );
     res.json(eventsWithCounts);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -25,7 +24,16 @@ const getEvents = async (req, res) => {
 
 const createEvent = async (req, res) => {
   try {
-    const { title, description, eventDate, eventTime, location, meetingPoint } = req.body;
+    const {
+      title,
+      description,
+      eventDate,
+      eventTime,
+      location,
+      meetingPoint,
+      isActive,
+      certificateEnabled,
+    } = req.body;
     
     if (!req.file) {
       return res.status(400).json({ message: 'Event banner is mandatory' });
@@ -38,8 +46,18 @@ const createEvent = async (req, res) => {
       eventTime,
       location,
       meetingPoint,
+      isActive:
+        typeof isActive === "string"
+          ? isActive === "true"
+          : isActive !== undefined
+            ? !!isActive
+            : true,
+      certificateEnabled:
+        typeof certificateEnabled === "string"
+          ? certificateEnabled === "true"
+          : !!certificateEnabled,
       banner: req.file.path,
-      bannerPublicId: req.file.filename
+      bannerPublicId: req.file.filename,
     });
 
     const newEvent = await event.save();
@@ -54,6 +72,20 @@ const updateEvent = async (req, res) => {
     const { id } = req.params;
     const updateData = { ...req.body };
 
+    if (updateData.isActive !== undefined) {
+      updateData.isActive =
+        typeof updateData.isActive === "string"
+          ? updateData.isActive === "true"
+          : !!updateData.isActive;
+    }
+
+    if (updateData.certificateEnabled !== undefined) {
+      updateData.certificateEnabled =
+        typeof updateData.certificateEnabled === "string"
+          ? updateData.certificateEnabled === "true"
+          : !!updateData.certificateEnabled;
+    }
+
     if (req.file) {
       // Delete old image if new one is uploaded
       const oldEvent = await Event.findById(id);
@@ -64,7 +96,9 @@ const updateEvent = async (req, res) => {
       updateData.bannerPublicId = req.file.filename;
     }
 
-    const updatedEvent = await Event.findByIdAndUpdate(id, updateData, { new: true });
+    const updatedEvent = await Event.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
     res.json(updatedEvent);
   } catch (error) {
     res.status(400).json({ message: error.message });

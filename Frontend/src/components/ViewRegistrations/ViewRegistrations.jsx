@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Download, Trash2, X, AlertTriangle, RefreshCw } from "lucide-react";
 import { eventService, registrationService } from "../../services/api";
 import { exportToExcel, exportToPDF } from "../../utils/exportUtils";
+import { generateCertificate } from "../../utils/certificateUtils";
 import "./ViewRegistrations.css";
 
 const ViewRegistrations = () => {
@@ -21,6 +22,7 @@ const ViewRegistrations = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [qrData, setQrData] = useState(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -69,6 +71,19 @@ const ViewRegistrations = () => {
     const event = events.find((e) => e._id === eventInput);
     return event ? event.title : "Unknown Event";
   }, [events]);
+
+  const getEventByInput = useCallback(
+    (eventInput) => {
+      if (typeof eventInput === "object" && eventInput !== null) {
+        return eventInput;
+      }
+      if (eventInput === "community") {
+        return null;
+      }
+      return events.find((e) => e._id === eventInput) || null;
+    },
+    [events],
+  );
 
   const filterRegistrations = useCallback(() => {
     let filtered = [...registrations];
@@ -322,6 +337,7 @@ const ViewRegistrations = () => {
         })),
         { key: "licenseProof", label: "License Image", type: "image", width: "120px" },
         { key: "eventName", label: "Event", type: "text", width: "200px" },
+        { key: "certificate", label: "Certificate", type: "certificate", width: "130px" },
         { key: "actions", label: "Actions", type: "action", width: "100px" },
       ];
 
@@ -353,6 +369,55 @@ const ViewRegistrations = () => {
         >
           {deletingId === reg._id ? "..." : <Trash2 size={16} />}
         </button>
+      );
+    }
+
+    if (column.key === "certificate") {
+      const eventObj = getEventByInput(reg.eventId);
+      if (!eventObj || !eventObj.certificateEnabled) {
+        return "-";
+      }
+
+      const eventDateLabel = eventObj.eventDate
+        ? new Date(eventObj.eventDate).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })
+        : "";
+
+      const riderName =
+        reg.fullName || reg.name || `${reg.firstName || ""} ${reg.lastName || ""}`.trim();
+
+      const certificateUrl = `${window.location.origin}/certificate?name=${encodeURIComponent(
+        riderName || "",
+      )}&eventTitle=${encodeURIComponent(
+        getEventName(reg.eventId) || "",
+      )}&eventDate=${encodeURIComponent(
+        eventDateLabel || "",
+      )}&location=${encodeURIComponent(eventObj.location || "")}&registrationId=${encodeURIComponent(
+        reg._id || "",
+      )}`;
+
+      return (
+        <div className="flex flex-col gap-1">
+          <button
+            type="button"
+            onClick={() => generateCertificate(reg, eventObj)}
+            className="view-license-button"
+            title="Download certificate"
+          >
+            Download
+          </button>
+          <button
+            type="button"
+            onClick={() => setQrData({ url: certificateUrl, name: riderName })}
+            className="view-license-button"
+            title="Show QR code"
+          >
+            QR Code
+          </button>
+        </div>
       );
     }
 
@@ -727,6 +792,39 @@ const ViewRegistrations = () => {
                 disabled={selectedFields.length === 0}
               >
                 Export {exportType === "excel" ? "Excel" : "PDF"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {qrData && (
+        <div className="delete-modal-overlay" onClick={() => setQrData(null)}>
+          <div
+            className="delete-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="delete-modal-icon">
+              <Download size={36} color="#f97316" />
+            </div>
+            <h2>Scan to Download Certificate</h2>
+            <p className="mb-4 text-sm text-gray-300">
+              Rider: <span className="font-semibold">{qrData.name || "Participant"}</span>
+            </p>
+            <div className="flex justify-center mb-4">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+                  qrData.url,
+                )}`}
+                alt="Certificate QR Code"
+              />
+            </div>
+            <p className="text-xs text-gray-400 break-all text-center mb-4">
+              {qrData.url}
+            </p>
+            <div className="delete-modal-actions">
+              <button className="cancel-btn" onClick={() => setQrData(null)}>
+                Close
               </button>
             </div>
           </div>

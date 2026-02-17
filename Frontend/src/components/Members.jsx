@@ -65,7 +65,7 @@ const Members = () => {
           alt="Motorcycle community background"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/85"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-950/85 to-black/90"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

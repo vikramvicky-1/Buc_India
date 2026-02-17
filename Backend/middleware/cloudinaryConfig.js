@@ -38,8 +38,20 @@ const galleryStorage = new CloudinaryStorage({
   }
 });
 
+// Storage for club collaboration assets (logos, documents, photos)
+const clubStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'buc_india_clubs',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'pdf'],
+    transformation: [{ width: 1200, height: 1200, crop: 'limit' }]
+  }
+});
+
 const upload = multer({ storage: eventStorage });
 const profileUpload = multer({ storage: profileStorage });
 const galleryUpload = multer({ storage: galleryStorage });
 
-module.exports = { cloudinary, upload, profileUpload, galleryUpload };
+const clubUpload = multer({ storage: clubStorage });
+
+module.exports = { cloudinary, upload, profileUpload, galleryUpload, clubUpload };

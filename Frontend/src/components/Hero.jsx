@@ -94,7 +94,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-950"
     >
       <motion.div
         initial={{ scale: 1.1, opacity: 0 }}
@@ -102,12 +102,17 @@ const Hero = () => {
         transition={{ duration: 1.5 }}
         className="absolute inset-0 z-0"
       >
-        <img
-          src="https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
-          alt="Motorcycle riders on the road"
+        <video
           className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
+        >
+          <source src="https://videos.pexels.com/video-files/856190/856190-hd_1280_720_25fps.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/55 via-slate-950/70 to-orange-900/55 backdrop-blur-[3px]"></div>
       </motion.div>
 
       <motion.div
