@@ -12,6 +12,8 @@ const profileRoutes = require("./routes/profileRoutes");
 const galleryRoutes = require("./routes/galleryRoutes");
 const clubRoutes = require("./routes/clubRoutes");
 const clubMembershipRoutes = require("./routes/clubMembershipRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
 
 const app = express();
 
@@ -112,6 +114,8 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/clubs", clubRoutes);
 app.use("/api/club-memberships", clubMembershipRoutes);
+app.use("/api/certificates", certificateRoutes);
+app.use("/api/certificates", certificateRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

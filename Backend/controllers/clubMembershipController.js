@@ -1,5 +1,6 @@
 const Club = require('../models/Club');
 const ClubMembership = require('../models/ClubMembership');
+const ClubExitLog = require('../models/ClubExitLog');
 const User = require('../models/User');
 
 // Helper to resolve or create user from email/phone, mirroring existing profile logic
@@ -123,6 +124,14 @@ const leaveClub = async (req, res) => {
     membership.exitReason = reason;
     membership.exitedAt = new Date();
     await membership.save();
+
+    // Persist a separate exit log for BUC owner analytics
+    await ClubExitLog.create({
+      clubId,
+      userId: user._id,
+      reason: reason.trim(),
+      exitedAt: membership.exitedAt,
+    });
 
     res.json({ message: 'You have left the club successfully' });
   } catch (error) {

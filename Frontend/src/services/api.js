@@ -195,4 +195,14 @@ export const clubMembershipService = {
   },
 };
 
+export const certificateService = {
+  getAll: async (eventId, userEmail) => {
+    const params = {};
+    if (eventId) params.eventId = eventId;
+    if (userEmail) params.userEmail = userEmail;
+    const response = await api.get("/certificates", { params });
+    return response.data;
+  },
+};
+
 export default api;

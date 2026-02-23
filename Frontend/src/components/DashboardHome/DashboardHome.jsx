@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { eventService, registrationService } from "../../services/api";
+import { eventService, registrationService, clubService, clubMembershipService, certificateService } from "../../services/api";
 import "./DashboardHome.css";
 
 const DashboardHome = () => {
@@ -10,6 +10,14 @@ const DashboardHome = () => {
   const [activeEvent, setActiveEvent] = useState(null);
   const [registeredCount, setRegisteredCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [clubStats, setClubStats] = useState({
+    totalClubs: 0,
+    pendingClubs: 0,
+    totalMembers: 0,
+    totalExits: 0,
+    totalEvents: 0,
+    totalCertificates: 0,
+  });
 
   useEffect(() => {
     loadData();
@@ -18,9 +26,12 @@ const DashboardHome = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [events, registrations] = await Promise.all([
+      const [events, registrations, clubs, memberships, certificates] = await Promise.all([
         eventService.getAll(),
-        registrationService.getAll()
+        registrationService.getAll(),
+        clubService.getAllAdmin(),
+        clubMembershipService.getAllAdmin(),
+        certificateService.getAll()
       ]);
 
       const today = new Date();
@@ -54,6 +65,23 @@ const DashboardHome = () => {
       } else {
         setRegisteredCount(0);
       }
+
+      // Compute BUC owner level stats
+      const totalClubs = clubs.length;
+      const pendingClubs = clubs.filter((c) => c.status === "pending").length;
+      const totalMembers = memberships.filter((m) => m.status === "active").length;
+      const totalExits = memberships.filter((m) => m.status === "exited" && m.exitReason).length;
+      const totalEvents = events.length;
+      const totalCertificates = certificates.length;
+
+      setClubStats({
+        totalClubs,
+        pendingClubs,
+        totalMembers,
+        totalExits,
+        totalEvents,
+        totalCertificates,
+      });
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
     } finally {
@@ -114,7 +142,36 @@ const DashboardHome = () => {
   return (
     <div className="dashboard-home">
       <h1 className="page-title">Admin Dashboard</h1>
-      <p className="page-subtitle">Administrative Control Panel</p>
+      <p className="page-subtitle">BUC Owner Super Panel</p>
+
+      <div className="quick-stats-grid">
+        <div className="quick-stat-card">
+          <h3>Total Clubs</h3>
+          <p className="quick-stat-value">{clubStats.totalClubs}</p>
+          <p className="quick-stat-sub">
+            {clubStats.pendingClubs} pending approval
+          </p>
+        </div>
+        <div className="quick-stat-card">
+          <h3>Club Members</h3>
+          <p className="quick-stat-value">{clubStats.totalMembers}</p>
+          <p className="quick-stat-sub">
+            {clubStats.totalExits} exits with reasons
+          </p>
+        </div>
+        <div className="quick-stat-card">
+          <h3>Events</h3>
+          <p className="quick-stat-value">{clubStats.totalEvents}</p>
+          <p className="quick-stat-sub">
+            {registeredCount} registered for selected event
+          </p>
+        </div>
+        <div className="quick-stat-card">
+          <h3>E‑Certificates</h3>
+          <p className="quick-stat-value">{clubStats.totalCertificates}</p>
+          <p className="quick-stat-sub">Ready for download</p>
+        </div>
+      </div>
 
       <div className="active-event-section">
         <h2 className="section-title">Active Event</h2>

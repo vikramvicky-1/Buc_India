@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Registration = require("../models/Registration");
 const User = require("../models/User");
+const ClubMembership = require("../models/ClubMembership");
+const Certificate = require("../models/Certificate");
 const { cloudinary } = require("../middleware/cloudinaryConfig");
 
 const createRegistration = async (req, res) => {
@@ -203,6 +205,33 @@ const createRegistration = async (req, res) => {
       requestRidingGears: newRegistration.requestRidingGears,
       requestedGears: newRegistration.requestedGears,
     });
+
+    // Create or update a certificate record for event registrations
+    if (eventId !== "community" && existingUser) {
+      try {
+        // Find active club membership, if any
+        const activeMembership = await ClubMembership.findOne({
+          userId: existingUser._id,
+          status: "active",
+        }).select("clubId");
+
+        await Certificate.findOneAndUpdate(
+          { userId: existingUser._id, eventId: newRegistration.eventId },
+          {
+            userId: existingUser._id,
+            eventId: newRegistration.eventId,
+            clubId: activeMembership ? activeMembership.clubId : null,
+            participantName: fullName || existingUser.fullName || email,
+            status: "ready",
+            generatedAt: new Date(),
+          },
+          { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+      } catch (certErr) {
+        console.error("Certificate upsert error (non-fatal):", certErr.message);
+      }
+    }
+
     res.status(201).json(newRegistration);
   } catch (error) {
     console.error("Registration Error:", error);

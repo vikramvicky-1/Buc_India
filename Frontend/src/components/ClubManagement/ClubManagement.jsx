@@ -50,6 +50,13 @@ const ClubManagement = () => {
     (m) => m.status === "exited" && m.exitReason
   );
 
+  const getParticipantsForClub = (clubId) =>
+    memberships.filter(
+      (m) =>
+        m.clubId?._id === clubId &&
+        m.status === "active"
+    );
+
   return (
     <div className="club-management">
       <h1 className="page-title">Partner Clubs</h1>
@@ -75,59 +82,94 @@ const ClubManagement = () => {
                   <span>Status</span>
                   <span>Actions</span>
                 </div>
-                {clubs.map((club) => (
-                  <div key={club._id} className="club-row">
-                    <div className="club-main">
-                      <div className="club-logo-small">
-                        {club.logoUrl ? (
-                          <img src={club.logoUrl} alt={club.name} />
-                        ) : (
-                          <span>{club.name?.charAt(0) || "C"}</span>
-                        )}
-                      </div>
-                      <div>
-                        <div className="club-name">{club.name}</div>
-                        {club.founder?.name && (
+                {clubs.map((club) => {
+                  const participants = getParticipantsForClub(club._id);
+                  return (
+                    <div key={club._id} className="club-row club-row-with-participants">
+                      <div className="club-main">
+                        <div className="club-logo-small">
+                          {club.logoUrl ? (
+                            <img src={club.logoUrl} alt={club.name} />
+                          ) : (
+                            <span>{club.name?.charAt(0) || "C"}</span>
+                          )}
+                        </div>
+                        <div>
+                          <div className="club-name">{club.name}</div>
+                          {club.founder?.name && (
+                            <div className="club-meta">
+                              Founder: {club.founder.name} (
+                              {club.founder.role || "founder"})
+                            </div>
+                          )}
                           <div className="club-meta">
-                            Founder: {club.founder.name} (
-                            {club.founder.role || "founder"})
+                            Active participants: {participants.length}
                           </div>
-                        )}
+                        </div>
                       </div>
+                      <div className="club-cell">
+                        {club.startedOn
+                          ? new Date(club.startedOn).toLocaleDateString()
+                          : "-"}
+                      </div>
+                      <div className="club-cell club-moto">
+                        {club.moto || club.showcaseText || "-"}
+                      </div>
+                      <div className="club-cell">
+                        <span className={statusLabelClass(club.status)}>
+                          {club.status}
+                        </span>
+                      </div>
+                      <div className="club-cell club-actions">
+                        <button
+                          type="button"
+                          className="status-btn approve"
+                          disabled={updatingId === club._id}
+                          onClick={() => changeStatus(club._id, "approved")}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          className="status-btn reject"
+                          disabled={updatingId === club._id}
+                          onClick={() => changeStatus(club._id, "rejected")}
+                        >
+                          Reject
+                        </button>
+                      </div>
+                      {participants.length > 0 && (
+                        <div className="club-participants">
+                          <div className="club-participants-header">
+                            <span>Active club participants</span>
+                          </div>
+                          <div className="club-participants-table">
+                            <div className="club-participants-row club-participants-row-header">
+                              <span>Name</span>
+                              <span>Email</span>
+                              <span>Phone</span>
+                              <span>Role</span>
+                              <span>Joined At</span>
+                            </div>
+                            {participants.map((m) => (
+                              <div key={m._id} className="club-participants-row">
+                                <span>{m.userId?.fullName || "Member"}</span>
+                                <span>{m.userId?.email || "-"}</span>
+                                <span>{m.userId?.phone || "-"}</span>
+                                <span>{m.role || "member"}</span>
+                                <span>
+                                  {m.createdAt
+                                    ? new Date(m.createdAt).toLocaleDateString()
+                                    : "-"}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="club-cell">
-                      {club.startedOn
-                        ? new Date(club.startedOn).toLocaleDateString()
-                        : "-"}
-                    </div>
-                    <div className="club-cell club-moto">
-                      {club.moto || club.showcaseText || "-"}
-                    </div>
-                    <div className="club-cell">
-                      <span className={statusLabelClass(club.status)}>
-                        {club.status}
-                      </span>
-                    </div>
-                    <div className="club-cell club-actions">
-                      <button
-                        type="button"
-                        className="status-btn approve"
-                        disabled={updatingId === club._id}
-                        onClick={() => changeStatus(club._id, "approved")}
-                      >
-                        Approve
-                      </button>
-                      <button
-                        type="button"
-                        className="status-btn reject"
-                        disabled={updatingId === club._id}
-                        onClick={() => changeStatus(club._id, "rejected")}
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
