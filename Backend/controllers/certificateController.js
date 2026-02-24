@@ -1,10 +1,10 @@
-const Certificate = require('../models/Certificate');
-const User = require('../models/User');
-const Event = require('../models/Event');
-const Club = require('../models/Club');
+import Certificate from '../models/Certificate.js';
+import User from '../models/User.js';
+import Event from '../models/Event.js';
+import Club from '../models/Club.js';
 
 // Admin: list certificates with optional filters
-const getCertificates = async (req, res) => {
+export const getCertificates = async (req, res) => {
   try {
     const { eventId, userEmail } = req.query;
     const filter = {};
@@ -35,7 +35,7 @@ const getCertificates = async (req, res) => {
 };
 
 // Admin: create or upsert a certificate record for a registration
-const createOrUpdateCertificate = async (req, res) => {
+export const createOrUpdateCertificate = async (req, res) => {
   try {
     const { userId, eventId, clubId, participantName } = req.body;
 
@@ -83,9 +83,3 @@ const createOrUpdateCertificate = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
-module.exports = {
-  getCertificates,
-  createOrUpdateCertificate,
-};
-

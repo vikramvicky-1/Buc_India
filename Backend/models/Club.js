@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const adminSchema = new mongoose.Schema(
   {
@@ -87,5 +87,5 @@ const clubSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Club', clubSchema);
-
+const Club = mongoose.model('Club', clubSchema);
+export default Club;

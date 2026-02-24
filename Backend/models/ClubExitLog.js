@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const clubExitLogSchema = new mongoose.Schema(
   {
@@ -25,5 +25,5 @@ const clubExitLogSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-module.exports = mongoose.model('ClubExitLog', clubExitLogSchema);
-
+const ClubExitLog = mongoose.model('ClubExitLog', clubExitLogSchema);
+export default ClubExitLog;

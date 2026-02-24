@@ -1,7 +1,7 @@
-const GalleryItem = require('../models/GalleryItem');
-const { cloudinary } = require('../middleware/cloudinaryConfig');
+import GalleryItem from '../models/GalleryItem.js';
+import { cloudinary } from '../middleware/cloudinaryConfig.js';
 
-const getGalleryItems = async (req, res) => {
+export const getGalleryItems = async (req, res) => {
   try {
     const items = await GalleryItem.find().sort({ createdAt: -1 });
     res.json(items);
@@ -10,7 +10,7 @@ const getGalleryItems = async (req, res) => {
   }
 };
 
-const createGalleryItem = async (req, res) => {
+export const createGalleryItem = async (req, res) => {
   try {
     const { eventName, eventDate, category } = req.body;
 
@@ -37,7 +37,7 @@ const createGalleryItem = async (req, res) => {
   }
 };
 
-const deleteGalleryItem = async (req, res) => {
+export const deleteGalleryItem = async (req, res) => {
   try {
     const { id } = req.params;
     const item = await GalleryItem.findById(id);
@@ -61,7 +61,7 @@ const deleteGalleryItem = async (req, res) => {
   }
 };
 
-const updateGalleryItem = async (req, res) => {
+export const updateGalleryItem = async (req, res) => {
   try {
     const { id } = req.params;
     const { eventName, eventDate, category } = req.body;
@@ -94,11 +94,3 @@ const updateGalleryItem = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
-module.exports = {
-  getGalleryItems,
-  createGalleryItem,
-  deleteGalleryItem,
-  updateGalleryItem,
-};
-

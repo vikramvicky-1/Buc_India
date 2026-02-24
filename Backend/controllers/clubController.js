@@ -1,9 +1,9 @@
-const Club = require('../models/Club');
-const ClubMembership = require('../models/ClubMembership');
-const User = require('../models/User');
+import Club from '../models/Club.js';
+import ClubMembership from '../models/ClubMembership.js';
+import User from '../models/User.js';
 
 // Public: list approved clubs with minimal info
-const getPublicClubs = async (req, res) => {
+export const getPublicClubs = async (req, res) => {
   try {
     const clubs = await Club.find({ status: 'approved' }).sort({ createdAt: -1 });
 
@@ -32,7 +32,7 @@ const getPublicClubs = async (req, res) => {
 };
 
 // Admin: full list with details
-const getAllClubs = async (req, res) => {
+export const getAllClubs = async (req, res) => {
   try {
     const clubs = await Club.find().sort({ createdAt: -1 });
     res.json(clubs);
@@ -43,7 +43,7 @@ const getAllClubs = async (req, res) => {
 };
 
 // Public: create collaboration request
-const createClubRequest = async (req, res) => {
+export const createClubRequest = async (req, res) => {
   try {
     const {
       name,
@@ -168,7 +168,7 @@ const createClubRequest = async (req, res) => {
 };
 
 // Admin: update club status (approve / reject)
-const updateClubStatus = async (req, res) => {
+export const updateClubStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -193,11 +193,3 @@ const updateClubStatus = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
-module.exports = {
-  getPublicClubs,
-  getAllClubs,
-  createClubRequest,
-  updateClubStatus,
-};
-

@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
-const Registration = require("../models/Registration");
-const User = require("../models/User");
-const ClubMembership = require("../models/ClubMembership");
-const Certificate = require("../models/Certificate");
-const { cloudinary } = require("../middleware/cloudinaryConfig");
+import mongoose from "mongoose";
+import Registration from "../models/Registration.js";
+import User from "../models/User.js";
+import ClubMembership from "../models/ClubMembership.js";
+import Certificate from "../models/Certificate.js";
+import { cloudinary } from "../middleware/cloudinaryConfig.js";
 
-const createRegistration = async (req, res) => {
+export const createRegistration = async (req, res) => {
   console.log("Incoming Registration Request:", {
     body: req.body,
     files: req.files ? Object.keys(req.files) : "no files",
@@ -262,7 +262,7 @@ const createRegistration = async (req, res) => {
   }
 };
 
-const getRegistrations = async (req, res) => {
+export const getRegistrations = async (req, res) => {
   try {
     const { eventId, email, phone } = req.query;
     let filter = {};
@@ -304,7 +304,7 @@ const getRegistrations = async (req, res) => {
   }
 };
 
-const deleteRegistration = async (req, res) => {
+export const deleteRegistration = async (req, res) => {
   try {
     const registration = await Registration.findById(req.params.id);
     if (!registration) {
@@ -321,10 +321,4 @@ const deleteRegistration = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-};
-
-module.exports = {
-  createRegistration,
-  getRegistrations,
-  deleteRegistration,
 };

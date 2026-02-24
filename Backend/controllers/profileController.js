@@ -1,7 +1,7 @@
-const User = require('../models/User');
-const { cloudinary } = require('../middleware/cloudinaryConfig');
+import User from '../models/User.js';
+import { cloudinary } from '../middleware/cloudinaryConfig.js';
 
-const getProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
   try {
     const { email, phone } = req.query;
     
@@ -26,7 +26,7 @@ const getProfile = async (req, res) => {
   }
 };
 
-const createOrUpdateProfile = async (req, res) => {
+export const createOrUpdateProfile = async (req, res) => {
   try {
     const {
       email,
@@ -166,9 +166,4 @@ const createOrUpdateProfile = async (req, res) => {
 
     res.status(400).json({ message: error.message });
   }
-};
-
-module.exports = {
-  getProfile,
-  createOrUpdateProfile
 };

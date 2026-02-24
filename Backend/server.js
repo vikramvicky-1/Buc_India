@@ -1,19 +1,19 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
-const Admin = require("./models/Admin");
+import "dotenv/config";
+import express from "express";
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import Admin from "./models/Admin.js";
+import Registration from "./models/Registration.js";
 
-const authRoutes = require("./routes/authRoutes");
-const eventRoutes = require("./routes/eventRoutes");
-const registrationRoutes = require("./routes/registrationRoutes");
-const profileRoutes = require("./routes/profileRoutes");
-const galleryRoutes = require("./routes/galleryRoutes");
-const clubRoutes = require("./routes/clubRoutes");
-const clubMembershipRoutes = require("./routes/clubMembershipRoutes");
-const certificateRoutes = require("./routes/certificateRoutes");
-const certificateRoutes = require("./routes/certificateRoutes");
+import authRoutes from "./routes/authRoutes.js";
+import eventRoutes from "./routes/eventRoutes.js";
+import registrationRoutes from "./routes/registrationRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
+import galleryRoutes from "./routes/galleryRoutes.js";
+import clubRoutes from "./routes/clubRoutes.js";
+import clubMembershipRoutes from "./routes/clubMembershipRoutes.js";
+import certificateRoutes from "./routes/certificateRoutes.js";
 
 const app = express();
 
@@ -57,7 +57,6 @@ mongoose
 
     // Programmatically drop old global indexes that interfere with event-scoped registration
     try {
-      const Registration = require("./models/Registration");
       const collection = mongoose.connection.collection("registrations");
       const indexes = await collection.indexes();
 
@@ -114,7 +113,6 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/clubs", clubRoutes);
 app.use("/api/club-memberships", clubMembershipRoutes);
-app.use("/api/certificates", certificateRoutes);
 app.use("/api/certificates", certificateRoutes);
 
 // Error handler

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const certificateSchema = new mongoose.Schema(
   {
@@ -37,5 +37,5 @@ const certificateSchema = new mongoose.Schema(
 
 certificateSchema.index({ userId: 1, eventId: 1 }, { unique: true });
 
-module.exports = mongoose.model('Certificate', certificateSchema);
-
+const Certificate = mongoose.model('Certificate', certificateSchema);
+export default Certificate;

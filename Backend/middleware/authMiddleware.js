@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   let token;
 
   // Check for token in cookies
@@ -26,5 +26,3 @@ const protect = async (req, res, next) => {
     res.status(401).json({ message: 'Not authorized, token failed' });
   }
 };
-
-module.exports = { protect };

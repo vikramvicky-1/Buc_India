@@ -1,6 +1,6 @@
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const multer = require('multer');
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import multer from 'multer';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -48,10 +48,8 @@ const clubStorage = new CloudinaryStorage({
   }
 });
 
-const upload = multer({ storage: eventStorage });
-const profileUpload = multer({ storage: profileStorage });
-const galleryUpload = multer({ storage: galleryStorage });
-
-const clubUpload = multer({ storage: clubStorage });
-
-module.exports = { cloudinary, upload, profileUpload, galleryUpload, clubUpload };
+export const upload = multer({ storage: eventStorage });
+export const profileUpload = multer({ storage: profileStorage });
+export const galleryUpload = multer({ storage: galleryStorage });
+export const clubUpload = multer({ storage: clubStorage });
+export { cloudinary };

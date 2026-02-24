@@ -1,7 +1,7 @@
-const Club = require('../models/Club');
-const ClubMembership = require('../models/ClubMembership');
-const ClubExitLog = require('../models/ClubExitLog');
-const User = require('../models/User');
+import Club from '../models/Club.js';
+import ClubMembership from '../models/ClubMembership.js';
+import ClubExitLog from '../models/ClubExitLog.js';
+import User from '../models/User.js';
 
 // Helper to resolve or create user from email/phone, mirroring existing profile logic
 const findUserByContact = async (email, phone) => {
@@ -13,7 +13,7 @@ const findUserByContact = async (email, phone) => {
 };
 
 // Public: get the active club membership for a user (if any)
-const getMyClub = async (req, res) => {
+export const getMyClub = async (req, res) => {
   try {
     const { email, phone } = req.query;
     const user = await findUserByContact(email, phone);
@@ -34,7 +34,7 @@ const getMyClub = async (req, res) => {
 };
 
 // Public: join a club as a member (enforces one active club per user)
-const joinClub = async (req, res) => {
+export const joinClub = async (req, res) => {
   try {
     const { clubId } = req.params;
     const { email, phone } = req.body;
@@ -90,7 +90,7 @@ const joinClub = async (req, res) => {
 };
 
 // Public: leave current club with a reason
-const leaveClub = async (req, res) => {
+export const leaveClub = async (req, res) => {
   try {
     const { clubId } = req.params;
     const { email, phone, reason } = req.body;
@@ -141,7 +141,7 @@ const leaveClub = async (req, res) => {
 };
 
 // Admin: view membership records and exit reasons
-const getAllMemberships = async (req, res) => {
+export const getAllMemberships = async (req, res) => {
   try {
     const memberships = await ClubMembership.find()
       .populate('clubId', 'name logoUrl')
@@ -154,11 +154,3 @@ const getAllMemberships = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-module.exports = {
-  getMyClub,
-  joinClub,
-  leaveClub,
-  getAllMemberships,
-};
-

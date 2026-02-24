@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { getProfile, createOrUpdateProfile } from '../controllers/profileController.js';
+import { profileUpload } from '../middleware/cloudinaryConfig.js';
+
 const router = express.Router();
-const { getProfile, createOrUpdateProfile } = require('../controllers/profileController');
-const { profileUpload } = require('../middleware/cloudinaryConfig');
 
 router.get('/', getProfile);
 router.post('/', profileUpload.fields([
@@ -13,4 +14,4 @@ router.put('/', profileUpload.fields([
   { name: 'licenseImage', maxCount: 1 }
 ]), createOrUpdateProfile);
 
-module.exports = router;
+export default router;

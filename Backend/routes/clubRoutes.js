@@ -1,13 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const {
+import express from 'express';
+import {
   getPublicClubs,
   getAllClubs,
   createClubRequest,
   updateClubStatus,
-} = require('../controllers/clubController');
-const { protect } = require('../middleware/authMiddleware');
-const { clubUpload } = require('../middleware/cloudinaryConfig');
+} from '../controllers/clubController.js';
+import { protect } from '../middleware/authMiddleware.js';
+import { clubUpload } from '../middleware/cloudinaryConfig.js';
+
+const router = express.Router();
 
 // Public
 router.get('/public', getPublicClubs);
@@ -28,5 +29,4 @@ router.post(
 router.get('/', protect, getAllClubs);
 router.patch('/:id/status', protect, updateClubStatus);
 
-module.exports = router;
-
+export default router;

@@ -1,7 +1,7 @@
-const Admin = require("../models/Admin");
-const jwt = require("jsonwebtoken");
+import Admin from "../models/Admin.js";
+import jwt from "jsonwebtoken";
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -46,7 +46,7 @@ const login = async (req, res) => {
   }
 };
 
-const logout = (req, res) => {
+export const logout = (req, res) => {
   const isProd = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
@@ -57,7 +57,7 @@ const logout = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
-const checkAuth = async (req, res) => {
+export const checkAuth = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: "Not authenticated" });
@@ -71,10 +71,4 @@ const checkAuth = async (req, res) => {
     console.error("CheckAuth error:", error);
     res.status(500).json({ message: "Server error" });
   }
-};
-
-module.exports = {
-  login,
-  logout,
-  checkAuth,
 };

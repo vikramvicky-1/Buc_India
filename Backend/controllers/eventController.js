@@ -1,8 +1,8 @@
-const Event = require('../models/Event');
-const Registration = require('../models/Registration');
-const { cloudinary } = require('../middleware/cloudinaryConfig');
+import Event from '../models/Event.js';
+import Registration from '../models/Registration.js';
+import { cloudinary } from '../middleware/cloudinaryConfig.js';
 
-const getEvents = async (req, res) => {
+export const getEvents = async (req, res) => {
   try {
     const events = await Event.find().sort({ eventDate: -1 });
     const eventsWithCounts = await Promise.all(
@@ -22,7 +22,7 @@ const getEvents = async (req, res) => {
   }
 };
 
-const createEvent = async (req, res) => {
+export const createEvent = async (req, res) => {
   try {
     const {
       title,
@@ -67,7 +67,7 @@ const createEvent = async (req, res) => {
   }
 };
 
-const updateEvent = async (req, res) => {
+export const updateEvent = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -105,7 +105,7 @@ const updateEvent = async (req, res) => {
   }
 };
 
-const deleteEvent = async (req, res) => {
+export const deleteEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) {
@@ -135,11 +135,4 @@ const deleteEvent = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-};
-
-module.exports = {
-  getEvents,
-  createEvent,
-  updateEvent,
-  deleteEvent
 };
