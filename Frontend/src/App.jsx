@@ -22,6 +22,8 @@ import YourEvents from "./components/YourEvents.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import { ToastContainer } from "react-toastify";
 import Clubs from "./components/Clubs/Clubs.jsx";
+import ClubDetail from "./components/Clubs/ClubDetail.jsx";
+import ClubCollaborate from "./components/Clubs/ClubCollaborate.jsx";
 import CertificatePage from "./components/CertificatePage.jsx";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -58,6 +60,8 @@ function App() {
             <Route path="/members" element={<Members />} />
             <Route path="/forum" element={<Forum />} />
             <Route path="/clubs" element={<Clubs />} />
+            <Route path="/clubs/collaborate" element={<ClubCollaborate />} />
+            <Route path="/clubs/:slug" element={<ClubDetail />} />
             <Route path="/certificate" element={<CertificatePage />} />
             <Route
               path="/profile"
