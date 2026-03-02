@@ -122,6 +122,11 @@ export const generateCertificate = (registration, event) => {
   doc.text("BUC Founder / Admin", 85, 176, { align: "center" });
   doc.text("Club / Ride Lead", 212, 176, { align: "center" });
 
+  // Soft watermark text in the middle (simulating club / BUC branding)
+  doc.setFontSize(40);
+  doc.setTextColor(100, 116, 139);
+  doc.text("BUC INDIA", 148.5, 120, { align: "center" });
+
   // Generated date
   doc.setFontSize(9);
   doc.setTextColor(148, 163, 184);
@@ -129,6 +134,16 @@ export const generateCertificate = (registration, event) => {
     `Generated on: ${new Date().toLocaleString()}`,
     148.5,
     190,
+    { align: "center" },
+  );
+
+  // Authorization line
+  doc.setFontSize(9);
+  doc.setTextColor(226, 232, 240);
+  doc.text(
+    "Club photo/logo registered with BUC India • Authorized by BUC India",
+    148.5,
+    184,
     { align: "center" },
   );
 
