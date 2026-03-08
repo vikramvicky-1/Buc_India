@@ -1,23 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Calendar,
-  MapPin,
-  Clock,
-  ChevronRight,
-  Flag,
-  Share2,
-  Users,
-  CheckCircle,
-  Loader2,
-} from "lucide-react";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardMedia from "@mui/material/CardMedia";
+import CardContent from "@mui/material/CardContent";
+import CardActions from "@mui/material/CardActions";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import CircularProgress from "@mui/material/CircularProgress";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import FlagIcon from "@mui/icons-material/Flag";
+import ShareIcon from "@mui/icons-material/Share";
+import GroupsIcon from "@mui/icons-material/Groups";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
 import {
   eventService,
   registrationService,
   profileService,
 } from "../../services/api";
 import { toast } from "react-toastify";
-import "./PublicHome.css";
 
 const ConfirmationModal = ({
   isOpen,
@@ -27,36 +40,29 @@ const ConfirmationModal = ({
   message,
   confirmText,
   loading,
-}) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-2xl p-8 max-w-md w-full border border-orange-500/30 shadow-2xl">
-        <h3 className="text-2xl font-bold text-white mb-4">{title}</h3>
-        <p className="text-gray-300 mb-8 leading-relaxed">{message}</p>
-        <div className="flex gap-4">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-semibold transition-colors border border-white/10"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              confirmText
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+}) => (
+  <Dialog open={isOpen} onClose={onClose} maxWidth="xs" fullWidth>
+    <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
+    <DialogContent>
+      <Typography variant="body2" sx={{ color: "text.secondary" }}>
+        {message}
+      </Typography>
+    </DialogContent>
+    <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+      <Button variant="outlined" onClick={onClose} sx={{ flex: 1 }}>
+        Cancel
+      </Button>
+      <Button
+        variant="contained"
+        onClick={onConfirm}
+        disabled={loading}
+        sx={{ flex: 1 }}
+      >
+        {loading ? <CircularProgress size={22} color="inherit" /> : confirmText}
+      </Button>
+    </DialogActions>
+  </Dialog>
+);
 
 const PublicHome = () => {
   const navigate = useNavigate();
@@ -67,36 +73,21 @@ const PublicHome = () => {
   const [loading, setLoading] = useState(false);
   const [registrationLoading, setRegistrationLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showCompleteProfileModal, setShowCompleteProfileModal] =
-    useState(false);
+  const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     loadEvents();
-    const interval = setInterval(() => {
-      loadEvents();
-    }, 10000); // Refresh every 10 seconds
+    const interval = setInterval(() => loadEvents(), 10000);
     return () => clearInterval(interval);
   }, []);
 
   const isProfileComplete = (profile) => {
     const requiredFields = [
-      "fullName",
-      "email",
-      "phone",
-      "address",
-      "city",
-      "state",
-      "pincode",
-      "dateOfBirth",
-      "bloodGroup",
-      "bikeModel",
-      "bikeRegistrationNumber",
-      "licenseNumber",
-      "emergencyContactName",
-      "emergencyContactPhone",
-      "profileImage",
-      "licenseImage",
+      "fullName", "email", "phone", "address", "city", "state", "pincode",
+      "dateOfBirth", "bloodGroup", "bikeModel", "bikeRegistrationNumber",
+      "licenseNumber", "emergencyContactName", "emergencyContactPhone",
+      "profileImage", "licenseImage",
     ];
     return requiredFields.every(
       (field) => profile[field] && profile[field].toString().trim() !== "",
@@ -110,13 +101,11 @@ const PublicHome = () => {
       navigate("/signup");
       return;
     }
-
     setLoading(true);
     try {
       const userEmail = sessionStorage.getItem("userEmail");
       const userPhone = sessionStorage.getItem("userPhone");
       const profile = await profileService.get(userEmail, userPhone);
-
       if (isProfileComplete(profile)) {
         setSelectedEvent(event);
         setShowConfirmModal(true);
@@ -141,14 +130,7 @@ const PublicHome = () => {
 
       const data = new FormData();
       Object.keys(profile).forEach((key) => {
-        if (
-          key !== "_id" &&
-          key !== "__v" &&
-          key !== "createdAt" &&
-          key !== "updatedAt" &&
-          key !== "profileImage" &&
-          key !== "profileImagePublicId"
-        ) {
+        if (!["_id", "__v", "createdAt", "updatedAt", "profileImage", "profileImagePublicId"].includes(key)) {
           data.append(key, profile[key]);
         }
       });
@@ -157,7 +139,7 @@ const PublicHome = () => {
       await registrationService.create(data);
       toast.success(`Successfully registered for ${selectedEvent.title}!`);
       setShowConfirmModal(false);
-      loadEvents(); // Refresh counts
+      loadEvents();
     } catch (error) {
       console.error("Registration failed:", error);
       toast.error(error.response?.data?.message || "Registration failed");
@@ -205,12 +187,8 @@ const PublicHome = () => {
     const registrationLink = `${window.location.origin}/event-register/${eventId}`;
     navigator.clipboard
       .writeText(registrationLink)
-      .then(() => {
-        toast.success("Registration link copied to clipboard!");
-      })
-      .catch(() => {
-        toast.error("Failed to copy link");
-      });
+      .then(() => toast.success("Registration link copied to clipboard!"))
+      .catch(() => toast.error("Failed to copy link"));
   };
 
   const formatTime = (timeString) => {
@@ -230,168 +208,219 @@ const PublicHome = () => {
     activeTab === "upcoming" ? upcomingEvents : pastEvents.slice(0, pastLimit);
 
   return (
-    <section
+    <Box
+      component="section"
       id="events"
-      className="relative pt-24 pb-24 bg-gradient-to-b from-amber-50 via-orange-50 to-slate-100 overflow-hidden"
+      sx={{ py: { xs: 8, md: 12 }, bgcolor: "background.default" }}
     >
-      {/* Background decoration */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute -top-24 -left-24 w-80 h-80 bg-orange-400/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-[-6rem] right-[-4rem] w-96 h-96 bg-red-400/30 rounded-full blur-3xl"></div>
-        <div className="absolute inset-x-0 top-40 h-32 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-3">
+      <Container maxWidth="lg">
+        {/* Header */}
+        <Box sx={{ textAlign: "center", mb: 6 }}>
+          <Typography variant="h2" sx={{
+            fontWeight: 900,
+            color: "text.primary",
+            mb: 1,
+            fontSize: { xs: "2.5rem", md: "3.5rem" },
+            fontFamily: "'Audiowide', sans-serif",
+          }}>
             {activeTab === "upcoming" ? "Upcoming" : "Past"}{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
-              Events
-            </span>
-          </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto">
-            Festival-style rides, breakfast meets and long hauls curated by BUC
-            and partner clubs across India.
-          </p>
+            <Box component="span" sx={{ color: "primary.main" }}>Events</Box>
+          </Typography>
+          <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 600, mx: "auto", mb: 4 }}>
+            Festival-style rides, breakfast meets and long hauls curated by BUC and partner clubs across India.
+          </Typography>
 
-          <div className="flex justify-center mt-8">
-            <div className="inline-flex p-1 bg-white/80 backdrop-blur-md rounded-xl border border-orange-100 shadow-sm">
-              <button
-                onClick={() => setActiveTab("upcoming")}
-                className={`px-6 py-2.5 rounded-lg font-medium transition-all duration-300 ${
-                  activeTab === "upcoming"
-                    ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                Upcoming
-              </button>
-              <button
-                onClick={() => setActiveTab("past")}
-                className={`px-6 py-2.5 rounded-lg font-medium transition-all duration-300 ${
-                  activeTab === "past"
-                    ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                Past Events
-              </button>
-            </div>
-          </div>
-        </div>
+          <ToggleButtonGroup
+            value={activeTab}
+            exclusive
+            onChange={(e, val) => val && setActiveTab(val)}
+            sx={{
+              bgcolor: "surface.container",
+              borderRadius: "999px",
+              border: "1px solid",
+              borderColor: "divider",
+              "& .MuiToggleButton-root": {
+                border: "none",
+                borderRadius: "999px !important",
+                px: 3,
+                py: 1,
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "0.875rem",
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  bgcolor: "primary.main",
+                  color: "white",
+                  "&:hover": { bgcolor: "primary.dark" },
+                },
+              },
+            }}
+          >
+            <ToggleButton value="upcoming">Upcoming</ToggleButton>
+            <ToggleButton value="past">Past Events</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
 
+        {/* Content */}
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
-          </div>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+            <CircularProgress />
+          </Box>
         ) : displayedEvents.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Grid container spacing={3}>
               {displayedEvents.map((event) => (
-                <div
-                  key={event._id}
-                  className="group relative bg-white rounded-2xl border border-orange-100 hover:border-orange-400/60 transition-all duration-500 overflow-hidden flex flex-col shadow-sm hover:shadow-xl"
-                >
-                  <div className="h-48 w-full relative overflow-hidden">
-                    <img
-                      src={event.banner}
-                      alt={event.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent group-hover:from-black/30 transition-colors duration-500"></div>
-
-                    {/* Date Badge */}
-                    <div className="absolute bottom-4 left-4 bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg z-20">
-                      {new Date(event.eventDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="p-6 flex-grow flex flex-col">
-                    <div className="mb-3">
-                      <h3 className="text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors duration-300">
-                        {event.title}
-                      </h3>
-                    </div>
-
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="flex items-center text-xs font-medium text-orange-700 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-100">
-                        <Users className="w-3 h-3 text-orange-500 mr-1.5" />
-                        {event.registrationCount || 0} riders in
-                      </div>
-                    </div>
-                    <button
-                      onClick={(e) => handleShare(e, event._id)}
-                      className="absolute top-25 right-4 p-2 bg-white backdrop-blur-md hover:bg-orange-500 hover:text-white text-orange-500 rounded-full transition-all duration-300 z-30 border border-white/10 flex items-center justify-center"
-                      title="Share Registration Link"
-                    >
-                      <Share2 size={16} />
-                    </button>
-
-                    <p className="text-slate-600 text-sm mb-6 line-clamp-3">
-                      {event.description}
-                    </p>
-
-                    <div className="space-y-3 mb-6 mt-auto">
-                      <div className="flex items-center text-slate-700 text-sm">
-                        <MapPin className="w-4 h-4 text-orange-500 mr-2 shrink-0" />
-                        <span className="truncate">
-                          Location: {event.location}
-                        </span>
-                        {/* Share Button */}
-                      </div>
-
-                      <div className="flex items-center text-slate-700 text-sm">
-                        <Flag className="w-4 h-4 text-orange-500 mr-2 shrink-0" />
-                        <span className="truncate">
-                          Meeting: {event.meetingPoint}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-slate-700 text-sm">
-                        <Clock className="w-4 h-4 text-orange-500 mr-2 shrink-0" />
-                        <span>{formatTime(event.eventTime)}</span>
-                      </div>
-                    </div>
-
-                    {activeTab === "upcoming" ? (
-                      <button
-                        onClick={() => handleRegisterClick(event)}
-                        className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center group/btn"
+                <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={event._id}>
+                  <Card
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      height: "100%",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {/* Image */}
+                    <Box sx={{ position: "relative" }}>
+                      <CardMedia
+                        component="img"
+                        height="200"
+                        image={event.banner}
+                        alt={event.title}
+                        sx={{
+                          objectFit: "cover",
+                          transition: "transform 0.5s",
+                          "&:hover": { transform: "scale(1.05)" },
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)",
+                        }}
+                      />
+                      <Chip
+                        label={new Date(event.eventDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                        size="small"
+                        color="primary"
+                        sx={{
+                          position: "absolute",
+                          bottom: 12,
+                          left: 12,
+                          fontWeight: 700,
+                          fontSize: "0.7rem",
+                        }}
+                      />
+                      <Button
+                        onClick={(e) => handleShare(e, event._id)}
+                        size="small"
+                        sx={{
+                          position: "absolute",
+                          top: 12,
+                          right: 12,
+                          minWidth: 36,
+                          width: 36,
+                          height: 36,
+                          borderRadius: "50%",
+                          bgcolor: "rgba(255,255,255,0.9)",
+                          color: "primary.main",
+                          "&:hover": { bgcolor: "primary.main", color: "white" },
+                        }}
                       >
-                        Register Now
-                        <ChevronRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                      </button>
-                    ) : (
-                      <div className="w-full py-3 bg-slate-100 text-slate-400 rounded-xl font-semibold border border-slate-200 text-center cursor-not-allowed">
-                        Registration Closed
-                      </div>
-                    )}
-                  </div>
-                </div>
+                        <ShareIcon fontSize="small" />
+                      </Button>
+                    </Box>
+
+                    {/* Content */}
+                    <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontSize: "1.05rem" }}>
+                        {event.title}
+                      </Typography>
+
+                      <Chip
+                        icon={<GroupsIcon sx={{ fontSize: "14px !important" }} />}
+                        label={`${event.registrationCount || 0} riders in`}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                        sx={{ alignSelf: "flex-start", mb: 2, fontSize: "0.7rem" }}
+                      />
+
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.secondary",
+                          mb: 2,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {event.description}
+                      </Typography>
+
+                      <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 1 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <LocationOnIcon sx={{ fontSize: 16, color: "primary.main" }} />
+                          <Typography variant="caption" noWrap>{event.location}</Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <FlagIcon sx={{ fontSize: 16, color: "primary.main" }} />
+                          <Typography variant="caption" noWrap>{event.meetingPoint}</Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <AccessTimeIcon sx={{ fontSize: 16, color: "primary.main" }} />
+                          <Typography variant="caption">{formatTime(event.eventTime)}</Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+
+                    {/* Action */}
+                    <CardActions sx={{ px: 2, pb: 2 }}>
+                      {activeTab === "upcoming" ? (
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          endIcon={<ChevronRightIcon />}
+                          onClick={() => handleRegisterClick(event)}
+                        >
+                          Register Now
+                        </Button>
+                      ) : (
+                        <Button variant="outlined" fullWidth disabled>
+                          Registration Closed
+                        </Button>
+                      )}
+                    </CardActions>
+                  </Card>
+                </Grid>
               ))}
-            </div>
+            </Grid>
 
             {activeTab === "past" && pastEvents.length > pastLimit && (
-              <div className="flex justify-center mt-12">
-                <button
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
+                <Button
+                  variant="outlined"
                   onClick={() => setPastLimit((prev) => prev + 6)}
-                  className="px-8 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium border border-white/10 transition-all duration-300"
                 >
                   Load More Events
-                </button>
-              </div>
+                </Button>
+              </Box>
             )}
           </>
         ) : (
-          <div className="text-center py-20 bg-white/80 rounded-3xl border border-orange-100 shadow-sm">
-            <Calendar className="w-16 h-16 text-orange-400 mx-auto mb-4" />
-            <p className="text-slate-600 text-lg">
+          <Card sx={{ textAlign: "center", py: 10 }}>
+            <EventBusyIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
+            <Typography variant="h6" sx={{ color: "text.secondary" }}>
               No {activeTab} events found.
-            </p>
-          </div>
+            </Typography>
+          </Card>
         )}
 
         <ConfirmationModal
@@ -412,8 +441,8 @@ const PublicHome = () => {
           message="To register for events, you must fully update your profile including personal information, bike details, and emergency contacts."
           confirmText="Update Profile"
         />
-      </div>
-    </section>
+      </Container>
+    </Box>
   );
 };
 

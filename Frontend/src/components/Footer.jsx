@@ -1,26 +1,31 @@
 import React from "react";
-import {
-  Bike,
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
-  Globe,
-  ArrowRight,
-} from "lucide-react";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import Link from "@mui/material/Link";
+import Divider from "@mui/material/Divider";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import XIcon from "@mui/icons-material/X";
+import YouTubeIcon from "@mui/icons-material/YouTube";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import PhoneIcon from "@mui/icons-material/Phone";
+import EmailIcon from "@mui/icons-material/Email";
+import LanguageIcon from "@mui/icons-material/Language";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import ShieldIcon from "@mui/icons-material/Shield";
+import WarningIcon from "@mui/icons-material/Warning";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-import { motion } from "framer-motion";
-import cortexLogo from "../assets/gallery/cortexlogo.png";
 
+const buclogo = "/logo.jpg";
 gsap.registerPlugin(ScrollToPlugin);
 
 const Footer = () => {
   const quickLinks = [
-    { name: "About Us", href: "#about" },
+    { name: "About", href: "#about" },
     { name: "Events", href: "/events" },
     { name: "Membership", href: "#membership" },
     { name: "Gallery", href: "/gallery" },
@@ -28,309 +33,267 @@ const Footer = () => {
   ];
 
   const emergencyContacts = [
-    { name: "Child Abuse & Safety", number: "1098" },
-    { name: "Emergency Response", number: "112" },
-    { name: "Ambulance", number: "102" },
+    { name: "Emergency", number: "112", icon: WarningIcon },
+    { name: "Ambulance", number: "102", icon: LocalHospitalIcon },
+    { name: "Child Safety", number: "1098", icon: ShieldIcon },
   ];
 
   const scrollToSection = (e, href) => {
     e.preventDefault();
     if (href === "#contact") {
-      gsap.to(window, {
-        duration: 1,
-        scrollTo: { y: "max" },
-        ease: "power3.inOut",
-      });
+      gsap.to(window, { duration: 1, scrollTo: { y: "max" }, ease: "power3.inOut" });
       return;
     }
     const target = href.startsWith("#") ? href : `#${href}`;
     const element = document.querySelector(target);
     if (element) {
-      gsap.to(window, {
-        duration: 1,
-        scrollTo: { y: target, offsetY: 80 },
-        ease: "power3.inOut",
-      });
+      gsap.to(window, { duration: 1, scrollTo: { y: target, offsetY: 80 }, ease: "power3.inOut" });
     }
   };
 
-  const fadeIn = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
+  const SocialButtons = ({ socials }) => (
+    <Box sx={{ display: "flex", gap: 1 }}>
+      {socials.map((social) => {
+        const Icon = social.icon;
+        return (
+          <IconButton
+            key={social.name}
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={social.name}
+            size="small"
+            sx={{
+              color: "text.secondary",
+              bgcolor: "rgba(255, 255, 255, 0.02)",
+              border: "1px solid",
+              borderColor: "rgba(255, 255, 255, 0.05)",
+              borderRadius: 2,
+              transition: "all 0.3s ease",
+              "&:hover": {
+                color: "primary.main",
+                borderColor: "primary.main",
+                transform: "translateY(-2px)",
+                bgcolor: "rgba(59, 130, 246, 0.05)"
+              },
+            }}
+          >
+            <Icon fontSize="small" sx={{ fontSize: 18 }} />
+          </IconButton>
+        );
+      })}
+    </Box>
+  );
 
   return (
-    <footer className="bg-slate-950 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12"
-        >
-          <motion.div variants={fadeIn} className="lg:col-span-2">
-            <div className="mb-10">
-              <div className="flex items-center space-x-4 mb-8">
-                <motion.div
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.8 }}
-                  className="relative w-14 h-14"
-                >
-                  <img
-                    src="/logo copy copy.jpg"
-                    alt="Bikers Unity Calls Logo"
-                    className="w-14 h-14 rounded-full object-cover border-2 border-orange-500/50 shadow-lg shadow-orange-500/10"
-                  />
-                </motion.div>
-                <div>
-                  <h3 className="text-2xl font-bold text-white tracking-tight">
-                    Bikers Unity Calls
-                  </h3>
-                  <p className="text-sm text-orange-500 font-medium tracking-wide">
-                    Ride Together, Stand Together
-                  </p>
-                </div>
-              </div>
-              <p className="text-gray-400 mb-8 max-w-md leading-relaxed text-lg">
-                Founded in 2025, we're India's largest group of motorcycle
-                community dedicated to safe riding, brotherhood, and Inspiring
-                change for a better tomorrow.
-              </p>
-              <div className="flex space-x-4 mb-10">
-                {[
-                  { icon: Facebook, href: "#", name: "Facebook" },
-                  {
-                    icon: Instagram,
-                    href: "https://www.instagram.com/buc_india",
-                    name: "Instagram",
-                  },
-                  {
-                    icon: Twitter,
-                    href: "https://x.com/Buc_India",
-                    name: "Twitter",
-                  },
-                  {
-                    icon: Youtube,
-                    href: "https://www.youtube.com/@BucIndia",
-                    name: "YouTube",
-                  },
-                ].map((social) => (
-                  <motion.a
-                    key={`buc-${social.name}`}
-                    href={social.href}
-                    whileHover={{
-                      scale: 1.1,
-                      backgroundColor: "rgba(249, 115, 22, 1)",
-                      color: "white",
-                    }}
-                    whileTap={{ scale: 0.9 }}
-                    className="bg-gray-900 p-3.5 rounded-xl text-gray-400 transition-all duration-300 border border-gray-800"
-                    aria-label={`BUC ${social.name}`}
-                  >
-                    <social.icon className="h-5 w-5" />
-                  </motion.a>
-                ))}
-              </div>
-            </div>
+    <Box
+      component="footer"
+      sx={{
+        bgcolor: "#020617",
+        background: "linear-gradient(to bottom, #020617 0%, #030712 100%)",
+        borderTop: "1px solid",
+        borderColor: "rgba(255, 255, 255, 0.05)",
+        pt: { xs: 6, md: 8 },
+        pb: { xs: 3, md: 4 }
+      }}
+    >
+      <Container maxWidth="lg">
+        {/* Main 3-Column Grid */}
+        <Grid container spacing={{ xs: 5, md: 4, lg: 8 }} sx={{ mb: 6 }}>
 
-            <motion.div variants={fadeIn}>
-              <div className="flex items-center space-x-4 mb-8">
-                <div className="relative w-14 h-14">
-                  <div className="w-14 h-14 rounded-full bg-white p-2.5 flex items-center justify-center shadow-lg border border-white/10">
-                    <img
-                      src="https://static.wixstatic.com/media/2d0007_ccad2163f88540659e8212ff5138666c~mv2.png/v1/fit/w_2500,h_1330,al_c/2d0007_ccad2163f88540659e8212ff5138666c~mv2.png"
-                      alt="Humanity Calls Logo"
-                      className="w-full h-full object-contain rounded-full"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-white tracking-tight">
+          {/* Column 1: Brands & Description */}
+          <Grid size={{ xs: 12, md: 5, lg: 4 }}>
+            {/* BUC India Section */}
+            <Box sx={{ mb: 4 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                <Box
+                  component="img"
+                  src={buclogo}
+                  alt="Bikers Unity Calls Logo"
+                  sx={{ width: 64, height: 64, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)" }}
+                />
+                <Typography variant="h6" sx={{ fontFamily: '\"Audiowide\", sans-serif', fontSize: "1.2rem", color: "text.primary" }}>
+                  Buc_India
+                </Typography>
+              </Box>
+              <Typography variant="body2" sx={{ color: "text.secondary", mb: 2, lineHeight: 1.6, fontSize: "0.85rem", pr: { md: 4 } }}>
+                Founded in 2025, we are India's Premier Riding Community, dedicated to safe riding, brotherhood, and inspiring change for a better tomorrow.
+              </Typography>
+              <SocialButtons socials={[
+                { icon: FacebookIcon, href: "#", name: "Facebook" },
+                { icon: InstagramIcon, href: "https://www.instagram.com/buc_india", name: "Instagram" },
+                { icon: XIcon, href: "https://x.com/Buc_India", name: "Twitter" },
+                { icon: YouTubeIcon, href: "https://www.youtube.com/@BucIndia", name: "YouTube" },
+              ]} />
+            </Box>
+
+            {/* Humanity Calls Section */}
+            <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
+                <Box sx={{ width: 52, height: 52, borderRadius: "50%", bgcolor: "white", display: "flex", alignItems: "center", justifyContent: "center", p: 0.5 }}>
+                  <Box component="img" src="https://static.wixstatic.com/media/2d0007_ccad2163f88540659e8212ff5138666c~mv2.png/v1/fit/w_2500,h_1330,al_c/2d0007_ccad2163f88540659e8212ff5138666c~mv2.png" alt="Humanity Calls Logo" sx={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%" }} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "text.primary", fontSize: "0.95rem", lineHeight: 1 }}>
                     Humanity Calls
-                  </h3>
-                  <p className="text-sm text-blue-500 font-medium tracking-wide">
-                    Compassion & Action
-                  </p>
-                </div>
-              </div>
-              <p className="text-gray-400 mb-8 max-w-md leading-relaxed">
-                Founded in 2020, Humanity Calls is a non-profit initiative built
-                on the belief that service to humanity is the highest form of
-                responsibility.
-              </p>
-              <div className="flex space-x-4">
-                {[
-                  {
-                    icon: Facebook,
-                    href: "https://www.facebook.com/HumanityGcalls/",
-                    name: "Facebook",
-                  },
-                  {
-                    icon: Instagram,
-                    href: "https://www.instagram.com/humanitycalls_?igshid=MXBmb2d5MDFudm9waw%3D%3D",
-                    name: "Instagram",
-                  },
-                  {
-                    icon: Twitter,
-                    href: "https://x.com/Humanitycalls1",
-                    name: "Twitter",
-                  },
-                  {
-                    icon: Youtube,
-                    href: "https://www.youtube.com/@humanitycalls",
-                    name: "YouTube",
-                  },
-                  {
-                    icon: Globe,
-                    href: "https://www.humanitycalls.org",
-                    name: "Website",
-                  },
-                ].map((social) => (
-                  <motion.a
-                    key={`hc-${social.name}`}
-                    href={social.href}
-                    whileHover={{
-                      scale: 1.1,
-                      backgroundColor: "rgba(59, 130, 246, 1)",
-                      color: "white",
-                    }}
-                    whileTap={{ scale: 0.9 }}
-                    className="bg-gray-900 p-3.5 rounded-xl text-gray-400 transition-all duration-300 border border-gray-800"
-                    aria-label={`Humanity Calls ${social.name}`}
-                  >
-                    <social.icon className="h-5 w-5" />
-                  </motion.a>
-                ))}
-              </div>
-            </motion.div>
-          </motion.div>
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "info.main", fontWeight: 500, fontSize: "0.7rem", letterSpacing: 0.5 }}>
+                    COMPASSION & ACTION
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography variant="body2" sx={{ color: "text.secondary", mb: 2, lineHeight: 1.5, fontSize: "0.8rem", pr: { md: 4 } }}>
+                A non-profit initiative built on the belief that service to humanity is our highest responsibility.
+              </Typography>
+              <SocialButtons socials={[
+                { icon: FacebookIcon, href: "https://www.facebook.com/HumanityGcalls/", name: "Facebook" },
+                { icon: InstagramIcon, href: "https://www.instagram.com/humanitycalls_?igshid=MXBmb2d5MDFudm9waw%3D%3D", name: "Instagram" },
+                { icon: XIcon, href: "https://x.com/Humanitycalls1", name: "Twitter" },
+                { icon: YouTubeIcon, href: "https://www.youtube.com/@humanitycalls", name: "YouTube" },
+                { icon: LanguageIcon, href: "https://www.humanitycalls.org", name: "Website" },
+              ]} />
+            </Box>
+          </Grid>
 
-          <motion.div variants={fadeIn}>
-            <h4 className="text-xl font-bold text-white mb-8 pb-3 border-b-2 border-orange-500 w-fit">
+          {/* Column 2: Quick Links */}
+          <Grid size={{ xs: 12, sm: 6, md: 3, lg: 4 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.primary", mb: 2.5, textTransform: "uppercase", letterSpacing: 1, fontSize: "0.75rem" }}>
               Quick Links
-            </h4>
-            <ul className="space-y-4">
+            </Typography>
+            <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0, display: "flex", flexDirection: "column", gap: 1.5 }}>
               {quickLinks.map((link) => (
-                <li key={link.name}>
-                  <motion.a
+                <Box component="li" key={link.name}>
+                  <Link
                     href={link.href}
-                    whileHover={{ x: 10 }}
                     onClick={(e) => scrollToSection(e, link.href)}
-                    className="group flex items-center text-gray-400 hover:text-orange-500 transition-all duration-300 font-medium"
+                    underline="none"
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: "0.85rem",
+                      transition: "all 0.2s ease",
+                      position: "relative",
+                      display: "inline-block",
+                      "&::after": {
+                        content: '""',
+                        position: "absolute",
+                        width: 0,
+                        height: "1px",
+                        bottom: -2,
+                        left: 0,
+                        bgcolor: "primary.main",
+                        transition: "width 0.3s ease"
+                      },
+                      "&:hover": { color: "text.primary" },
+                      "&:hover::after": { width: "100%" }
+                    }}
                   >
-                    <ArrowRight className="h-4 w-4 mr-0 group-hover:mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                     {link.name}
-                  </motion.a>
-                </li>
+                  </Link>
+                </Box>
               ))}
-            </ul>
-          </motion.div>
+            </Box>
+          </Grid>
 
-          <motion.div variants={fadeIn}>
-            <h4 className="text-xl font-bold text-white mb-8 pb-3 border-b-2 border-orange-500 w-fit">
-              Contact Us
-            </h4>
-            <div className="space-y-6">
-              <motion.div
-                whileHover={{ x: 5 }}
-                className="flex items-start space-x-4 text-gray-400 group"
-              >
-                <MapPin className="h-6 w-6 text-orange-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm leading-relaxed group-hover:text-white transition-colors">
-                  Bengaluru, Karnataka
-                  <br />
-                  India 560001
-                </span>
-              </motion.div>
-              <motion.div
-                whileHover={{ x: 5 }}
-                className="flex items-center space-x-4 text-gray-400 group"
-              >
-                <Phone className="h-5 w-5 text-orange-500 flex-shrink-0" />
-                <span className="text-sm group-hover:text-white transition-colors">
-                  +91 88677 18080
-                </span>
-              </motion.div>
-              <motion.div
-                whileHover={{ x: 5 }}
-                className="flex items-center space-x-4 text-gray-400 group"
-              >
-                <Mail className="h-5 w-5 text-orange-500 flex-shrink-0" />
-                <span className="text-sm truncate group-hover:text-white transition-colors">
+          {/* Column 3: Contact Info */}
+          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.primary", mb: 2.5, textTransform: "uppercase", letterSpacing: 1, fontSize: "0.75rem" }}>
+              Contact
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                <EmailIcon sx={{ color: "text.secondary", fontSize: 18, mt: 0.2 }} />
+                <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.85rem" }}>
                   bikersunitycallsindia@gmail.com
-                </span>
-              </motion.div>
-            </div>
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <PhoneIcon sx={{ color: "text.secondary", fontSize: 18 }} />
+                <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.85rem" }}>
+                  +91 88677 18080
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                <LocationOnIcon sx={{ color: "text.secondary", fontSize: 18, mt: 0.2 }} />
+                <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.85rem", lineHeight: 1.5 }}>
+                  Bengaluru, Karnataka<br />India 560001
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
 
-            <h4 className="text-xl font-bold text-white mt-12 mb-6 pb-3 border-b-2 border-red-500 w-fit">
-              Emergency
-            </h4>
-            <div className="space-y-5">
-              {emergencyContacts.map((contact) => (
-                <div key={contact.name} className="flex flex-col space-y-1.5">
-                  <span className="text-xs text-gray-500 uppercase tracking-widest font-bold">
-                    {contact.name}
-                  </span>
-                  <motion.a
-                    href={`tel:${contact.number}`}
-                    whileHover={{ scale: 1.05, x: 5 }}
-                    className="text-orange-500 font-black text-2xl hover:text-red-500 transition-colors flex items-center gap-3 tracking-tighter"
-                  >
-                    <Phone className="h-5 w-5" />
+        {/* Horizontal Emergency Numbers */}
+        <Box sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+          p: 2.5,
+          bgcolor: "rgba(255,255,255,0.02)",
+          borderRadius: 3,
+          border: "1px solid rgba(255,255,255,0.03)"
+        }}>
+          <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 600, fontSize: "0.85rem" }}>
+            Emergency Dial:
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: { xs: 2, md: 4 } }}>
+            {emergencyContacts.map((contact) => {
+              const Icon = contact.icon;
+              return (
+                <Link
+                  key={contact.name}
+                  href={`tel:${contact.number}`}
+                  underline="none"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    color: "text.primary",
+                    transition: "color 0.2s ease",
+                    "&:hover": { color: "error.main" },
+                  }}
+                >
+                  <Icon sx={{ fontSize: 16, color: "error.main", opacity: 0.8 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 700, fontSize: "0.9rem" }}>
                     {contact.number}
-                  </motion.a>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </motion.div>
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "text.secondary", display: { xs: "none", sm: "block" } }}>
+                    ({contact.name})
+                  </Typography>
+                </Link>
+              );
+            })}
+          </Box>
+        </Box>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-          className="border-t border-gray-900 mt-20 pt-10"
-        >
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0">
-            <div className="flex flex-col items-center md:items-start space-y-4">
-              <p className="text-gray-500 text-sm font-medium">
-                © 2026 Bikers Unity Calls. All rights reserved.
-              </p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-8">
-              {["Privacy Policy", "Terms of Service", "Code of Conduct"].map(
-                (item) => (
-                  <motion.a
-                    key={item}
-                    href="#"
-                    whileHover={{ y: -2, color: "rgba(249, 115, 22, 1)" }}
-                    className="text-gray-500 hover:text-orange-500 text-sm font-bold transition-all duration-200"
-                  >
-                    {item}
-                  </motion.a>
-                ),
-              )}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </footer>
+        {/* Thin Divider & Bottom Bar */}
+        <Divider sx={{ mt: 5, mb: 3, borderColor: "rgba(255,255,255,0.05)" }} />
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, justifyContent: "space-between", alignItems: "center", gap: 2 }}>
+          <Typography variant="caption" sx={{ color: "text.secondary" }}>
+            © {new Date().getFullYear()} Bikers Unity Calls. All rights reserved.
+          </Typography>
+          <Box sx={{ display: "flex", gap: 3 }}>
+            {["Privacy", "Terms", "Conduct"].map((item) => (
+              <Link
+                key={item}
+                href="#"
+                underline="none"
+                sx={{
+                  color: "text.secondary",
+                  fontSize: "0.75rem",
+                  transition: "color 0.2s ease",
+                  "&:hover": { color: "text.primary" },
+                }}
+              >
+                {item}
+              </Link>
+            ))}
+          </Box>
+        </Box>
+
+      </Container>
+    </Box>
   );
 };
 

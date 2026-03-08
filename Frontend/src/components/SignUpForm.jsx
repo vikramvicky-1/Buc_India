@@ -1,7 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowLeft, UserPlus } from "lucide-react";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
+import CircularProgress from "@mui/material/CircularProgress";
+import PersonIcon from "@mui/icons-material/Person";
+import EmailIcon from "@mui/icons-material/Email";
+import PhoneIcon from "@mui/icons-material/Phone";
+import LockIcon from "@mui/icons-material/Lock";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { profileService } from "../services/api";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -23,10 +38,7 @@ const SignUpForm = () => {
       const numericValue = value.replace(/\D/g, "").slice(0, 10);
       setFormData((prev) => ({ ...prev, [name]: numericValue }));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -37,7 +49,6 @@ const SignUpForm = () => {
       return;
     }
     setIsSubmitting(true);
-
     try {
       const data = new FormData();
       data.append("eventId", "community");
@@ -48,12 +59,9 @@ const SignUpForm = () => {
 
       await profileService.createOrUpdate(data);
 
-      // Store user email and phone for profile access
       sessionStorage.setItem("userEmail", formData.email);
       sessionStorage.setItem("userPhone", formData.phone);
       sessionStorage.setItem("userLoggedIn", "true");
-
-      // Dispatch event to notify other components
       window.dispatchEvent(new Event("user-login-change"));
 
       toast.success("Account created successfully!");
@@ -67,132 +75,134 @@ const SignUpForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", display: "flex", flexDirection: "column" }}>
       <Header />
-      <div className="flex-1 flex items-center justify-center p-4 pt-24 pb-12">
-        <div className="max-w-md w-full bg-gray-900 rounded-2xl border border-gray-800 p-8 shadow-2xl">
-          <button
+      <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", p: 3, pt: { xs: 10, sm: 12 }, pb: 6 }}>
+        <Paper
+          sx={{
+            maxWidth: 440,
+            width: "100%",
+            p: 4,
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Button
+            startIcon={<ArrowBackIcon />}
             onClick={() => navigate("/")}
-            className="flex items-center text-gray-400 hover:text-white mb-6 transition-colors"
+            sx={{ color: "text.secondary", textTransform: "none", mb: 3, ml: -1 }}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
-          </button>
+          </Button>
 
-          <h2 className="text-3xl font-bold text-white mb-2">Sign Up</h2>
-          <p className="text-gray-400 mb-8">Create an account to join India's largest riding community</p>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: "text.primary", mb: 1 }}>
+            Create Account
+          </Typography>
+          <Typography variant="body2" sx={{ color: "text.secondary", mb: 4 }}>
+            Join India's largest riding community
+          </Typography>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors"
-                  placeholder="Enter your full name"
-                  required
-                />
-              </div>
-            </div>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+            <TextField
+              label="Full Name"
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonIcon sx={{ color: "text.secondary" }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
-            </div>
+            <TextField
+              label="Email Address"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon sx={{ color: "text.secondary" }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Mobile Number
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors"
-                  placeholder="Enter your mobile number"
-                  required
-                />
-              </div>
-            </div>
+            <TextField
+              label="Mobile Number"
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              required
+              helperText={formData.phone && formData.phone.length !== 10 ? "Must be 10 digits" : ""}
+              error={formData.phone.length > 0 && formData.phone.length !== 10}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PhoneIcon sx={{ color: "text.secondary" }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors"
-                  placeholder="Create a password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
+            <TextField
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon sx={{ color: "text.secondary" }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-            <button
+            <Button
               type="submit"
+              variant="contained"
+              size="large"
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 rounded-lg font-bold hover:from-orange-600 hover:to-red-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+              startIcon={isSubmitting ? null : <PersonAddIcon />}
+              sx={{ py: 1.5, mt: 1 }}
             >
-              {isSubmitting ? (
-                "Creating account..."
-              ) : (
-                <>
-                  <UserPlus className="h-5 w-5" />
-                  Sign Up
-                </>
-              )}
-            </button>
-          </form>
+              {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
+            </Button>
+          </Box>
 
-          <div className="mt-8 text-center">
-            <p className="text-gray-400">
+          <Box sx={{ textAlign: "center", mt: 4 }}>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
               Already have an account?{" "}
-              <button
+              <Button
                 onClick={() => navigate("/login")}
-                className="text-orange-500 hover:text-orange-400 font-semibold"
+                sx={{ color: "primary.main", fontWeight: 600, textTransform: "none", p: 0, minWidth: "auto" }}
               >
                 Login
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
+              </Button>
+            </Typography>
+          </Box>
+        </Paper>
+      </Box>
       <Footer />
-    </div>
+    </Box>
   );
 };
 

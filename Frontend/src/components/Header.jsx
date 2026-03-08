@@ -1,74 +1,87 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Menu,
-  X,
-  Bike,
-  Calendar,
-  Users,
-  Camera,
-  MessageSquare,
-  User,
-  LogOut,
-} from "lucide-react";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Divider from "@mui/material/Divider";
+import Avatar from "@mui/material/Avatar";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
+import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
+import EventIcon from "@mui/icons-material/Event";
+import GroupsIcon from "@mui/icons-material/Groups";
+import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
+import ForumIcon from "@mui/icons-material/Forum";
+import PersonIcon from "@mui/icons-material/Person";
+import LogoutIcon from "@mui/icons-material/Logout";
+import LoginIcon from "@mui/icons-material/Login";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import RegistrationForm from "./RegistrationForm.jsx";
-import buclogo from "../../public/logo.jpg";
+const buclogo = "/logo.jpg";
 import { profileService } from "../services/api";
+
+const navigation = [
+  { name: "Events", path: "/events", icon: <EventIcon /> },
+  { name: "Gallery", path: "/gallery", icon: <PhotoLibraryIcon /> },
+  { name: "Members", path: "/members", icon: <GroupsIcon /> },
+  { name: "Forum", path: "/forum", icon: <ForumIcon /> },
+  { name: "Clubs", path: "/clubs", icon: <TwoWheelerIcon /> },
+];
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    sessionStorage.getItem("userLoggedIn") === "true",
-  );
-  const [userProfile, setUserProfile] = useState(null);
+  const handler = () => setIsLoggedIn(sessionStorage.getItem("userLoggedIn") === "true");
+  const loginHandler = () => {
+    handler();
+    const email = sessionStorage.getItem("userEmail");
+    const phone = sessionStorage.getItem("userPhone");
+    if (email || phone) {
+      fetchProfile(email, phone);
+    } else {
+      setUserProfile(null);
+    }
+  };
 
   useEffect(() => {
-    const handler = () => setShowRegistrationForm(true);
-    const loginHandler = () => {
-      const loggedIn = sessionStorage.getItem("userLoggedIn") === "true";
-      setIsLoggedIn(loggedIn);
-      if (loggedIn) {
-        fetchProfile();
-      } else {
-        setUserProfile(null);
-      }
-    };
-
-    window.addEventListener("open-registration", handler);
+    loginHandler();
+    const openReg = () => setShowRegistrationForm(true);
     window.addEventListener("user-login-change", loginHandler);
-
-    if (isLoggedIn) {
-      fetchProfile();
-    }
-
+    window.addEventListener("storage", loginHandler);
+    window.addEventListener("open-registration", openReg);
     return () => {
-      window.removeEventListener("open-registration", handler);
       window.removeEventListener("user-login-change", loginHandler);
+      window.removeEventListener("storage", loginHandler);
+      window.removeEventListener("open-registration", openReg);
     };
-  }, [isLoggedIn]);
+  }, []);
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (email, phone) => {
     try {
-      const email = sessionStorage.getItem("userEmail");
-      const phone = sessionStorage.getItem("userPhone");
-      if (email || phone) {
-        const profile = await profileService.get(email, phone);
-        setUserProfile(profile);
-      }
-    } catch (error) {
-      console.error("Failed to fetch profile", error);
+      const profile = await profileService.get(email || "", phone || "");
+      if (profile) setUserProfile(profile);
+    } catch (err) {
+      console.warn("Profile fetch failed:", err);
     }
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("userLoggedIn");
-    sessionStorage.removeItem("userEmail");
-    sessionStorage.removeItem("userPhone");
+    sessionStorage.clear();
+    setIsLoggedIn(false);
+    setUserProfile(null);
     window.dispatchEvent(new Event("user-login-change"));
     navigate("/");
     setIsMenuOpen(false);
@@ -79,261 +92,322 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
-  const navigation = [
-    { name: "Home", path: "/", icon: Bike },
-    { name: "Events", path: "/events", icon: Calendar },
-    { name: "Gallery", path: "/gallery", icon: Camera },
-    { name: "Clubs", path: "/clubs", icon: Users },
-    { name: "Members", path: "/members", icon: Users },
-    { name: "Forum", path: "/forum", icon: MessageSquare },
-    ...(isLoggedIn
-      ? [{ name: "Your Events", path: "/your-events", icon: Calendar }]
-      : []),
-  ];
-
   const getInitials = (name) => {
     if (!name) return "U";
-    return name.charAt(0).toUpperCase();
+    return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
   return (
-    <header className="bg-gradient-to-r from-slate-950/90 via-slate-900/90 to-orange-900/80 backdrop-blur-md fixed w-full z-[100] border-b border-orange-500/30 shadow-lg shadow-orange-500/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-3 sm:py-4">
-          {/* Logo and Name Redesign */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="flex items-center space-x-3 cursor-pointer group"
+    <>
+      <AppBar
+        position="fixed"
+        sx={{
+          bgcolor: "rgba(15, 18, 20, 0.85)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Toolbar
+          sx={{
+            maxWidth: "1440px",
+            width: "100%",
+            mx: "auto",
+            px: { xs: 3, sm: 5 },
+            minHeight: { xs: 72, sm: 84 }, /* Increased height to ~80-90px */
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          {/* Left: Logo */}
+          <Box
             onClick={() => handleNavigation("/")}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              cursor: "pointer",
+              flex: 1, /* Takes exactly 1/3 of the space */
+              justifyContent: "flex-start",
+            }}
           >
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-red-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-500 group-hover:duration-200"></div>
-              <motion.img
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                className="relative rounded-full h-12 w-12 sm:h-14 sm:w-14 border-2 border-orange-500/50 object-cover"
-                src={buclogo}
-                alt="BUC India"
-              />
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tighter text-white leading-none">
+            <Avatar
+              src={buclogo}
+              alt="BUC India"
+              sx={{ width: 56, height: 56, border: "2px solid", borderColor: "rgba(255,255,255,0.1)", boxShadow: "0 2px 10px rgba(0,0,0,0.2)" }}
+            />
+            <Box>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontFamily: "'Audiowide', 'Inter', sans-serif",
+                  fontWeight: 900, /* Bold typography */
+                  color: "text.primary",
+                  fontSize: { xs: "1.4rem", sm: "1.6rem" }, /* Larger font size */
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.5px", /* Modern tight tracking */
+                }}
+              >
                 Buc_India
-              </h1>
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-sm text-gray-400"
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "text.secondary", /* Light grey */
+                  fontSize: "0.75rem",
+                  letterSpacing: "0.5px",
+                  fontWeight: 500,
+                  display: { xs: "none", sm: "block" }
+                }}
               >
                 Ride Together, Stand Together
-              </motion.p>
-            </div>
-          </motion.div>
+              </Typography>
+            </Box>
+          </Box>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-4">
-            {navigation.map((item, index) => (
-              <motion.button
+          {/* Center: Desktop Nav — Premium Pill Style */}
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              alignItems: "center",
+              justifyContent: "center", /* Perfectly centered */
+              gap: 1, /* Expanded spacing */
+              bgcolor: "rgba(255, 255, 255, 0.03)",
+              borderRadius: "999px",
+              border: "1px solid",
+              borderColor: "rgba(255, 255, 255, 0.08)",
+              p: 0.75,
+              backdropFilter: "blur(20px)", /* Apple-like glassmorphism */
+              boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            {navigation.map((item) => (
+              <Button
                 key={item.name}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
                 onClick={() => handleNavigation(item.path)}
-                className={`relative px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
-                  location.pathname === item.path
-                    ? "text-orange-500"
-                    : "text-gray-300 hover:text-white"
-                }`}
+                sx={{
+                  color: location.pathname === item.path ? "white" : "text.secondary",
+                  bgcolor: location.pathname === item.path ? "primary.main" : "transparent",
+                  fontWeight: location.pathname === item.path ? 700 : 500,
+                  fontSize: "0.9rem",
+                  letterSpacing: "0.2px",
+                  px: 3, /* Increased padding */
+                  py: 1.2, /* Increased padding */
+                  borderRadius: "999px",
+                  textTransform: "none",
+                  minWidth: "auto",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    bgcolor: location.pathname === item.path
+                      ? "primary.dark"
+                      : "rgba(255, 255, 255, 0.08)",
+                    color: "white",
+                  },
+                }}
               >
-                <span className="relative z-10">{item.name}</span>
-                {location.pathname === item.path && (
-                  <>
-                    <motion.div
-                      layoutId="nav-bg"
-                      className="absolute inset-0 bg-orange-500/10 rounded-full"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                    <motion.div
-                      layoutId="nav-underline"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 mx-4 rounded-full"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  </>
-                )}
-              </motion.button>
+                {item.name}
+              </Button>
             ))}
+          </Box>
 
-            <div className="h-6 w-[1px] bg-gray-800 mx-2"></div>
-
+          {/* Right: Desktop Actions */}
+          <Box sx={{
+            display: { xs: "none", md: "flex" },
+            alignItems: "center",
+            gap: 2,
+            flex: 1,  /* Takes exact 1/3 of the space to keep nav centered */
+            justifyContent: "flex-end"
+          }}>
             {isLoggedIn ? (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.02 }}
-                type="button"
+              <Button
                 onClick={() => handleNavigation("/profile")}
-                className="flex items-center space-x-3 pl-2 group"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  textTransform: "none",
+                  color: "text.primary",
+                  borderRadius: "999px",
+                  px: 2,
+                  py: 0.75,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
+                }}
               >
-                <div className="flex flex-col items-end mr-1">
-                  <span className="text-xs font-bold text-white group-hover:text-orange-500 transition-colors">
+                <Avatar
+                  src={userProfile?.profileImage}
+                  sx={{ width: 36, height: 36, bgcolor: "primary.main", fontSize: "0.9rem" }}
+                >
+                  {getInitials(userProfile?.fullName)}
+                </Avatar>
+                <Box sx={{ textAlign: "left", flexShrink: 0 }}>
+                  <Typography variant="caption" sx={{ color: "text.primary", fontWeight: 700, display: "block", lineHeight: 1.2 }}>
                     {userProfile?.fullName || "Member"}
-                  </span>
-                  <span className="text-[10px] text-gray-500 font-medium">
-                    View Profile
-                  </span>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white font-bold border-2 border-white/10 overflow-hidden group-hover:border-orange-500 transition-all duration-300 shadow-inner">
-                  {userProfile?.profileImage ? (
-                    <img
-                      src={userProfile.profileImage}
-                      alt="Profile"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span>{getInitials(userProfile?.fullName)}</span>
-                  )}
-                </div>
-              </motion.button>
+                  </Typography>
+                </Box>
+              </Button>
             ) : (
-              <motion.button
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                whileHover={{ scale: 1.05, shadow: "0px 0px 20px rgba(249, 115, 22, 0.4)" }}
-                whileTap={{ scale: 0.95 }}
-                type="button"
-                className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-2 rounded-full font-bold text-sm transition-all duration-300"
-                onClick={() => handleNavigation("/signup")}
+              <>
+                <Button
+                  variant="text"
+                  size="large"
+                  onClick={() => handleNavigation("/login")}
+                  sx={{
+                    color: "text.secondary",
+                    fontSize: "0.9rem",
+                    fontWeight: 600,
+                    textTransform: "none",
+                    "&:hover": { color: "white" }
+                  }}
+                >
+                  Login
+                </Button>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => handleNavigation("/signup")}
+                  sx={{
+                    fontSize: "0.9rem",
+                    fontWeight: 700,
+                    px: 3.5,
+                    py: 1.2,
+                    borderRadius: "999px",
+                    textTransform: "none",
+                    boxShadow: "0 4px 20px rgba(59, 130, 246, 0.3)",
+                  }}
+                >
+                  Join Now
+                </Button>
+              </>
+            )}
+          </Box>
+
+          {/* Mobile Hamburger */}
+          <IconButton
+            sx={{ display: { md: "none" }, ml: "auto", color: "text.primary" }}
+            onClick={() => setIsMenuOpen(true)}
+          >
+            <MenuIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        anchor="right"
+        open={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        PaperProps={{
+          sx: {
+            width: 280,
+            bgcolor: "background.paper",
+            borderLeft: "1px solid",
+            borderColor: "divider",
+          },
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Avatar src={buclogo} sx={{ width: 32, height: 32 }} />
+            <Typography variant="subtitle2" sx={{ fontFamily: "'Audiowide', sans-serif", fontWeight: 700, color: "text.primary" }}>
+              Buc_India
+            </Typography>
+          </Box>
+          <IconButton onClick={() => setIsMenuOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Divider />
+
+        <List sx={{ px: 1, py: 2 }}>
+          {navigation.map((item) => (
+            <ListItemButton
+              key={item.name}
+              onClick={() => handleNavigation(item.path)}
+              selected={location.pathname === item.path}
+              sx={{ borderRadius: 2, mb: 0.5 }}
+            >
+              <ListItemIcon sx={{ minWidth: 36, color: location.pathname === item.path ? "primary.main" : "text.secondary" }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.name}
+                primaryTypographyProps={{
+                  fontWeight: location.pathname === item.path ? 700 : 500,
+                  fontSize: "0.875rem",
+                }}
+              />
+            </ListItemButton>
+          ))}
+        </List>
+
+        <Divider />
+
+        <Box sx={{ p: 2 }}>
+          {isLoggedIn ? (
+            <>
+              <ListItemButton
+                onClick={() => handleNavigation("/profile")}
+                sx={{ borderRadius: 2, mb: 1 }}
               >
-                JOIN NOW
-              </motion.button>
-            )}
-          </nav>
-
-          <button
-            className="md:hidden text-white bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/10 transition-colors"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? (
-              <X className="h-6 w-6 text-orange-500" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
-            className="md:hidden bg-black/95 border-b border-orange-500/30 overflow-hidden"
-          >
-            <div className="px-4 py-6 space-y-4">
-              {navigation.map((item, index) => (
-                <motion.button
-                  key={item.name}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  onClick={() => handleNavigation(item.path)}
-                  className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-base font-bold transition-all duration-300 ${
-                    location.pathname === item.path
-                      ? "text-orange-500 bg-orange-500/10"
-                      : "text-gray-300 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.name}</span>
-                </motion.button>
-              ))}
-
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: navigation.length * 0.1 }}
-                className="h-[1px] bg-gray-800 my-4"
-              ></motion.div>
-
-              {isLoggedIn ? (
-                <div className="space-y-3">
-                  <motion.button
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: (navigation.length + 1) * 0.1 }}
-                    onClick={() => handleNavigation("/profile")}
-                    className="flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all"
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <Avatar
+                    src={userProfile?.profileImage}
+                    sx={{ width: 28, height: 28, bgcolor: "primary.main", fontSize: "0.7rem" }}
                   >
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white font-bold border-2 border-white/10 overflow-hidden">
-                      {userProfile?.profileImage ? (
-                        <img
-                          src={userProfile.profileImage}
-                          alt="Profile"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <span>{getInitials(userProfile?.fullName)}</span>
-                      )}
-                    </div>
-                    <div className="flex flex-col items-start">
-                      <span className="text-sm font-bold text-white">
-                        {userProfile?.fullName || "Member"}
-                      </span>
-                      <span className="text-xs text-gray-500">View Profile</span>
-                    </div>
-                  </motion.button>
-                  <motion.button
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: (navigation.length + 2) * 0.1 }}
-                    onClick={handleLogout}
-                    className="flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all font-bold"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span>Logout</span>
-                  </motion.button>
-                </div>
-              ) : (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: (navigation.length + 1) * 0.1 }}
-                  className="grid grid-cols-2 gap-4"
-                >
-                  <button
-                    onClick={() => handleNavigation("/login")}
-                    className="px-4 py-3 rounded-xl text-center text-gray-300 font-bold border border-gray-800 hover:bg-white/5"
-                  >
-                    LOGIN
-                  </button>
-                  <button
-                    onClick={() => handleNavigation("/signup")}
-                    className="px-4 py-3 rounded-xl text-center bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold"
-                  >
-                    SIGN UP
-                  </button>
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    {getInitials(userProfile?.fullName)}
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText
+                  primary={userProfile?.fullName || "Member"}
+                  secondary="View Profile"
+                  primaryTypographyProps={{ fontSize: "0.875rem", fontWeight: 600 }}
+                  secondaryTypographyProps={{ fontSize: "0.7rem" }}
+                />
+              </ListItemButton>
+              <ListItemButton
+                onClick={handleLogout}
+                sx={{ borderRadius: 2, color: "error.main" }}
+              >
+                <ListItemIcon sx={{ minWidth: 36, color: "error.main" }}>
+                  <LogoutIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Logout" primaryTypographyProps={{ fontSize: "0.875rem", fontWeight: 600 }} />
+              </ListItemButton>
+            </>
+          ) : (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<LoginIcon />}
+                onClick={() => handleNavigation("/login")}
+                sx={{ textTransform: "none" }}
+              >
+                Login
+              </Button>
+              <Button
+                variant="contained"
+                fullWidth
+                startIcon={<PersonAddIcon />}
+                onClick={() => handleNavigation("/signup")}
+                sx={{ textTransform: "none" }}
+              >
+                Sign Up
+              </Button>
+            </Box>
+          )}
+        </Box>
+      </Drawer>
 
       <RegistrationForm
         isOpen={showRegistrationForm}
         onClose={() => setShowRegistrationForm(false)}
         type="community"
       />
-    </header>
-
+    </>
   );
 };
 
