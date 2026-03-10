@@ -1,27 +1,51 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Shield,
-  AlertTriangle,
-  CheckCircle,
-  Book,
-  Users,
-  Phone,
-  ArrowRight,
-  ClipboardCheck,
-} from "lucide-react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Alert from "@mui/material/Alert";
+import Paper from "@mui/material/Paper";
+import Link from "@mui/material/Link";
+import ShieldIcon from "@mui/icons-material/Shield";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import PhoneIcon from "@mui/icons-material/Phone";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import PeopleIcon from "@mui/icons-material/People";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import CircleIcon from "@mui/icons-material/Circle";
+import groupRidingImg from "../assets/gallery/WhatsApp Image 2025-08-09 at 21.22.15_0472380c.jpg";
 
 const Safety = () => {
   const [pledgeText, setPledgeText] = useState("");
   const pledgeRef = useRef(null);
-  const isPledgeInView = useInView(pledgeRef, { once: true, margin: "-100px" });
+  const [pledgeStarted, setPledgeStarted] = useState(false);
   const fullPledge = "As members of All Bikers Unity Community, we pledge to prioritize safety in all our riding activities. We commit to wearing proper protective gear, following traffic laws, riding within our abilities, and looking out for our fellow riders. Together, we ensure that every ride ends with everyone returning home safely.";
 
   useEffect(() => {
-    if (isPledgeInView) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !pledgeStarted) {
+          setPledgeStarted(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    if (pledgeRef.current) observer.observe(pledgeRef.current);
+    return () => observer.disconnect();
+  }, [pledgeStarted]);
+
+  useEffect(() => {
+    if (pledgeStarted) {
       let index = 0;
       const speed = 15;
-
       const animate = () => {
         if (index <= fullPledge.length) {
           setPledgeText(fullPledge.substring(0, index));
@@ -29,16 +53,15 @@ const Safety = () => {
           setTimeout(animate, speed);
         }
       };
-
       animate();
     }
-  }, [isPledgeInView]);
+  }, [pledgeStarted]);
+
   const safetyTips = [
     {
-      icon: Shield,
+      icon: <ShieldIcon sx={{ fontSize: 40, color: "primary.main" }} />,
       title: "Protective Gear",
-      description:
-        "Always wear DOT-approved helmet, protective jacket, gloves, and boots.",
+      description: "Always wear DOT-approved helmet, protective jacket, gloves, and boots.",
       tips: [
         "Helmet should fit snugly without pressure points",
         "Wear bright colors for better visibility",
@@ -47,7 +70,7 @@ const Safety = () => {
       ],
     },
     {
-      icon: AlertTriangle,
+      icon: <WarningAmberIcon sx={{ fontSize: 40, color: "primary.main" }} />,
       title: "Road Awareness",
       description: "Stay alert and anticipate potential hazards on the road.",
       tips: [
@@ -58,7 +81,7 @@ const Safety = () => {
       ],
     },
     {
-      icon: CheckCircle,
+      icon: <CheckCircleIcon sx={{ fontSize: 40, color: "primary.main" }} />,
       title: "Pre-Ride Inspection",
       description: "Perform thorough bike inspection before every ride.",
       tips: [
@@ -71,292 +94,274 @@ const Safety = () => {
   ];
 
   const emergencyContacts = [
-    {
-      service: "Child Abuse & Safety",
-      number: "1098",
-      description: "Dedicated helpline for children in distress",
-    },
-    {
-      service: "Emergency Services",
-      number: "112",
-      description: "For immediate life-threatening emergencies",
-    },
-    {
-      service: "Community Emergency Line",
-      number: "88677 18080",
-      description: "community member assistance and roadside help",
-    },
-    {
-      service: "Roadside Assistance",
-      number: "1033-HELP",
-      description: "Motorcycle towing and breakdown assistance",
-    },
+    { service: "Child Abuse & Safety", number: "1098", description: "Dedicated helpline for children in distress" },
+    { service: "Emergency Services", number: "112", description: "For immediate life-threatening emergencies" },
+    { service: "Community Emergency Line", number: "88677 18080", description: "Community member assistance and roadside help" },
+    { service: "Roadside Assistance", number: "1033-HELP", description: "Motorcycle towing and breakdown assistance" },
   ];
 
   const safetyResources = [
-    {
-      title: "Motorcycle Safety Foundation (MSF)",
-      description: "Comprehensive riding courses and safety resources",
-      link: "#",
-    },
-    {
-      title: "Advanced Rider Training",
-      description: "Improve your skills with professional instruction",
-      link: "#",
-    },
-    {
-      title: "Weather Riding Guide",
-      description: "Tips for riding safely in various weather conditions",
-      link: "#",
-    },
-    {
-      title: "Group Riding Etiquette",
-      description: "Best practices for safe group riding",
-      link: "#",
-    },
+    { title: "Motorcycle Safety Foundation (MSF)", description: "Comprehensive riding courses and safety resources", link: "#" },
+    { title: "Advanced Rider Training", description: "Improve your skills with professional instruction", link: "#" },
+    { title: "Weather Riding Guide", description: "Tips for riding safely in various weather conditions", link: "#" },
+    { title: "Group Riding Etiquette", description: "Best practices for safe group riding", link: "#" },
   ];
 
-  const fadeIn = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
+  const groupSafetyTips = [
+    "Attend pre-ride briefings and follow designated routes",
+    "Maintain proper formation and spacing",
+    "Use hand signals and communicate with other riders",
+    "Never ride beyond your skill level or comfort zone",
+  ];
 
   return (
-    <section id="safety" className="relative py-20 overflow-hidden">
-      <motion.div 
-        initial={{ scale: 1.1 }}
-        whileInView={{ scale: 1 }}
-        transition={{ duration: 1.5 }}
-        className="absolute inset-0 z-0"
-      >
-        <img
-          src="https://images.pexels.com/photos/1119796/pexels-photo-1119796.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
-          alt="Motorcycle safety background"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-950/85 to-black/90"></div>
-      </motion.div>
+    <Box component="section" id="safety" sx={{ position: "relative", py: { xs: 8, md: 12 }, overflow: "hidden" }}>
+      {/* Background Decor */}
+      <Box sx={{ position: "absolute", top: '30%', right: '-10%', width: '40%', height: '40%', bgcolor: "radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)", zIndex: 0 }} />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeIn}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ride{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
-              Safe
-            </span>
-          </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-light">
-            Safety is our top priority. Learn essential riding tips, emergency
-            procedures, and best practices to ensure every ride is a safe one.
-          </p>
-        </motion.div>
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10 }}>
+        {/* Section Header */}
+        <Box sx={{ textAlign: "center", mb: 10 }}>
+          <Box sx={{ display: 'inline-flex', alignItems: 'center', px: 2, py: 0.5, mb: 3, borderRadius: 'full', border: '1px solid', borderColor: 'rgba(59, 130, 246, 0.2)', bgcolor: 'rgba(59, 130, 246, 0.05)' }}>
+            <Typography variant="caption" sx={{ color: "#3B82F6", fontWeight: 800, textTransform: 'uppercase', letterSpacing: 2 }}>
+              Safety First
+            </Typography>
+          </Box>
+          <Typography variant="h2" sx={{
+            color: "text.primary",
+            mb: 3,
+            fontSize: { xs: "2.5rem", md: "3.5rem" },
+            fontWeight: 900,
+            fontFamily: "'Audiowide', sans-serif"
+          }}>
+            Ride <Box component="span" sx={{ color: "primary.main" }}>Safe</Box>
+          </Typography>
+          <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 720, mx: "auto", fontSize: { xs: "1.1rem", md: "1.25rem" }, lineHeight: 1.8 }}>
+            Learn essential riding tips, emergency procedures, and best practices to ensure every ride is a safe one.
+          </Typography>
+        </Box>
 
-        <motion.div 
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
-        >
+        {/* Safety Tips Cards */}
+        <Grid container spacing={3} sx={{ mb: 12 }}>
           {safetyTips.map((tip, index) => (
-            <motion.div
-              key={index}
-              variants={fadeIn}
-              whileHover={{ y: -10, borderColor: "rgba(249, 115, 22, 0.4)" }}
-              className="bg-gray-900/80 backdrop-blur-md rounded-2xl p-8 border border-gray-800 transition-all duration-300"
-            >
-              <tip.icon className="h-12 w-12 text-orange-500 mb-6" />
-              <h3 className="text-2xl font-bold text-white mb-4">{tip.title}</h3>
-              <p className="text-gray-400 mb-6 leading-relaxed">{tip.description}</p>
-              <ul className="space-y-3">
-                {tip.tips.map((item, tipIndex) => (
-                  <motion.li 
-                    key={tipIndex} 
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + (tipIndex * 0.1) }}
-                    className="flex items-start text-gray-400"
-                  >
-                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></div>
-                    <span className="text-sm font-medium">{item}</span>
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
+            <Grid size={{ xs: 12, md: 4 }} key={index}>
+              <Card sx={{
+                height: "100%",
+                p: 1,
+                bgcolor: "rgba(255, 255, 255, 0.02)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255, 255, 255, 0.05)",
+                borderRadius: 4,
+                transition: "all 0.3s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-8px)",
+                  bgcolor: "rgba(255, 255, 255, 0.04)",
+                  borderColor: index === 0 ? "rgba(59, 130, 246, 0.3)" : "rgba(59, 130, 246, 0.3)",
+                }
+              }}>
+                <CardContent>
+                  <Box sx={{
+                    mb: 3,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: index === 0 ? "rgba(59, 130, 246, 0.1)" : "rgba(59, 130, 246, 0.1)",
+                    border: '1px solid',
+                    borderColor: index === 0 ? "rgba(59, 130, 246, 0.2)" : "rgba(59, 130, 246, 0.2)",
+                  }}>
+                    {tip.icon}
+                  </Box>
+                  <Typography variant="h5" sx={{ color: "text.primary", mb: 2, fontWeight: 800 }}>
+                    {tip.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary", mb: 3, lineHeight: 1.8 }}>
+                    {tip.description}
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {tip.tips.map((item, tipIndex) => (
+                      <Box key={tipIndex} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ width: 4, height: 4, borderRadius: 'full', bgcolor: index === 0 ? '#3B82F6' : '#8B5CF6' }} />
+                        <Typography sx={{ color: "text.secondary", fontWeight: 500, fontSize: "0.85rem" }}>
+                          {item}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
           ))}
-        </motion.div>
+        </Grid>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-          className="bg-red-900/10 border border-red-500/20 rounded-3xl p-8 md:p-12 mb-16 backdrop-blur-sm"
-        >
-          <div className="flex items-center mb-8">
-            <Phone className="h-8 w-8 text-red-500 mr-4" />
-            <h3 className="text-3xl font-bold text-white tracking-tight">
+        {/* Emergency Contacts */}
+        <Box sx={{
+          p: { xs: 4, md: 8 },
+          mb: 12,
+          borderRadius: 8,
+          bgcolor: 'rgba(239, 68, 68, 0.02)',
+          border: '1px solid rgba(239, 68, 68, 0.1)',
+          backdropFilter: 'blur(10px)'
+        }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 6, justifyContent: 'center' }}>
+            <PhoneIcon sx={{ fontSize: 32, color: "#EF4444" }} />
+            <Typography variant="h4" sx={{ color: "text.primary", fontWeight: 900, fontFamily: "'Audiowide', sans-serif" }}>
               Emergency Contacts
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            </Typography>
+          </Box>
+          <Grid container spacing={3}>
             {emergencyContacts.map((contact, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.05 }}
-                className="bg-black/60 rounded-2xl p-6 border border-red-500/10"
-              >
-                <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">
-                  {contact.service}
-                </h4>
-                <div className="text-2xl font-black text-red-500 mb-3 tracking-tighter">
-                  {contact.number}
-                </div>
-                <p className="text-gray-400 text-xs font-medium leading-relaxed">{contact.description}</p>
-              </motion.div>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+                <Box sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  bgcolor: "rgba(255, 255, 255, 0.03)",
+                  borderRadius: 4,
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  transition: 'transform 0.2s',
+                  "&:hover": { transform: 'scale(1.05)', bgcolor: "rgba(255, 255, 255, 0.05)" }
+                }}>
+                  <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.7rem", fontWeight: 800, letterSpacing: 1 }}>
+                    {contact.service}
+                  </Typography>
+                  <Typography variant="h5" sx={{ color: "#EF4444", fontWeight: 900, fontSize: '1.4rem', my: 1.5, letterSpacing: -0.5 }}>
+                    {contact.number}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 500 }}>
+                    {contact.description}
+                  </Typography>
+                </Box>
+              </Grid>
             ))}
-          </div>
-        </motion.div>
+          </Grid>
+        </Box>
 
-        <div className="mb-16">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center mb-10"
-          >
-            <Book className="h-8 w-8 text-orange-500 mr-4" />
-            <h3 className="text-3xl font-bold text-white tracking-tight">Safety Resources</h3>
-          </motion.div>
-          <motion.div 
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
+        {/* Safety Resources */}
+        <Box sx={{ mb: 12 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
+            <MenuBookIcon sx={{ fontSize: 28, color: "#8B5CF6" }} />
+            <Typography variant="h4" sx={{ color: "text.primary", fontWeight: 800, fontFamily: "'Audiowide', sans-serif" }}>Safety Resources</Typography>
+          </Box>
+          <Grid container spacing={3}>
             {safetyResources.map((resource, index) => (
-              <motion.div
-                key={index}
-                variants={fadeIn}
-                whileHover={{ x: 10, borderColor: "rgba(249, 115, 22, 0.4)" }}
-                className="bg-gray-900/60 backdrop-blur-sm rounded-2xl p-8 border border-gray-800 transition-all duration-300 group"
-              >
-                <h4 className="text-xl font-bold text-white mb-3 group-hover:text-orange-500 transition-colors duration-200">
-                  {resource.title}
-                </h4>
-                <p className="text-gray-400 mb-6 leading-relaxed">{resource.description}</p>
-                <a
-                  href={resource.link}
-                  className="inline-flex items-center text-orange-500 hover:text-orange-400 font-bold transition-colors duration-200"
-                >
-                  Learn More 
-                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </a>
-              </motion.div>
+              <Grid size={{ xs: 12, md: 6 }} key={index}>
+                <Card sx={{
+                  p: 3,
+                  cursor: "pointer",
+                  bgcolor: "rgba(255, 255, 255, 0.02)",
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderRadius: 4,
+                  "&:hover": { borderColor: 'primary.main', bgcolor: "rgba(255, 255, 255, 0.04)" }
+                }}>
+                  <Typography variant="h6" sx={{ color: "text.primary", mb: 1.5, fontWeight: 700 }}>
+                    {resource.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary", mb: 3, lineHeight: 1.7 }}>
+                    {resource.description}
+                  </Typography>
+                  <Link href={resource.link} underline="none" sx={{ display: "inline-flex", alignItems: "center", gap: 1, color: "primary.main", fontWeight: 800, fontSize: "0.875rem" }}>
+                    EXPLORE RESOURCE <ArrowForwardIcon sx={{ fontSize: 16 }} />
+                  </Link>
+                </Card>
+              </Grid>
             ))}
-          </motion.div>
-        </div>
+          </Grid>
+        </Box>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-3xl p-8 md:p-12 border border-orange-500/20 backdrop-blur-md"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="flex items-center mb-6">
-                <Users className="h-8 w-8 text-orange-500 mr-4" />
-                <h3 className="text-3xl font-bold text-white tracking-tight">
-                  Group Riding Safety
-                </h3>
-              </div>
-              <p className="text-gray-400 mb-8 leading-relaxed text-lg font-light">
+        {/* Group Riding Safety */}
+        <Box sx={{
+          p: { xs: 4, md: 8 },
+          mb: 12,
+          borderRadius: 8,
+          bgcolor: 'rgba(255, 255, 255, 0.02)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(10px)'
+        }}>
+          <Grid container spacing={5} alignItems="center">
+            <Grid size={{ xs: 12, lg: 7 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                <PeopleIcon sx={{ fontSize: 28, color: "primary.main" }} />
+                <Typography variant="h4" sx={{ color: "text.primary", fontWeight: 900, fontFamily: "'Audiowide', sans-serif" }}>
+                  Group Riding
+                </Typography>
+              </Box>
+              <Typography variant="body1" sx={{ color: "text.secondary", mb: 4, lineHeight: 1.8 }}>
                 Riding in a group requires additional safety considerations.
-                Follow these guidelines to ensure everyone's safety during club
-                rides.
-              </p>
-              <ul className="space-y-4">
-                {[
-                  "Attend pre-ride briefings and follow designated routes",
-                  "Maintain proper formation and spacing",
-                  "Use hand signals and communicate with other riders",
-                  "Never ride beyond your skill level or comfort zone"
-                ].map((item, i) => (
-                  <motion.li 
-                    key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-start text-gray-400"
-                  >
-                    <CheckCircle className="h-6 w-6 text-green-500/80 mr-4 mt-0.5 flex-shrink-0" />
-                    <span className="text-lg font-medium">{item}</span>
-                  </motion.li>
+                Follow these guidelines to ensure everyone's safety during club rides.
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {groupSafetyTips.map((item, i) => (
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ minWidth: 24, height: 24, borderRadius: 'full', bgcolor: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <CheckCircleIcon sx={{ color: "#10B981", fontSize: 16 }} />
+                    </Box>
+                    <Typography sx={{ color: "text.secondary", fontWeight: 600, fontSize: '0.95rem' }}>
+                      {item}
+                    </Typography>
+                  </Box>
                 ))}
-              </ul>
-            </div>
-            <motion.div 
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.5 }}
-              className="relative"
-            >
-              <div className="absolute -inset-4 bg-orange-500/5 rounded-3xl blur-3xl"></div>
-              <img
-                src="https://images.pexels.com/photos/1119796/pexels-photo-1119796.jpeg?auto=compress&cs=tinysrgb&w=600"
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 12, lg: 5 }}>
+              <Box
+                component="img"
+                src={groupRidingImg}
                 alt="Group of motorcycles riding safely"
-                className="relative rounded-2xl shadow-2xl border border-white/5"
+                sx={{ width: "100%", borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", filter: 'grayscale(0.5) contrast(1.2)' }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-2xl"></div>
-            </motion.div>
-          </div>
-        </motion.div>
+            </Grid>
+          </Grid>
+        </Box>
 
-        <motion.div
+        {/* Safety Pledge */}
+        <Paper
           ref={pledgeRef}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-16 bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 md:p-12 border border-orange-500/30 text-center relative overflow-hidden"
+          sx={{
+            p: { xs: 6, md: 10 },
+            textAlign: "center",
+            position: "relative",
+            overflow: "hidden",
+            borderRadius: 8,
+            bgcolor: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(20px)'
+          }}
         >
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <ClipboardCheck size={120} className="text-orange-500" />
-          </div>
-          <h3 className="text-3xl font-bold text-white mb-8 flex items-center justify-center">
-            <ClipboardCheck className="h-8 w-8 text-orange-500 mr-4" />
-            Our Safety Pledge
-          </h3>
-          <div className="max-w-4xl mx-auto">
-            <p className="text-2xl md:text-3xl font-medium text-gray-200 leading-relaxed italic min-h-[150px]">
+          <AssignmentTurnedInIcon sx={{ position: "absolute", top: -20, right: -20, fontSize: 180, color: "primary.main", opacity: 0.03 }} />
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, mb: 6 }}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+              <AssignmentTurnedInIcon sx={{ fontSize: 24, color: "primary.main" }} />
+            </Box>
+            <Typography variant="h4" sx={{ color: "text.primary", fontWeight: 900, fontFamily: "'Audiowide', sans-serif" }}>
+              Our Safety Pledge
+            </Typography>
+          </Box>
+          <Box sx={{ maxWidth: 850, mx: "auto" }}>
+            <Typography variant="h5" sx={{
+              color: "text.secondary",
+              lineHeight: 1.8,
+              fontStyle: "italic",
+              fontWeight: 500,
+              fontSize: { xs: "1.2rem", md: "1.35rem" },
+              minHeight: { xs: 200, md: 120 }
+            }}>
               "{pledgeText}"
-              <span className="inline-block w-1 h-8 bg-orange-500 ml-1 animate-pulse"></span>
-            </p>
-          </div>
-        </motion.div>
-      </div>
-    </section>
+              <Box component="span" sx={{
+                display: "inline-block",
+                width: 3,
+                height: 28,
+                bgcolor: "primary.main",
+                ml: 1,
+                verticalAlign: "middle",
+                animation: "pulse 1s infinite"
+              }} />
+            </Typography>
+          </Box>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

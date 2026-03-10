@@ -1,13 +1,26 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Camera,
-  Play,
-  Heart,
-  MessageCircle,
-  Share2,
-  Calendar as CalendarIcon,
-  Tag,
-} from "lucide-react";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Card from "@mui/material/Card";
+import CardMedia from "@mui/material/CardMedia";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import Chip from "@mui/material/Chip";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import ShareIcon from "@mui/icons-material/Share";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import CloseIcon from "@mui/icons-material/Close";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import { galleryService } from "../services/api";
 
 const Gallery = () => {
@@ -39,11 +52,7 @@ const Gallery = () => {
       const lowerFile = filename.toLowerCase();
       let category = "rides";
       if (normalizedPath.includes("/rallies/")) category = "rallies";
-      else if (
-        normalizedPath.includes("/rides/") ||
-        normalizedPath.includes("/group-rides/")
-      )
-        category = "rides";
+      else if (normalizedPath.includes("/rides/") || normalizedPath.includes("/group-rides/")) category = "rides";
       else if (lowerFile.includes("rally")) category = "rallies";
       else if (lowerFile.includes("ride")) category = "rides";
       return {
@@ -106,260 +115,229 @@ const Gallery = () => {
         const data = await galleryService.getAll();
         setGalleryItems(data);
       } catch (err) {
-        // Silent fallback: still show bundled/local gallery assets
-        console.warn(
-          "Gallery server unavailable; showing local gallery assets only.",
-          err,
-        );
+        console.warn("Gallery server unavailable; showing local gallery assets only.", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchGalleryItems();
   }, []);
 
   const formatDate = (date) => {
     if (!date) return "";
-    try {
-      return new Date(date).toLocaleDateString();
-    } catch {
-      return date;
-    }
+    try { return new Date(date).toLocaleDateString(); } catch { return date; }
+  };
+
+  const getCategoryLabel = (cat) => {
+    const found = categories.find(c => c.id === cat);
+    return found ? found.name : cat;
   };
 
   return (
-    <section id="gallery" className="relative pt-20 py-20 overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <img
-          src="https://images.pexels.com/photos/1119796/pexels-photo-1119796.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
-          alt="Motorcycle gallery background"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/90"></div>
-      </div>
+    <Box component="section" id="gallery" sx={{ position: "relative", pt: { xs: 8, md: 12 }, pb: 12, bgcolor: "#020617", overflow: "hidden" }}>
+      {/* Background Decor */}
+      <Box sx={{ position: "absolute", bottom: '0%', right: '0%', width: '50%', height: '50%', bgcolor: "radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%)", zIndex: 0 }} />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Community{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
-              Gallery
-            </span>
-          </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10 }}>
+        {/* Header */}
+        <Box sx={{ textAlign: "center", mb: 8 }}>
+          <Box sx={{ display: 'inline-flex', alignItems: 'center', px: 2, py: 0.5, mb: 3, borderRadius: 'full', border: '1px solid', borderColor: 'rgba(59, 130, 246, 0.2)', bgcolor: 'rgba(59, 130, 246, 0.05)' }}>
+            <Typography variant="caption" sx={{ color: "#8B5CF6", fontWeight: 800, textTransform: 'uppercase', letterSpacing: 2 }}>
+              Moments on the Road
+            </Typography>
+          </Box>
+          <Typography variant="h2" sx={{
+            color: "text.primary",
+            mb: 2,
+            fontSize: { xs: "2.5rem", md: "3.5rem" },
+            fontWeight: 900,
+            fontFamily: "'Audiowide', sans-serif"
+          }}>
+            Our <Box component="span" sx={{ color: "primary.main" }}>Gallery</Box>
+          </Typography>
+          <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 700, mx: "auto", mb: 6, fontSize: '1.1rem', lineHeight: 1.8 }}>
             Relive the memories and share your adventures with the community.
             From epic rides to unforgettable events.
-          </p>
-        </div>
+          </Typography>
 
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategory(category.id)}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-                activeCategory === category.id
-                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
-                  : "bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700"
-              }`}
+          {/* Category Filter */}
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 6 }}>
+            <ToggleButtonGroup
+              value={activeCategory}
+              exclusive
+              onChange={(_, val) => val && setActiveCategory(val)}
+              sx={{
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: 1.5,
+                "& .MuiToggleButton-root": {
+                  border: "1px solid rgba(0, 0, 0, 0.05)",
+                  bgcolor: 'rgba(255,255,255,0.02)',
+                  borderRadius: "12px !important",
+                  px: 3,
+                  py: 1,
+                  textTransform: "uppercase",
+                  fontWeight: 800,
+                  fontSize: "0.75rem",
+                  letterSpacing: 1,
+                  color: "text.secondary",
+                  "&.Mui-selected": {
+                    bgcolor: "primary.main",
+                    color: "white",
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                    "&:hover": { bgcolor: "primary.dark" },
+                  },
+                },
+              }}
             >
-              {category.name}
-            </button>
-          ))}
-        </div>
+              {categories.map((category) => (
+                <ToggleButton key={category.id} value={category.id}>
+                  {category.name}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Box>
+        </Box>
 
-        {/* No server error messaging on public site */}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Media Grid */}
+        <Grid container spacing={3}>
           {displayedMedia.map((item) => (
-            <div
-              key={item.id}
-              className="relative bg-gray-900 rounded-lg overflow-hidden border border-gray-700 hover:border-orange-500/50 transition-all duration-300 group cursor-pointer"
-              onClick={() => setSelectedMedia(item)}
-            >
-              <div className="relative">
-                {item.type === "video" ? (
-                  <video
-                    src={item.src}
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                    preload="metadata"
-                    muted
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const video = e.currentTarget;
-                      if (video.paused) {
-                        video.play().then(() => {
-                          setPlayingVideos((prev) =>
-                            new Set(prev).add(item.id),
-                          );
-                        });
-                      } else {
-                        video.pause();
-                        setPlayingVideos((prev) => {
-                          const newSet = new Set(prev);
-                          newSet.delete(item.id);
-                          return newSet;
-                        });
-                      }
-                    }}
-                    onEnded={() => {
-                      setPlayingVideos((prev) => {
-                        const newSet = new Set(prev);
-                        newSet.delete(item.id);
-                        return newSet;
-                      });
-                    }}
-                  />
-                ) : (
-                  <img
-                    src={item.src}
-                    alt={item.title}
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                )}
-
-                {item.type === "video" && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all duration-300">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 group-hover:scale-110 transition-transform duration-200">
-                      {playingVideos.has(item.id) ? (
-                        <div className="h-8 w-8 text-white flex items-center justify-center">
-                          <div className="w-2 h-6 bg-white rounded-sm mx-0.5"></div>
-                          <div className="w-2 h-6 bg-white rounded-sm mx-0.5"></div>
-                        </div>
-                      ) : (
-                        <Play className="h-8 w-8 text-white" />
-                      )}
-                    </div>
-                    <div className="absolute bottom-4 left-4 bg-black/60 text-white px-2 py-1 rounded text-xs">
-                      Click to play
-                    </div>
-                    {item.duration && (
-                      <div className="absolute bottom-4 right-4 bg-black/60 text-white px-2 py-1 rounded text-sm">
-                        {item.duration}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="text-white font-semibold mb-2">
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
+              <Card
+                sx={{
+                  cursor: "pointer",
+                  overflow: "hidden",
+                  bgcolor: "rgba(255, 255, 255, 0.02)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: 3, /* M3 soft rounded corners */
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    transform: "scale(1.02)",
+                    borderColor: "rgba(0, 0, 0, 0.3)",
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+                  }
+                }}
+                onClick={() => setSelectedMedia(item)}
+              >
+                <Box sx={{ position: "relative" }}>
+                  {item.type === "video" ? (
+                    <CardMedia
+                      component="video"
+                      src={item.src}
+                      sx={{ aspectRatio: "1 / 1", width: "100%", height: "auto", objectFit: "cover" }}
+                      preload="metadata"
+                      muted
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const video = e.currentTarget;
+                        if (video.paused) {
+                          video.play().then(() => setPlayingVideos((prev) => new Set(prev).add(item.id)));
+                        } else {
+                          video.pause();
+                          setPlayingVideos((prev) => { const s = new Set(prev); s.delete(item.id); return s; });
+                        }
+                      }}
+                      onEnded={() => setPlayingVideos((prev) => { const s = new Set(prev); s.delete(item.id); return s; })}
+                    />
+                  ) : (
+                    <CardMedia
+                      component="img"
+                      src={item.src}
+                      alt={item.title}
+                      sx={{ aspectRatio: "1 / 1", width: "100%", height: "auto", objectFit: "cover", filter: 'brightness(0.9)', transition: "all 0.5s", "&:hover": { filter: 'brightness(1.1)' } }}
+                    />
+                  )}
+                  {/* Overlay on Hover UI Elements */}
+                  <Box className="media-overlay" sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    bg: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    p: 3,
+                    opacity: 0.8,
+                    transition: 'opacity 0.3s'
+                  }}>
+                    <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 800, mb: 0.5 }}>
                       {item.title}
-                    </h3>
-                    <p className="text-gray-300 text-sm">by {item.author}</p>
-                  </div>
-                </div>
-              </div>
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: "rgba(255,255,255,0.7)" }}>
+                        <FavoriteBorderIcon sx={{ fontSize: 16 }} />
+                        <Typography variant="caption" sx={{ fontWeight: 700 }}>{item.likes}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: "rgba(255,255,255,0.7)" }}>
+                        <ChatBubbleOutlineIcon sx={{ fontSize: 16 }} />
+                        <Typography variant="caption" sx={{ fontWeight: 700 }}>{item.comments}</Typography>
+                      </Box>
+                    </Box>
+                  </Box>
 
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      <Tag className="h-3 w-3 text-orange-500" />
-                      {item.category === "all"
-                        ? "All Media"
-                        : item.category === "rides"
-                          ? "Group Rides"
-                          : item.category === "events"
-                            ? "Events"
-                            : item.category === "bikes"
-                              ? "Member Bikes"
-                              : item.category === "rallies"
-                                ? "Rallies"
-                                : item.category}
-                    </span>
-                    {item.eventDate && (
-                      <span className="text-xs text-gray-400 flex items-center gap-1">
-                        <CalendarIcon className="h-3 w-3 text-orange-500" />
-                        {formatDate(item.eventDate)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <button className="flex items-center space-x-1 text-gray-400 hover:text-red-500 transition-colors duration-200">
-                      <Heart className="h-4 w-4" />
-                      <span className="text-sm">{item.likes}</span>
-                    </button>
-                    <button className="flex items-center space-x-1 text-gray-400 hover:text-blue-500 transition-colors duration-200">
-                      <MessageCircle className="h-4 w-4" />
-                      <span className="text-sm">{item.comments}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  {item.type === "video" && (
+                    <Box sx={{ position: "absolute", top: 15, right: 15, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(0,0,0,0.5)", backdropFilter: 'blur(5px)', borderRadius: 'full', width: 40, height: 40 }}>
+                      {playingVideos.has(item.id) ? <PauseIcon sx={{ fontSize: 20, color: 'white' }} /> : <PlayArrowIcon sx={{ fontSize: 20, color: 'white' }} />}
+                    </Box>
+                  )}
+                </Box>
+              </Card>
+            </Grid>
           ))}
-        </div>
+        </Grid>
 
+        {/* Load More */}
         {visibleCount < filteredMedia.length && (
-          <div className="text-center mt-12">
-            <button
-              onClick={() => setVisibleCount(filteredMedia.length)}
-              className="bg-gray-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200"
-            >
+          <Box sx={{ textAlign: "center", mt: 6 }}>
+            <Button variant="outlined" onClick={() => setVisibleCount(filteredMedia.length)} sx={{ px: 4 }}>
               Load More Media
-            </button>
-          </div>
+            </Button>
+          </Box>
         )}
 
-        {selectedMedia && (
-          <div
-            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedMedia(null)}
-          >
-            <div
-              className="max-w-4xl w-full bg-gray-900 rounded-lg overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative">
+        {/* Lightbox Dialog */}
+        <Dialog
+          open={!!selectedMedia}
+          onClose={() => setSelectedMedia(null)}
+          maxWidth="md"
+          fullWidth
+        >
+          {selectedMedia && (
+            <>
+              <Box sx={{ position: "relative" }}>
                 {selectedMedia.type === "video" ? (
-                  <video
-                    src={selectedMedia.src}
-                    className="w-full h-96 object-cover"
-                    controls
-                    autoPlay
-                    muted
-                  />
+                  <video src={selectedMedia.src} style={{ width: "100%", maxHeight: 400, objectFit: "cover" }} controls autoPlay muted />
                 ) : (
-                  <img
-                    src={selectedMedia.src}
-                    alt={selectedMedia.title}
-                    className="w-full h-96 object-cover"
-                  />
+                  <Box component="img" src={selectedMedia.src} alt={selectedMedia.title} sx={{ width: "100%", maxHeight: 400, objectFit: "cover" }} />
                 )}
-                <button
-                  onClick={() => setSelectedMedia(null)}
-                  className="absolute top-4 right-4 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors duration-200"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-white mb-2">
+                <IconButton onClick={() => setSelectedMedia(null)} sx={{ position: "absolute", top: 8, right: 8, bgcolor: "rgba(0,0,0,0.5)", color: "white" }}>
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              <DialogContent>
+                <Typography variant="h5" sx={{ color: "text.primary", mb: 1, fontWeight: 700 }}>
                   {selectedMedia.title}
-                </h3>
-                <p className="text-gray-300 mb-4">by {selectedMedia.author}</p>
-                <div className="flex items-center space-x-6">
-                  <button className="flex items-center space-x-2 text-gray-400 hover:text-red-500 transition-colors duration-200">
-                    <Heart className="h-5 w-5" />
-                    <span>{selectedMedia.likes} likes</span>
-                  </button>
-                  <button className="flex items-center space-x-2 text-gray-400 hover:text-blue-500 transition-colors duration-200">
-                    <MessageCircle className="h-5 w-5" />
-                    <span>{selectedMedia.comments} comments</span>
-                  </button>
-                  <button className="flex items-center space-x-2 text-gray-400 hover:text-orange-500 transition-colors duration-200">
-                    <Share2 className="h-5 w-5" />
-                    <span>Share</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary", mb: 3 }}>
+                  by {selectedMedia.author}
+                </Typography>
+                <Box sx={{ display: "flex", gap: 3 }}>
+                  <Button startIcon={<FavoriteBorderIcon />} size="small" sx={{ color: "text.secondary" }}>
+                    {selectedMedia.likes} likes
+                  </Button>
+                  <Button startIcon={<ChatBubbleOutlineIcon />} size="small" sx={{ color: "text.secondary" }}>
+                    {selectedMedia.comments} comments
+                  </Button>
+                  <Button startIcon={<ShareIcon />} size="small" sx={{ color: "text.secondary" }}>
+                    Share
+                  </Button>
+                </Box>
+              </DialogContent>
+            </>
+          )}
+        </Dialog>
+      </Container>
+    </Box>
   );
 };
 

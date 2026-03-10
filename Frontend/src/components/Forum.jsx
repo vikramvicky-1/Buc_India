@@ -1,13 +1,22 @@
 import React, { useState } from "react";
-import {
-  MessageSquare,
-  ThumbsUp,
-  Reply,
-  Clock,
-  User,
-  Pin,
-  Lock,
-} from "lucide-react";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Avatar from "@mui/material/Avatar";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import PushPinIcon from "@mui/icons-material/PushPin";
+import ReplyIcon from "@mui/icons-material/Reply";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import PersonIcon from "@mui/icons-material/Person";
+import AddIcon from "@mui/icons-material/Add";
 
 const Forum = () => {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -38,7 +47,7 @@ const Forum = () => {
     {
       id: 2,
       title: "Best Winter Riding Gear - What Do You Recommend?",
-      author: "Pradeep ",
+      author: "Pradeep",
       category: "gear",
       replies: 18,
       likes: 12,
@@ -53,139 +62,190 @@ const Forum = () => {
       ? forumPosts
       : forumPosts.filter((post) => post.category === activeCategory);
 
+  const stats = [
+    { label: "Total Topics", value: "247" },
+    { label: "Total Posts", value: "280" },
+    { label: "Active Members", value: "10" },
+    { label: "Community Support", value: "24/7" },
+  ];
+
   return (
-    <section id="forum" className="relative pt-20 py-20 overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <img
+    <Box
+      component="section"
+      id="forum"
+      sx={{ position: "relative", pt: { xs: 8, md: 10 }, pb: 10, overflow: "hidden" }}
+    >
+      {/* Background Image */}
+      <Box sx={{ position: "absolute", inset: 0, zIndex: 0 }}>
+        <Box
+          component="img"
           src="https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
-          alt="Motorcycle forum background"
-          className="w-full h-full object-cover"
+          alt=""
+          sx={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-950/85 to-black/90"></div>
-      </div>
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to bottom, rgba(15,18,20,0.7), rgba(15,18,20,0.92), rgba(15,18,20,0.98))",
+          }}
+        />
+      </Box>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10 }}>
+        {/* Header */}
+        <Box sx={{ textAlign: "center", mb: 8 }}>
+          <Typography variant="h2" sx={{
+            fontWeight: 900,
+            color: "text.primary",
+            mb: 2,
+            fontSize: { xs: "2.5rem", md: "3.5rem" },
+            fontFamily: "'Audiowide', sans-serif",
+          }}>
             Community{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
+            <Box component="span" sx={{ color: "primary.main" }}>
               Forum
-            </span>
-          </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Connect with fellow riders, share experiences, ask questions, and be
-            part of our vibrant community discussions.
-          </p>
-        </div>
+            </Box>
+          </Typography>
+          <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 700, mx: "auto" }}>
+            Connect with fellow riders, share experiences, ask questions, and be part of our vibrant community discussions.
+          </Typography>
+        </Box>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-1">
-            <div className="bg-black/40 backdrop-blur-sm rounded-lg p-6 border border-gray-700 sticky top-8">
-              <h3 className="text-lg font-bold text-white mb-4">Categories</h3>
-              <div className="space-y-2">
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => setActiveCategory(category.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
-                      activeCategory === category.id
-                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
-                        : "text-gray-300 hover:text-white hover:bg-gray-700"
-                    }`}
-                  >
-                    <span>{category.name}</span>
-                  </button>
-                ))}
-              </div>
+        <Grid container spacing={3}>
+          {/* Sidebar */}
+          <Grid size={{ xs: 12, md: 3 }}>
+            <Card sx={{ position: "sticky", top: 80 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                  Categories
+                </Typography>
+                <List disablePadding>
+                  {categories.map((category) => (
+                    <ListItemButton
+                      key={category.id}
+                      onClick={() => setActiveCategory(category.id)}
+                      selected={activeCategory === category.id}
+                      sx={{ borderRadius: 2, mb: 0.5, py: 1 }}
+                    >
+                      <ListItemText
+                        primary={category.name}
+                        primaryTypographyProps={{
+                          fontSize: "0.8125rem",
+                          fontWeight: activeCategory === category.id ? 700 : 400,
+                        }}
+                      />
+                      <Chip
+                        label={category.count}
+                        size="small"
+                        sx={{
+                          height: 22,
+                          fontSize: "0.7rem",
+                          bgcolor: activeCategory === category.id ? "primary.main" : "action.hover",
+                          color: activeCategory === category.id ? "white" : "text.secondary",
+                        }}
+                      />
+                    </ListItemButton>
+                  ))}
+                </List>
 
-              <button className="w-full mt-6 bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-orange-600 hover:to-red-700 transition-all duration-200">
-                New Topic
-              </button>
-            </div>
-          </div>
-
-          <div className="lg:col-span-3">
-            <div className="space-y-4">
-              {filteredPosts.map((post) => (
-                <div
-                  key={post.id}
-                  className="bg-black/40 backdrop-blur-sm rounded-lg p-6 border border-gray-700 hover:border-orange-500/50 transition-all duration-300 group"
+                <Button
+                  variant="contained"
+                  fullWidth
+                  startIcon={<AddIcon />}
+                  sx={{ mt: 2 }}
                 >
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-700 border-2 border-orange-500 flex items-center justify-center">
-                      <User className="h-6 w-6 text-gray-400" />
-                    </div>
+                  New Topic
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-2">
-                        {post.isPinned && (
-                          <Pin className="h-4 w-4 text-orange-500" />
-                        )}
-                        <h3 className="text-lg font-semibold text-white group-hover:text-orange-500 transition-colors duration-200 cursor-pointer">
+          {/* Posts */}
+          <Grid size={{ xs: 12, md: 9 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {filteredPosts.map((post) => (
+                <Card
+                  key={post.id}
+                  sx={{
+                    cursor: "pointer",
+                    "&:hover": { borderColor: "primary.main", transform: "translateY(-1px)" },
+                  }}
+                >
+                  <CardContent sx={{ display: "flex", gap: 2 }}>
+                    <Avatar sx={{ bgcolor: "surface.containerHigh", width: 44, height: 44 }}>
+                      <PersonIcon sx={{ color: "text.secondary" }} />
+                    </Avatar>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                        {post.isPinned && <PushPinIcon sx={{ fontSize: 16, color: "primary.main" }} />}
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
                           {post.title}
-                        </h3>
-                      </div>
+                        </Typography>
+                      </Box>
 
-                      <div className="flex items-center space-x-4 text-sm text-gray-400 mb-3">
-                        <div className="flex items-center space-x-1">
-                          <User className="h-4 w-4" />
-                          <span>{post.author}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{post.lastActivity}</span>
-                        </div>
-                        <span className="bg-orange-500/20 text-orange-400 px-2 py-1 rounded text-xs">
-                          {categories.find((c) => c.id === post.category)?.name}
-                        </span>
-                      </div>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1.5, flexWrap: "wrap" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                          <PersonIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                          <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                            {post.author}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                          <AccessTimeIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                          <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                            {post.lastActivity}
+                          </Typography>
+                        </Box>
+                        <Chip
+                          label={categories.find((c) => c.id === post.category)?.name}
+                          size="small"
+                          sx={{ height: 22, fontSize: "0.7rem" }}
+                        />
+                      </Box>
 
-                      <p className="text-gray-300 mb-4 line-clamp-2">
+                      <Typography variant="body2" sx={{ color: "text.secondary", mb: 2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                         {post.preview}
-                      </p>
+                      </Typography>
 
-                      <div className="flex items-center space-x-6">
-                        <div className="flex items-center space-x-1 text-gray-400 hover:text-blue-500 transition-colors duration-200 cursor-pointer">
-                          <Reply className="h-4 w-4" />
-                          <span className="text-sm">
-                            {post.replies} replies
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1 text-gray-400 hover:text-red-500 transition-colors duration-200 cursor-pointer">
-                          <ThumbsUp className="h-4 w-4" />
-                          <span className="text-sm">{post.likes} likes</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                      <Box sx={{ display: "flex", gap: 3 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "text.secondary", cursor: "pointer", "&:hover": { color: "primary.main" } }}>
+                          <ReplyIcon sx={{ fontSize: 16 }} />
+                          <Typography variant="caption">{post.replies} replies</Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "text.secondary", cursor: "pointer", "&:hover": { color: "primary.main" } }}>
+                          <ThumbUpIcon sx={{ fontSize: 16 }} />
+                          <Typography variant="caption">{post.likes} likes</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
               ))}
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Grid>
+        </Grid>
 
-        <div className="mt-16 bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-8 border border-orange-500/20">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">247</div>
-              <div className="text-gray-300">Total Topics</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">280</div>
-              <div className="text-gray-300">Total Posts</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">10</div>
-              <div className="text-gray-300">Active Members</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">24/7</div>
-              <div className="text-gray-300">Community Support</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+        {/* Stats Bar */}
+        <Card sx={{ mt: 8, bgcolor: "rgba(59, 130, 246, 0.06)", border: "1px solid rgba(59, 130, 246, 0.15)" }}>
+          <CardContent>
+            <Grid container spacing={3}>
+              {stats.map((stat, i) => (
+                <Grid size={{ xs: 6, md: 3 }} key={i} sx={{ textAlign: "center" }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: "text.primary" }}>
+                    {stat.value}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    {stat.label}
+                  </Typography>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   );
 };
 

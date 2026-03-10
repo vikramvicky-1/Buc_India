@@ -1,32 +1,48 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowRight, Users, Calendar, Shield } from "lucide-react";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import PeopleIcon from "@mui/icons-material/People";
+import EventIcon from "@mui/icons-material/Event";
+import ShieldIcon from "@mui/icons-material/Shield";
 import { useNavigate } from "react-router-dom";
-import {
-  motion,
-  useInView,
-  useSpring,
-  useTransform,
-  animate,
-} from "framer-motion";
+import SplitText from "./animations/SplitText";
+import heroVideo from "../assets/gallery/WhatsApp Video 2025-08-09 at 21.21.40_0c2cbf8a.mp4";
 
 const AnimatedNumber = ({ value, suffix = "" }) => {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true });
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
-    if (inView) {
-      const controls = animate(0, value, {
-        duration: 2,
-        ease: "easeOut",
-        onUpdate: (latest) => {
-          if (ref.current) {
-            ref.current.textContent = Math.floor(latest) + suffix;
-          }
-        },
-      });
-      return () => controls.stop();
-    }
-  }, [value, inView, suffix]);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          let start = 0;
+          const duration = 2000;
+          const startTime = performance.now();
+          const step = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            if (ref.current) {
+              ref.current.textContent = Math.floor(eased * value) + suffix;
+            }
+            if (progress < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [value, suffix, hasAnimated]);
 
   return <span ref={ref}>0{suffix}</span>;
 };
@@ -44,200 +60,169 @@ const Hero = () => {
     return () => window.removeEventListener("user-login-change", loginHandler);
   }, []);
 
-  const scrollToEvents = () => {
-    navigate("/events");
-  };
-
+  const scrollToEvents = () => navigate("/events");
   const handleJoinClick = () => {
-    if (isLoggedIn) {
-      return;
-    } else {
-      navigate("/signup");
-    }
+    if (!isLoggedIn) navigate("/signup");
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.8,
-        ease: [0.22, 1, 0.36, 1],
-      },
-    },
-  };
-
-  const statsVariants = {
-    hidden: { scale: 0.8, opacity: 0 },
-    visible: {
-      scale: 1,
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-      },
-    },
-  };
+  const stats = [
+    { icon: <PeopleIcon sx={{ fontSize: 32, color: "#3B82F6" }} />, value: 500, suffix: "+", label: "Members" },
+    { icon: <EventIcon sx={{ fontSize: 32, color: "#8B5CF6" }} />, value: 10, suffix: "+", label: "Yearly Events" },
+    { icon: <ShieldIcon sx={{ fontSize: 32, color: "#3B82F6" }} />, value: 4, suffix: "+", label: "Years Strong" },
+  ];
 
   return (
-    <section
+    <Box
+      component="section"
       id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-950"
+      sx={{
+        position: "relative",
+        minHeight: { xs: "auto", md: "100vh" },
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        bgcolor: "#020617", // Modern deep slate
+        mt: -10, // Pull up to meet header if needed
+        pt: { xs: 12, md: 0 }
+      }}
     >
-      <motion.div
-        initial={{ scale: 1.1, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1.5 }}
-        className="absolute inset-0 z-0"
-      >
+      {/* Video Background */}
+      <Box sx={{ position: "absolute", inset: 0, zIndex: 0 }}>
         <video
-          className="w-full h-full object-cover"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
           autoPlay
           muted
           loop
           playsInline
           poster="https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
         >
-          <source src="https://videos.pexels.com/video-files/856190/856190-hd_1280_720_25fps.mp4" type="video/mp4" />
+          <source src={heroVideo} type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/55 via-slate-950/70 to-orange-900/55 backdrop-blur-[3px]"></div>
-      </motion.div>
+        {/* Sleek Gradient Overlay */}
+        <Box sx={{
+          position: "absolute",
+          inset: 0,
+          background: 'linear-gradient(to bottom, rgba(2, 6, 23, 0.4) 0%, rgba(2, 6, 23, 0.8) 100%)',
+          zIndex: 1
+        }} />
+      </Box>
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
-      >
-        <div className="mb-6 sm:mb-8 pt-16 sm:pt-20 lg:pt-24">
-          <motion.h1
-            variants={itemVariants}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight tracking-tight"
+      {/* Content */}
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10, textAlign: "center", py: { xs: 8, md: 10 } }}>
+        <Box sx={{ mb: 6 }}>
+          <Box sx={{ display: 'inline-flex', alignItems: 'center', px: 3, py: 0.8, mb: 4, borderRadius: '999px', border: '1px solid', borderColor: '#d1d5db', bgcolor: 'rgba(156, 163, 175, 0.1)', backdropFilter: 'blur(5px)', boxShadow: '0 0 12px rgba(209, 213, 219, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.1)' }}>
+            <Typography variant="caption" sx={{ color: "#d1d5db", fontWeight: 800, textTransform: 'uppercase', letterSpacing: 3, textShadow: '0px 1px 3px rgba(0,0,0,0.8)' }}>
+              India's Premier Riding Community
+            </Typography>
+          </Box>
+          <Typography
+            variant="h1"
+            sx={{
+              fontSize: { xs: "2.5rem", sm: "3.5rem", md: "4.5rem", lg: "5.5rem" },
+              fontWeight: 900,
+              color: "text.primary",
+              mb: 3,
+              lineHeight: 1.1,
+              letterSpacing: "-0.04em",
+              fontFamily: '\"Audiowide\", sans-serif',
+              textShadow: '0 0 20px rgba(59, 130, 246, 0.2)'
+            }}
           >
-            <span className="block text-white bg-clip-text bg-gradient-to-r from-white via-orange-100 to-white px-2">
-              Bikers Unity Calls
-            </span>
-          </motion.h1>
-          <motion.p
-            variants={itemVariants}
-            className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-6 sm:mb-8 max-w-2xl sm:max-w-3xl mx-auto px-2 leading-relaxed font-light"
+            <SplitText
+              text="Bikers Unity Calls"
+              delay={40}
+              duration={1}
+              ease="power4.out"
+              splitType="chars"
+              from={{ opacity: 0, scale: 0.8, y: 50 }}
+              to={{ opacity: 1, scale: 1, y: 0 }}
+              textAlign="center"
+              tag="span"
+            />
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              fontSize: { xs: "1rem", sm: "1.25rem" },
+              color: "text.secondary",
+              mb: 5,
+              maxWidth: 800,
+              mx: "auto",
+              lineHeight: 1.8,
+              fontWeight: 400,
+              opacity: 0.9
+            }}
           >
             Where passion meets the pavement. Join a community of riders across
             India who share the love for the open road, adventure, and the
             unbreakable bonds forged on two wheels.
-          </motion.p>
-        </div>
+          </Typography>
 
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 px-2"
-        >
-          <motion.div
-            variants={statsVariants}
-            whileHover={{ y: -5, borderColor: "rgba(249, 115, 22, 0.4)" }}
-            className="bg-black/40 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-orange-500/20 transition-colors duration-300"
-          >
-            <Users className="h-8 w-8 sm:h-12 sm:w-12 text-orange-500 mx-auto mb-3 sm:mb-4" />
-            <div className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
-              <AnimatedNumber value={500} suffix="+" />
-            </div>
-            <div className="text-sm sm:text-base text-gray-400 font-medium uppercase tracking-wider">
-              Members
-            </div>
-          </motion.div>
-          <motion.div
-            variants={statsVariants}
-            whileHover={{ y: -5, borderColor: "rgba(249, 115, 22, 0.4)" }}
-            className="bg-black/40 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-orange-500/20 transition-colors duration-300"
-          >
-            <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-orange-500 mx-auto mb-3 sm:mb-4" />
-            <div className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
-              <AnimatedNumber value={10} suffix="+" />
-            </div>
-            <div className="text-sm sm:text-base text-gray-400 font-medium uppercase tracking-wider">
-              Events This Year
-            </div>
-          </motion.div>
-          <motion.div
-            variants={statsVariants}
-            whileHover={{ y: -5, borderColor: "rgba(249, 115, 22, 0.4)" }}
-            className="bg-black/40 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-orange-500/20 sm:col-span-2 lg:col-span-1 transition-colors duration-300"
-          >
-            <Shield className="h-8 w-8 sm:h-12 sm:w-12 text-orange-500 mx-auto mb-3 sm:mb-4" />
-            <div className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
-              <AnimatedNumber value={4} suffix="+" />
-            </div>
-            <div className="text-sm sm:text-base text-gray-400 font-medium uppercase tracking-wider">
-              Years Strong
-            </div>
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-2"
-        >
-          {!isLoggedIn && (
-            <motion.button
-              whileHover={{
-                scale: 1.05,
-                shadow: "0 10px 25px -5px rgba(249, 115, 22, 0.4)",
+          {/* CTAs */}
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2.5, justifyContent: "center", alignItems: "center", mb: 8 }}>
+            {!isLoggedIn && (
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleJoinClick}
+                endIcon={<ArrowForwardIcon />}
+                sx={{
+                  px: 5,
+                  py: 1.8,
+                  fontSize: "1.05rem",
+                  width: { xs: "100%", sm: "auto" },
+                  borderRadius: 4,
+                  fontWeight: 900,
+                  boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4)',
+                  bgcolor: 'primary.main',
+                  "&:hover": { bgcolor: 'primary.dark' }
+                }}
+              >
+                Join the Brotherhood
+              </Button>
+            )}
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={scrollToEvents}
+              sx={{
+                px: 5,
+                py: 1.8,
+                fontSize: "1.05rem",
+                width: { xs: "100%", sm: "auto" },
+                borderRadius: 4,
+                fontWeight: 900,
+                border: "2px solid rgba(255,255,255,0.1)",
+                color: "text.primary",
+                backdropFilter: 'blur(10px)',
+                "&:hover": { border: "2px solid #3B82F6", bgcolor: "rgba(59, 130, 246, 0.05)" },
               }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleJoinClick}
-              className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-red-600 text-white px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg transition-all duration-300 flex items-center justify-center space-x-2"
             >
-              <span>Join Our Community</span>
-              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-            </motion.button>
-          )}
-          <motion.button
-            whileHover={{
-              scale: 1.05,
-              backgroundColor: "rgba(255, 255, 255, 1)",
-              color: "rgba(0, 0, 0, 1)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            onClick={scrollToEvents}
-            className={`w-full sm:w-auto border-2 border-white text-white px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg transition-all duration-300 ${isLoggedIn ? "bg-white/10" : ""}`}
-          >
-            View Upcoming Rides
-          </motion.button>
-        </motion.div>
-      </motion.div>
+              Upcoming Rides
+            </Button>
+          </Box>
+        </Box>
 
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{
-          delay: 2,
-          duration: 1,
-          repeat: Infinity,
-          repeatType: "reverse",
-        }}
-        className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2"
-      >
-        <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-white/30 rounded-full flex justify-center">
-          <motion.div
-            animate={{ y: [0, 12, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-1 h-2 sm:h-3 bg-orange-500 rounded-full mt-1.5 sm:mt-2"
-          ></motion.div>
+        {/* Stats Cards - New Layout */}
+        <div className="mx-auto max-w-7xl px-6 lg:px-8 pb-12">
+          <dl className="grid grid-cols-1 gap-x-8 gap-y-12 text-center lg:grid-cols-3">
+            {[
+              { label: "Members", value: "500", suffix: "+" },
+              { label: "Events This Year", value: "10", suffix: "+" },
+              { label: "Years Strong", value: "4", suffix: "+" }
+            ].map((stat, index) => (
+              <div key={index} className="mx-auto flex max-w-xs flex-col gap-y-4">
+                <dt className="text-base/7 text-gray-400 font-medium tracking-wide uppercase">{stat.label}</dt>
+                <dd className="order-first text-4xl font-semibold tracking-tight text-white sm:text-6xl font-['Audiowide']">
+                  <AnimatedNumber value={parseInt(stat.value)} suffix={stat.suffix} />
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
-      </motion.div>
-    </section>
+      </Container>
+    </Box>
   );
 };
 

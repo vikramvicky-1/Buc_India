@@ -266,7 +266,7 @@ const GalleryManagement = () => {
 
         {loading ? (
           <div className="text-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
             <p className="mt-4 text-gray-400">Loading gallery...</p>
           </div>
         ) : items.length === 0 ? (
@@ -294,7 +294,7 @@ const GalleryManagement = () => {
                 </div>
                 <div className="event-card-header">
                   <h3 className="flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-orange-500" />
+                    <ImageIcon className="w-4 h-4 text-blue-500" />
                     {item.eventName}
                   </h3>
                 </div>
@@ -303,7 +303,7 @@ const GalleryManagement = () => {
                     <div className="detail-item">
                       <span className="detail-label">Event Date:</span>
                       <span>
-                        <Calendar className="w-3 h-3 inline-block mr-1 text-orange-500" />
+                        <Calendar className="w-3 h-3 inline-block mr-1 text-blue-500" />
                         {formatDate(item.eventDate)}
                       </span>
                     </div>
@@ -358,16 +358,16 @@ const GalleryManagement = () => {
             </div>
             <div className="p-6">
               <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-orange-500" />
+                <ImageIcon className="w-5 h-5 text-blue-500" />
                 {selectedItem.eventName}
               </h3>
               <p className="text-gray-300 mb-2">
-                <Calendar className="w-4 h-4 inline-block mr-2 text-orange-500" />
+                <Calendar className="w-4 h-4 inline-block mr-2 text-blue-500" />
                 {formatDate(selectedItem.eventDate)}
               </p>
               <p className="text-gray-400 text-sm">
                 Category:{" "}
-                <span className="font-semibold text-orange-400">
+                <span className="font-semibold text-blue-400">
                   {getCategoryLabel(selectedItem.category)}
                 </span>
               </p>
@@ -379,10 +379,10 @@ const GalleryManagement = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
-          <div className="bg-gray-900 rounded-lg p-8 max-w-md w-full text-center border border-orange-500/30 shadow-2xl">
+          <div className="bg-gray-900 rounded-lg p-8 max-w-md w-full text-center border border-blue-500/30 shadow-2xl">
             <div className="mb-6">
-              <div className="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="h-12 w-12 text-orange-500" />
+              <div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-12 w-12 text-blue-500" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">Confirm Delete</h3>
               <p className="text-gray-300">
@@ -398,7 +398,7 @@ const GalleryManagement = () => {
               </button>
               <button
                 onClick={() => handleDelete(showDeleteConfirm)}
-                className="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all"
+                className="flex-1 px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-all"
               >
                 Delete
               </button>
