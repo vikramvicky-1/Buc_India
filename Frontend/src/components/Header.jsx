@@ -44,7 +44,8 @@ const Header = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
-  const handler = () => setIsLoggedIn(sessionStorage.getItem("userLoggedIn") === "true");
+  const handler = () =>
+    setIsLoggedIn(sessionStorage.getItem("userLoggedIn") === "true");
   const loginHandler = () => {
     handler();
     const email = sessionStorage.getItem("userEmail");
@@ -94,7 +95,12 @@ const Header = () => {
 
   const getInitials = (name) => {
     if (!name) return "U";
-    return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -114,7 +120,7 @@ const Header = () => {
             width: "100%",
             mx: "auto",
             px: { xs: 3, sm: 5 },
-            minHeight: { xs: 72, sm: 84 }, /* Increased height to ~80-90px */
+            minHeight: { xs: 72, sm: 84 } /* Increased height to ~80-90px */,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -128,25 +134,34 @@ const Header = () => {
               alignItems: "center",
               gap: 2,
               cursor: "pointer",
-              flex: 1, /* Takes exactly 1/3 of the space */
+              flex: 1 /* Takes exactly 1/3 of the space */,
               justifyContent: "flex-start",
             }}
           >
             <Avatar
               src={buclogo}
               alt="BUC India"
-              sx={{ width: 56, height: 56, border: "2px solid", borderColor: "rgba(255,255,255,0.1)", boxShadow: "0 2px 10px rgba(0,0,0,0.2)" }}
+              sx={{
+                width: 56,
+                height: 56,
+                border: "2px solid",
+                borderColor: "rgba(255,255,255,0.1)",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+              }}
             />
             <Box>
               <Typography
                 variant="subtitle1"
                 sx={{
                   fontFamily: "'Audiowide', 'Inter', sans-serif",
-                  fontWeight: 900, /* Bold typography */
+                  fontWeight: 900 /* Bold typography */,
                   color: "text.primary",
-                  fontSize: { xs: "1.4rem", sm: "1.6rem" }, /* Larger font size */
+                  fontSize: {
+                    xs: "1.4rem",
+                    sm: "1.6rem",
+                  } /* Larger font size */,
                   lineHeight: 1.1,
-                  letterSpacing: "-0.5px", /* Modern tight tracking */
+                  letterSpacing: "-0.5px" /* Modern tight tracking */,
                 }}
               >
                 Buc_India
@@ -154,11 +169,11 @@ const Header = () => {
               <Typography
                 variant="caption"
                 sx={{
-                  color: "text.secondary", /* Light grey */
+                  color: "text.secondary" /* Light grey */,
                   fontSize: "0.75rem",
                   letterSpacing: "0.5px",
                   fontWeight: 500,
-                  display: { xs: "none", sm: "block" }
+                  display: { xs: "none", sm: "block" },
                 }}
               >
                 Ride Together, Stand Together
@@ -171,14 +186,14 @@ const Header = () => {
             sx={{
               display: { xs: "none", md: "flex" },
               alignItems: "center",
-              justifyContent: "center", /* Perfectly centered */
-              gap: 1, /* Expanded spacing */
+              justifyContent: "center" /* Perfectly centered */,
+              gap: 1 /* Expanded spacing */,
               bgcolor: "rgba(255, 255, 255, 0.03)",
               borderRadius: "999px",
               border: "1px solid",
               borderColor: "rgba(255, 255, 255, 0.08)",
               p: 0.75,
-              backdropFilter: "blur(20px)", /* Apple-like glassmorphism */
+              backdropFilter: "blur(20px)" /* Apple-like glassmorphism */,
               boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
             }}
           >
@@ -187,21 +202,28 @@ const Header = () => {
                 key={item.name}
                 onClick={() => handleNavigation(item.path)}
                 sx={{
-                  color: location.pathname === item.path ? "white" : "text.secondary",
-                  bgcolor: location.pathname === item.path ? "primary.main" : "transparent",
+                  color:
+                    location.pathname === item.path
+                      ? "white"
+                      : "text.secondary",
+                  bgcolor:
+                    location.pathname === item.path
+                      ? "primary.main"
+                      : "transparent",
                   fontWeight: location.pathname === item.path ? 700 : 500,
                   fontSize: "0.9rem",
                   letterSpacing: "0.2px",
-                  px: 3, /* Increased padding */
-                  py: 1.2, /* Increased padding */
+                  px: 3 /* Increased padding */,
+                  py: 1.2 /* Increased padding */,
                   borderRadius: "999px",
                   textTransform: "none",
                   minWidth: "auto",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   "&:hover": {
-                    bgcolor: location.pathname === item.path
-                      ? "primary.dark"
-                      : "rgba(255, 255, 255, 0.08)",
+                    bgcolor:
+                      location.pathname === item.path
+                        ? "primary.dark"
+                        : "rgba(255, 255, 255, 0.08)",
                     color: "white",
                   },
                 }}
@@ -212,13 +234,15 @@ const Header = () => {
           </Box>
 
           {/* Right: Desktop Actions */}
-          <Box sx={{
-            display: { xs: "none", md: "flex" },
-            alignItems: "center",
-            gap: 2,
-            flex: 1,  /* Takes exact 1/3 of the space to keep nav centered */
-            justifyContent: "flex-end"
-          }}>
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              alignItems: "center",
+              gap: 2,
+              flex: 1 /* Takes exact 1/3 of the space to keep nav centered */,
+              justifyContent: "flex-end",
+            }}
+          >
             {isLoggedIn ? (
               <Button
                 onClick={() => handleNavigation("/profile")}
@@ -237,12 +261,25 @@ const Header = () => {
               >
                 <Avatar
                   src={userProfile?.profileImage}
-                  sx={{ width: 36, height: 36, bgcolor: "primary.main", fontSize: "0.9rem" }}
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    bgcolor: "primary.main",
+                    fontSize: "0.9rem",
+                  }}
                 >
                   {getInitials(userProfile?.fullName)}
                 </Avatar>
                 <Box sx={{ textAlign: "left", flexShrink: 0 }}>
-                  <Typography variant="caption" sx={{ color: "text.primary", fontWeight: 700, display: "block", lineHeight: 1.2 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "text.primary",
+                      fontWeight: 700,
+                      display: "block",
+                      lineHeight: 1.2,
+                    }}
+                  >
                     {userProfile?.fullName || "Member"}
                   </Typography>
                 </Box>
@@ -258,7 +295,7 @@ const Header = () => {
                     fontSize: "0.9rem",
                     fontWeight: 600,
                     textTransform: "none",
-                    "&:hover": { color: "white" }
+                    "&:hover": { color: "white" },
                   }}
                 >
                   Login
@@ -307,10 +344,24 @@ const Header = () => {
           },
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            p: 2,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Avatar src={buclogo} sx={{ width: 32, height: 32 }} />
-            <Typography variant="subtitle2" sx={{ fontFamily: "'Audiowide', sans-serif", fontWeight: 700, color: "text.primary" }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontFamily: "'Audiowide', sans-serif",
+                fontWeight: 700,
+                color: "text.primary",
+              }}
+            >
               Buc_India
             </Typography>
           </Box>
@@ -327,9 +378,17 @@ const Header = () => {
               key={item.name}
               onClick={() => handleNavigation(item.path)}
               selected={location.pathname === item.path}
-              sx={{ borderRadius: 2, mb: 0.5 }}
+              sx={{ borderRadius: 1, mb: 0.5 }}
             >
-              <ListItemIcon sx={{ minWidth: 36, color: location.pathname === item.path ? "primary.main" : "text.secondary" }}>
+              <ListItemIcon
+                sx={{
+                  minWidth: 36,
+                  color:
+                    location.pathname === item.path
+                      ? "primary.main"
+                      : "text.secondary",
+                }}
+              >
                 {item.icon}
               </ListItemIcon>
               <ListItemText
@@ -355,7 +414,12 @@ const Header = () => {
                 <ListItemIcon sx={{ minWidth: 36 }}>
                   <Avatar
                     src={userProfile?.profileImage}
-                    sx={{ width: 28, height: 28, bgcolor: "primary.main", fontSize: "0.7rem" }}
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      bgcolor: "primary.main",
+                      fontSize: "0.7rem",
+                    }}
                   >
                     {getInitials(userProfile?.fullName)}
                   </Avatar>
@@ -363,7 +427,10 @@ const Header = () => {
                 <ListItemText
                   primary={userProfile?.fullName || "Member"}
                   secondary="View Profile"
-                  primaryTypographyProps={{ fontSize: "0.875rem", fontWeight: 600 }}
+                  primaryTypographyProps={{
+                    fontSize: "0.875rem",
+                    fontWeight: 600,
+                  }}
                   secondaryTypographyProps={{ fontSize: "0.7rem" }}
                 />
               </ListItemButton>
@@ -374,7 +441,13 @@ const Header = () => {
                 <ListItemIcon sx={{ minWidth: 36, color: "error.main" }}>
                   <LogoutIcon fontSize="small" />
                 </ListItemIcon>
-                <ListItemText primary="Logout" primaryTypographyProps={{ fontSize: "0.875rem", fontWeight: 600 }} />
+                <ListItemText
+                  primary="Logout"
+                  primaryTypographyProps={{
+                    fontSize: "0.875rem",
+                    fontWeight: 600,
+                  }}
+                />
               </ListItemButton>
             </>
           ) : (

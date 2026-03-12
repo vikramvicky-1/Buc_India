@@ -38,7 +38,7 @@ const AnimatedNumber = ({ value, suffix = "" }) => {
           requestAnimationFrame(step);
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -66,9 +66,24 @@ const Hero = () => {
   };
 
   const stats = [
-    { icon: <PeopleIcon sx={{ fontSize: 32, color: "#3B82F6" }} />, value: 500, suffix: "+", label: "Members" },
-    { icon: <EventIcon sx={{ fontSize: 32, color: "#8B5CF6" }} />, value: 10, suffix: "+", label: "Yearly Events" },
-    { icon: <ShieldIcon sx={{ fontSize: 32, color: "#3B82F6" }} />, value: 4, suffix: "+", label: "Years Strong" },
+    {
+      icon: <PeopleIcon sx={{ fontSize: 32, color: "#3B82F6" }} />,
+      value: 500,
+      suffix: "+",
+      label: "Members",
+    },
+    {
+      icon: <EventIcon sx={{ fontSize: 32, color: "#8B5CF6" }} />,
+      value: 10,
+      suffix: "+",
+      label: "Yearly Events",
+    },
+    {
+      icon: <ShieldIcon sx={{ fontSize: 32, color: "#3B82F6" }} />,
+      value: 4,
+      suffix: "+",
+      label: "Years Strong",
+    },
   ];
 
   return (
@@ -84,7 +99,7 @@ const Hero = () => {
         overflow: "hidden",
         bgcolor: "#020617", // Modern deep slate
         mt: -10, // Pull up to meet header if needed
-        pt: { xs: 12, md: 0 }
+        pt: { xs: 12, md: 0 },
       }}
     >
       {/* Video Background */}
@@ -100,33 +115,73 @@ const Hero = () => {
           <source src={heroVideo} type="video/mp4" />
         </video>
         {/* Sleek Gradient Overlay */}
-        <Box sx={{
-          position: "absolute",
-          inset: 0,
-          background: 'linear-gradient(to bottom, rgba(2, 6, 23, 0.4) 0%, rgba(2, 6, 23, 0.8) 100%)',
-          zIndex: 1
-        }} />
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to bottom, rgba(2, 6, 23, 0.4) 0%, rgba(2, 6, 23, 0.8) 100%)",
+            zIndex: 1,
+          }}
+        />
       </Box>
 
       {/* Content */}
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10, textAlign: "center", py: { xs: 8, md: 10 } }}>
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: "relative",
+          zIndex: 10,
+          textAlign: "center",
+          py: { xs: 8, md: 10 },
+        }}
+      >
         <Box sx={{ mb: 6 }}>
-          <Box sx={{ display: 'inline-flex', alignItems: 'center', px: 3, py: 0.8, mb: 4, borderRadius: '999px', border: '1px solid', borderColor: '#d1d5db', bgcolor: 'rgba(156, 163, 175, 0.1)', backdropFilter: 'blur(5px)', boxShadow: '0 0 12px rgba(209, 213, 219, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.1)' }}>
-            <Typography variant="caption" sx={{ color: "#d1d5db", fontWeight: 800, textTransform: 'uppercase', letterSpacing: 3, textShadow: '0px 1px 3px rgba(0,0,0,0.8)' }}>
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              px: 3,
+              py: 0.8,
+              mb: 4,
+              borderRadius: "999px",
+              border: "1px solid",
+              borderColor: "#d1d5db",
+              bgcolor: "rgba(156, 163, 175, 0.1)",
+              backdropFilter: "blur(5px)",
+              boxShadow:
+                "0 0 12px rgba(209, 213, 219, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.1)",
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#d1d5db",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: 3,
+                textShadow: "0px 1px 3px rgba(0,0,0,0.8)",
+              }}
+            >
               India's Premier Riding Community
             </Typography>
           </Box>
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: "2.5rem", sm: "3.5rem", md: "4.5rem", lg: "5.5rem" },
+              fontSize: {
+                xs: "2.5rem",
+                sm: "3.5rem",
+                md: "4.5rem",
+                lg: "5.5rem",
+              },
               fontWeight: 900,
               color: "text.primary",
               mb: 3,
               lineHeight: 1.1,
               letterSpacing: "-0.04em",
               fontFamily: '\"Audiowide\", sans-serif',
-              textShadow: '0 0 20px rgba(59, 130, 246, 0.2)'
+              textShadow: "0 0 20px rgba(59, 130, 246, 0.2)",
             }}
           >
             <SplitText
@@ -151,7 +206,7 @@ const Hero = () => {
               mx: "auto",
               lineHeight: 1.8,
               fontWeight: 400,
-              opacity: 0.9
+              opacity: 0.9,
             }}
           >
             Where passion meets the pavement. Join a community of riders across
@@ -160,7 +215,16 @@ const Hero = () => {
           </Typography>
 
           {/* CTAs */}
-          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2.5, justifyContent: "center", alignItems: "center", mb: 8 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 2.5,
+              justifyContent: "center",
+              alignItems: "center",
+              mb: 8,
+            }}
+          >
             {!isLoggedIn && (
               <Button
                 variant="contained"
@@ -172,11 +236,11 @@ const Hero = () => {
                   py: 1.8,
                   fontSize: "1.05rem",
                   width: { xs: "100%", sm: "auto" },
-                  borderRadius: 4,
+                  borderRadius: 1.25,
                   fontWeight: 900,
-                  boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4)',
-                  bgcolor: 'primary.main',
-                  "&:hover": { bgcolor: 'primary.dark' }
+                  boxShadow: "0 4px 20px rgba(59, 130, 246, 0.4)",
+                  bgcolor: "primary.main",
+                  "&:hover": { bgcolor: "primary.dark" },
                 }}
               >
                 Join the Brotherhood
@@ -191,12 +255,15 @@ const Hero = () => {
                 py: 1.8,
                 fontSize: "1.05rem",
                 width: { xs: "100%", sm: "auto" },
-                borderRadius: 4,
+                borderRadius: 2.5,
                 fontWeight: 900,
                 border: "2px solid rgba(255,255,255,0.1)",
                 color: "text.primary",
-                backdropFilter: 'blur(10px)',
-                "&:hover": { border: "2px solid #3B82F6", bgcolor: "rgba(59, 130, 246, 0.05)" },
+                backdropFilter: "blur(10px)",
+                "&:hover": {
+                  border: "2px solid #3B82F6",
+                  bgcolor: "rgba(59, 130, 246, 0.05)",
+                },
               }}
             >
               Upcoming Rides
@@ -210,12 +277,20 @@ const Hero = () => {
             {[
               { label: "Members", value: "500", suffix: "+" },
               { label: "Events This Year", value: "10", suffix: "+" },
-              { label: "Years Strong", value: "4", suffix: "+" }
+              { label: "Years Strong", value: "4", suffix: "+" },
             ].map((stat, index) => (
-              <div key={index} className="mx-auto flex max-w-xs flex-col gap-y-4">
-                <dt className="text-base/7 text-gray-400 font-medium tracking-wide uppercase">{stat.label}</dt>
+              <div
+                key={index}
+                className="mx-auto flex max-w-xs flex-col gap-y-4"
+              >
+                <dt className="text-base/7 text-gray-400 font-medium tracking-wide uppercase">
+                  {stat.label}
+                </dt>
                 <dd className="order-first text-4xl font-semibold tracking-tight text-white sm:text-6xl font-['Audiowide']">
-                  <AnimatedNumber value={parseInt(stat.value)} suffix={stat.suffix} />
+                  <AnimatedNumber
+                    value={parseInt(stat.value)}
+                    suffix={stat.suffix}
+                  />
                 </dd>
               </div>
             ))}

@@ -41,7 +41,15 @@ const ConfirmationModal = ({
   confirmText,
   loading,
 }) => (
-  <Dialog open={isOpen} onClose={onClose} maxWidth="xs" fullWidth>
+  <Dialog
+    open={isOpen}
+    onClose={onClose}
+    maxWidth="xs"
+    fullWidth
+    PaperProps={{
+      sx: { borderRadius: 1.25 },
+    }}
+  >
     <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
     <DialogContent>
       <Typography variant="body2" sx={{ color: "text.secondary" }}>
@@ -73,7 +81,8 @@ const PublicHome = () => {
   const [loading, setLoading] = useState(false);
   const [registrationLoading, setRegistrationLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
+  const [showCompleteProfileModal, setShowCompleteProfileModal] =
+    useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
@@ -84,10 +93,22 @@ const PublicHome = () => {
 
   const isProfileComplete = (profile) => {
     const requiredFields = [
-      "fullName", "email", "phone", "address", "city", "state", "pincode",
-      "dateOfBirth", "bloodGroup", "bikeModel", "bikeRegistrationNumber",
-      "licenseNumber", "emergencyContactName", "emergencyContactPhone",
-      "profileImage", "licenseImage",
+      "fullName",
+      "email",
+      "phone",
+      "address",
+      "city",
+      "state",
+      "pincode",
+      "dateOfBirth",
+      "bloodGroup",
+      "bikeModel",
+      "bikeRegistrationNumber",
+      "licenseNumber",
+      "emergencyContactName",
+      "emergencyContactPhone",
+      "profileImage",
+      "licenseImage",
     ];
     return requiredFields.every(
       (field) => profile[field] && profile[field].toString().trim() !== "",
@@ -130,7 +151,16 @@ const PublicHome = () => {
 
       const data = new FormData();
       Object.keys(profile).forEach((key) => {
-        if (!["_id", "__v", "createdAt", "updatedAt", "profileImage", "profileImagePublicId"].includes(key)) {
+        if (
+          ![
+            "_id",
+            "__v",
+            "createdAt",
+            "updatedAt",
+            "profileImage",
+            "profileImagePublicId",
+          ].includes(key)
+        ) {
           data.append(key, profile[key]);
         }
       });
@@ -216,18 +246,27 @@ const PublicHome = () => {
       <Container maxWidth="lg">
         {/* Header */}
         <Box sx={{ textAlign: "center", mb: 6 }}>
-          <Typography variant="h2" sx={{
-            fontWeight: 900,
-            color: "text.primary",
-            mb: 1,
-            fontSize: { xs: "2.5rem", md: "3.5rem" },
-            fontFamily: "'Audiowide', sans-serif",
-          }}>
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 900,
+              color: "text.primary",
+              mb: 1,
+              fontSize: { xs: "2.5rem", md: "3.5rem" },
+              fontFamily: "'Audiowide', sans-serif",
+            }}
+          >
             {activeTab === "upcoming" ? "Upcoming" : "Past"}{" "}
-            <Box component="span" sx={{ color: "primary.main" }}>Events</Box>
+            <Box component="span" sx={{ color: "primary.main" }}>
+              Events
+            </Box>
           </Typography>
-          <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 600, mx: "auto", mb: 4 }}>
-            Festival-style rides, breakfast meets and long hauls curated by BUC and partner clubs across India.
+          <Typography
+            variant="body1"
+            sx={{ color: "text.secondary", maxWidth: 600, mx: "auto", mb: 4 }}
+          >
+            Festival-style rides, breakfast meets and long hauls curated by BUC
+            and partner clubs across India.
           </Typography>
 
           <ToggleButtonGroup
@@ -278,6 +317,7 @@ const PublicHome = () => {
                       height: "100%",
                       position: "relative",
                       overflow: "hidden",
+                      borderRadius: 1.25,
                     }}
                   >
                     {/* Image */}
@@ -297,15 +337,19 @@ const PublicHome = () => {
                         sx={{
                           position: "absolute",
                           inset: 0,
-                          background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)",
+                          background:
+                            "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)",
                         }}
                       />
                       <Chip
-                        label={new Date(event.eventDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
+                        label={new Date(event.eventDate).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
                         size="small"
                         color="primary"
                         sx={{
@@ -329,7 +373,10 @@ const PublicHome = () => {
                           borderRadius: "50%",
                           bgcolor: "rgba(255,255,255,0.9)",
                           color: "primary.main",
-                          "&:hover": { bgcolor: "primary.main", color: "white" },
+                          "&:hover": {
+                            bgcolor: "primary.main",
+                            color: "white",
+                          },
                         }}
                       >
                         <ShareIcon fontSize="small" />
@@ -337,18 +384,33 @@ const PublicHome = () => {
                     </Box>
 
                     {/* Content */}
-                    <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontSize: "1.05rem" }}>
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{ fontWeight: 700, mb: 1, fontSize: "1.05rem" }}
+                      >
                         {event.title}
                       </Typography>
 
                       <Chip
-                        icon={<GroupsIcon sx={{ fontSize: "14px !important" }} />}
+                        icon={
+                          <GroupsIcon sx={{ fontSize: "14px !important" }} />
+                        }
                         label={`${event.registrationCount || 0} riders in`}
                         size="small"
                         variant="outlined"
                         color="primary"
-                        sx={{ alignSelf: "flex-start", mb: 2, fontSize: "0.7rem" }}
+                        sx={{
+                          alignSelf: "flex-start",
+                          mb: 2,
+                          fontSize: "0.7rem",
+                        }}
                       />
 
                       <Typography
@@ -365,18 +427,43 @@ const PublicHome = () => {
                         {event.description}
                       </Typography>
 
-                      <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 1 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <LocationOnIcon sx={{ fontSize: 16, color: "primary.main" }} />
-                          <Typography variant="caption" noWrap>{event.location}</Typography>
+                      <Box
+                        sx={{
+                          mt: "auto",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 1,
+                        }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <LocationOnIcon
+                            sx={{ fontSize: 16, color: "primary.main" }}
+                          />
+                          <Typography variant="caption" noWrap>
+                            {event.location}
+                          </Typography>
                         </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <FlagIcon sx={{ fontSize: 16, color: "primary.main" }} />
-                          <Typography variant="caption" noWrap>{event.meetingPoint}</Typography>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <FlagIcon
+                            sx={{ fontSize: 16, color: "primary.main" }}
+                          />
+                          <Typography variant="caption" noWrap>
+                            {event.meetingPoint}
+                          </Typography>
                         </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <AccessTimeIcon sx={{ fontSize: 16, color: "primary.main" }} />
-                          <Typography variant="caption">{formatTime(event.eventTime)}</Typography>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <AccessTimeIcon
+                            sx={{ fontSize: 16, color: "primary.main" }}
+                          />
+                          <Typography variant="caption">
+                            {formatTime(event.eventTime)}
+                          </Typography>
                         </Box>
                       </Box>
                     </CardContent>
@@ -415,8 +502,10 @@ const PublicHome = () => {
             )}
           </>
         ) : (
-          <Card sx={{ textAlign: "center", py: 10 }}>
-            <EventBusyIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
+          <Card sx={{ textAlign: "center", py: 10, borderRadius: 1.25 }}>
+            <EventBusyIcon
+              sx={{ fontSize: 64, color: "text.disabled", mb: 2 }}
+            />
             <Typography variant="h6" sx={{ color: "text.secondary" }}>
               No {activeTab} events found.
             </Typography>
