@@ -10,6 +10,7 @@ const categories = [
   { id: "events", label: "Events" },
   { id: "bikes", label: "Member Bikes" },
   { id: "rallies", label: "Rallies" },
+  { id: "highlights", label: "Ride Highlights (2–3s Clips)" },
 ];
 
 const GalleryManagement = () => {
@@ -25,8 +26,8 @@ const GalleryManagement = () => {
     eventDate: "",
     category: "all",
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [mediaFile, setMediaFile] = useState(null);
+  const [mediaPreview, setMediaPreview] = useState(null);
 
   useEffect(() => {
     loadItems();
@@ -50,13 +51,13 @@ const GalleryManagement = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
+  const handleMediaChange = (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    setImageFile(file);
+    setMediaFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
-      setImagePreview(reader.result);
+      setMediaPreview(reader.result);
     };
     reader.readAsDataURL(file);
   };
@@ -67,8 +68,8 @@ const GalleryManagement = () => {
       eventDate: "",
       category: "all",
     });
-    setImageFile(null);
-    setImagePreview(null);
+    setMediaFile(null);
+    setMediaPreview(null);
     setIsEditing(false);
     setEditId(null);
   };
@@ -89,8 +90,8 @@ const GalleryManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isEditing && !imageFile) {
-      toast.error("Please select an image to upload");
+    if (!isEditing && !mediaFile) {
+      toast.error("Please select a media file (image or short video) to upload");
       return;
     }
     if (!formData.eventName || !formData.eventDate) {
@@ -102,8 +103,8 @@ const GalleryManagement = () => {
     data.append("eventName", formData.eventName);
     data.append("eventDate", formData.eventDate);
     data.append("category", formData.category);
-    if (imageFile) {
-      data.append("image", imageFile);
+    if (mediaFile) {
+      data.append("media", mediaFile);
     }
 
     setSubmitting(true);
@@ -113,7 +114,7 @@ const GalleryManagement = () => {
         toast.success("Gallery item updated successfully");
       } else {
         await galleryService.create(data);
-        toast.success("Image added to gallery");
+        toast.success("Media added to gallery");
       }
       resetForm();
       loadItems();
@@ -174,7 +175,7 @@ const GalleryManagement = () => {
 
       <div className="event-form-container">
         <div className="event-form">
-          <h2>{isEditing ? "Edit Gallery Item" : "Add Image to BUC Gallery"}</h2>
+          <h2>{isEditing ? "Edit Gallery Item" : "Add Media to BUC Gallery"}</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
@@ -217,17 +218,17 @@ const GalleryManagement = () => {
                 </select>
               </div>
               <div className="form-group">
-                <label>Image {isEditing ? "(Leave blank to keep current)" : "*"}</label>
+                <label>Media {isEditing ? "(Leave blank to keep current)" : "*"}</label>
                 <input
                   type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
+                  accept="image/*,video/*"
+                  onChange={handleMediaChange}
                   required={!isEditing}
                 />
-                {imagePreview && (
+                {mediaPreview && (
                   <div className="mt-2 relative w-full h-32 rounded-lg overflow-hidden border border-gray-700">
                     <img
-                      src={imagePreview}
+                      src={mediaPreview}
                       alt="Preview"
                       className="w-full h-full object-cover"
                     />

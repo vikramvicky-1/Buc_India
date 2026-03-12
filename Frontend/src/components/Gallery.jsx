@@ -36,6 +36,7 @@ const Gallery = () => {
     { id: "events", name: "Events" },
     { id: "bikes", name: "Member Bikes" },
     { id: "rallies", name: "Rallies" },
+    { id: "highlights", name: "Ride Highlights" },
   ];
 
   const autoGalleryItems = useMemo(() => {
@@ -50,11 +51,24 @@ const Gallery = () => {
       const isVideo = /\.(mp4|webm|mov)$/i.test(filename);
       const normalizedPath = path.toLowerCase();
       const lowerFile = filename.toLowerCase();
-      let category = "rides";
-      if (normalizedPath.includes("/rallies/")) category = "rallies";
-      else if (normalizedPath.includes("/rides/") || normalizedPath.includes("/group-rides/")) category = "rides";
-      else if (lowerFile.includes("rally")) category = "rallies";
-      else if (lowerFile.includes("ride")) category = "rides";
+      // Default categorization:
+      // - videos → highlights (short clips)
+      // - images → rides (unless path/name suggests otherwise)
+      let category = isVideo ? "highlights" : "rides";
+
+      if (normalizedPath.includes("/highlights/") || lowerFile.includes("highlight")) {
+        category = "highlights";
+      } else if (normalizedPath.includes("/rallies/") || lowerFile.includes("rally")) {
+        category = "rallies";
+      } else if (
+        normalizedPath.includes("/rides/") ||
+        normalizedPath.includes("/group-rides/") ||
+        lowerFile.includes("ride")
+      ) {
+        category = isVideo ? "highlights" : "rides";
+      } else if (normalizedPath.includes("/events/") || lowerFile.includes("event")) {
+        category = isVideo ? "highlights" : "events";
+      }
       return {
         id: 1000 + index,
         type: isVideo ? "video" : "image",
@@ -71,18 +85,21 @@ const Gallery = () => {
 
   const baseMediaItems = useMemo(
     () =>
-      galleryItems.map((item) => ({
-        id: item._id,
-        type: "image",
-        src: item.imageUrl,
-        title: item.eventName,
-        category: item.category || "all",
-        author: "BUC Admin",
-        eventDate: item.eventDate,
-        likes: 0,
-        comments: 0,
-        fromBackend: true,
-      })),
+      galleryItems.map((item) => {
+        const isVideo = !!item.videoUrl;
+        return {
+          id: item._id,
+          type: isVideo ? "video" : "image",
+          src: isVideo ? item.videoUrl : item.imageUrl,
+          title: item.eventName,
+          category: item.category || (isVideo ? "highlights" : "all"),
+          author: "BUC Admin",
+          eventDate: item.eventDate,
+          likes: 0,
+          comments: 0,
+          fromBackend: true,
+        };
+      }),
     [galleryItems],
   );
 
@@ -199,7 +216,7 @@ const Gallery = () => {
           </Box>
         </Box>
 
-        {/* Media Grid */}
+        {/* Main Media Grid */}
         <Grid container spacing={3}>
           {displayedMedia.map((item) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
@@ -228,17 +245,39 @@ const Gallery = () => {
                       sx={{ aspectRatio: "1 / 1", width: "100%", height: "auto", objectFit: "cover" }}
                       preload="metadata"
                       muted
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const video = e.currentTarget;
-                        if (video.paused) {
-                          video.play().then(() => setPlayingVideos((prev) => new Set(prev).add(item.id)));
-                        } else {
-                          video.pause();
-                          setPlayingVideos((prev) => { const s = new Set(prev); s.delete(item.id); return s; });
-                        }
-                      }}
-                      onEnded={() => setPlayingVideos((prev) => { const s = new Set(prev); s.delete(item.id); return s; })}
+                      playsInline
+                      autoPlay={activeCategory === "highlights"}
+                      loop={activeCategory === "highlights"}
+                      onClick={
+                        activeCategory === "highlights"
+                          ? undefined
+                          : (e) => {
+                              e.stopPropagation();
+                              const video = e.currentTarget;
+                              if (video.paused) {
+                                video.play().then(() =>
+                                  setPlayingVideos((prev) => new Set(prev).add(item.id)),
+                                );
+                              } else {
+                                video.pause();
+                                setPlayingVideos((prev) => {
+                                  const s = new Set(prev);
+                                  s.delete(item.id);
+                                  return s;
+                                });
+                              }
+                            }
+                      }
+                      onEnded={
+                        activeCategory === "highlights"
+                          ? undefined
+                          : () =>
+                              setPlayingVideos((prev) => {
+                                const s = new Set(prev);
+                                s.delete(item.id);
+                                return s;
+                              })
+                      }
                     />
                   ) : (
                     <CardMedia
@@ -275,7 +314,7 @@ const Gallery = () => {
                     </Box>
                   </Box>
 
-                  {item.type === "video" && (
+                  {item.type === "video" && activeCategory !== "highlights" && (
                     <Box sx={{ position: "absolute", top: 15, right: 15, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(0,0,0,0.5)", backdropFilter: 'blur(5px)', borderRadius: 'full', width: 40, height: 40 }}>
                       {playingVideos.has(item.id) ? <PauseIcon sx={{ fontSize: 20, color: 'white' }} /> : <PlayArrowIcon sx={{ fontSize: 20, color: 'white' }} />}
                     </Box>

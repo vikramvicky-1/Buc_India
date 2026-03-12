@@ -29,9 +29,14 @@ const SocialButtons = ({ socials }) => (
       return (
         <IconButton
           key={social.name}
-          href={social.href}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={social.href || "#"}
+          target={social.href ? "_blank" : undefined}
+          rel={social.href ? "noopener noreferrer" : undefined}
+          onClick={(e) => {
+            if (!social.href) {
+              e.preventDefault();
+            }
+          }}
           aria-label={social.name}
           size="small"
           sx={{
@@ -153,20 +158,20 @@ const Footer = () => {
               </Typography>
               <SocialButtons
                 socials={[
-                  { icon: FacebookIcon, href: "#", name: "Facebook" },
+                  { icon: FacebookIcon, href: "", name: "Facebook" },
                   {
                     icon: InstagramIcon,
-                    href: "https://www.instagram.com/buc_india",
+                    href: "https://www.instagram.com/buc_india?igsh=MW5pejllMHhsMjRpZg==",
                     name: "Instagram",
                   },
                   {
                     icon: XIcon,
-                    href: "https://x.com/Buc_India",
+                    href: "",
                     name: "Twitter",
                   },
                   {
                     icon: YouTubeIcon,
-                    href: "https://www.youtube.com/@BucIndia",
+                    href: "",
                     name: "YouTube",
                   },
                 ]}
