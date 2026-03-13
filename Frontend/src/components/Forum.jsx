@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { 
-  PushPin, 
+  Pin, 
   MessageSquare, 
   ThumbsUp, 
   Clock, 
@@ -104,7 +104,7 @@ const Forum = () => {
                     <div key={post.id} className="group bg-carbon-light border border-white/5 p-8 hover:border-copper/30 transition-all duration-500 cursor-pointer">
                        <div className="flex justify-between items-start mb-6">
                           <div className="flex items-center gap-4">
-                             {post.isPinned && <PushPin size={16} className="text-copper rotate-45" />}
+                             {post.isPinned && <Pin size={16} className="text-copper rotate-45" />}
                              <h3 className="font-heading text-2xl uppercase group-hover:text-copper transition-colors">{post.title}</h3>
                           </div>
                           <span className="bg-white/5 px-3 py-1 font-body text-[10px] uppercase tracking-widest text-steel-dim group-hover:bg-copper group-hover:text-carbon transition-colors">
