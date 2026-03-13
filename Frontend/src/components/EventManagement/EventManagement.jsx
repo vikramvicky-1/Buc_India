@@ -12,7 +12,7 @@ import {
   Award, 
   Search, 
   Calendar, 
-  TriangleAlert,
+  AlertTriangle,
   X,
   MapPin,
   Clock,
@@ -428,7 +428,7 @@ const EventManagement = () => {
               className="bg-carbon-light border border-white/10 p-8 md:p-12 max-w-lg w-full relative z-[101]"
             >
                <div className="flex items-center gap-4 text-copper mb-6">
-                  <TriangleAlert size={32} />
+                  <AlertTriangle size={32} />
                   <h3 className="font-heading text-3xl uppercase">Terminate Mission?</h3>
                </div>
                <p className="font-text text-steel-dim text-sm leading-relaxed mb-10 pb-6 border-b border-white/5 italic">
