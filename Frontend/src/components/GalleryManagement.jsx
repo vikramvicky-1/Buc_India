@@ -17,6 +17,23 @@ import {
   ChevronRight,
   Upload
 } from "lucide-react";
+import { 
+  Box, 
+  Container, 
+  Grid, 
+  Typography, 
+  Button, 
+  TextField, 
+  Select, 
+  MenuItem, 
+  FormControl, 
+  InputLabel, 
+  IconButton,
+  Dialog,
+  DialogContent,
+  Card,
+  CardMedia
+} from "@mui/material";
 
 const categories = [
   { id: "all", label: "All Media" },
@@ -40,8 +57,9 @@ const GalleryManagement = () => {
     eventDate: "",
     category: "all",
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [mediaFile, setMediaFile] = useState(null);
+  const [mediaPreview, setMediaPreview] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     loadItems();
@@ -97,7 +115,7 @@ const GalleryManagement = () => {
       eventDate: item.eventDate ? item.eventDate.split("T")[0] : "",
       category: item.category || "all",
     });
-    setImagePreview(item.imageUrl);
+    setMediaPreview(item.imageUrl);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -105,7 +123,7 @@ const GalleryManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isEditing && !imageFile) {
+    if (!isEditing && !mediaFile) {
       toast.error("Please select an image to upload");
       return;
     }
@@ -186,79 +204,120 @@ const GalleryManagement = () => {
         </div>
       </div>
 
-      <div className="event-form-container">
-        <div className="event-form">
-          <h2>{isEditing ? "Edit Gallery Item" : "Add Image to BUC Gallery"}</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Event Name *</label>
-                <input
-                  type="text"
-                  name="eventName"
-                  value={formData.eventName}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter event name"
-                />
-              </div>
-              <div className="form-group">
-                <label>Event Date *</label>
-                <input
-                  type="date"
-                  name="eventDate"
-                  value={formData.eventDate}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
+      {/* Upload Form */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="event-form-container">
+              <div className="event-form">
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                  <Typography variant="h5" sx={{ fontFamily: 'Anton', color: 'white', textTransform: 'uppercase' }}>
+                    {isEditing ? "Modify Archive Entry" : "Ingest New Artifact"}
+                  </Typography>
+                  <IconButton onClick={resetForm} sx={{ color: 'white' }}>
+                    <X size={20} />
+                  </IconButton>
+                </Box>
+                
+                <form onSubmit={handleSubmit}>
+                  <Grid container spacing={4}>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Event Name"
+                        name="eventName"
+                        value={formData.eventName}
+                        onChange={handleChange}
+                        required
+                        variant="outlined"
+                        sx={{ input: { color: 'white' }, label: { color: 'rgba(255,255,255,0.7)' } }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Event Date"
+                        type="date"
+                        name="eventDate"
+                        value={formData.eventDate}
+                        onChange={handleChange}
+                        required
+                        InputLabelProps={{ shrink: true }}
+                        sx={{ input: { color: 'white' }, label: { color: 'rgba(255,255,255,0.7)' } }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth>
+                        <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>Category</InputLabel>
+                        <Select
+                          name="category"
+                          value={formData.category}
+                          onChange={handleChange}
+                          label="Category"
+                          sx={{ color: 'white' }}
+                        >
+                          {categories.map((cat) => (
+                            <MenuItem key={cat.id} value={cat.id}>
+                              {cat.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        fullWidth
+                        startIcon={<Upload />}
+                        sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)', py: 1.5 }}
+                      >
+                        {isEditing ? "Override Media" : "Select Visual Asset"}
+                        <input
+                          type="file"
+                          hidden
+                          accept="image/*,video/*"
+                          onChange={handleMediaChange}
+                        />
+                      </Button>
+                    </Grid>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Category *</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  required
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Image {isEditing ? "(Leave blank to keep current)" : "*"}</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  required={!isEditing}
-                />
-                {imagePreview && (
-                  <div className="mt-2 relative w-full h-32 rounded-lg overflow-hidden border border-gray-700">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
+                    {(mediaPreview) && (
+                      <Grid item xs={12}>
+                        <Box sx={{ position: 'relative', height: 200, borderRadius: 2, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <img 
+                            src={mediaPreview} 
+                            alt="Preview" 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                        </Box>
+                      </Grid>
+                    )}
+                  </Grid>
 
-                <div className="flex gap-4 border-t border-white/5 pt-8">
-                  <button type="submit" disabled={submitting} className="btn-metallica px-12 disabled:opacity-50">
-                    {submitting ? "Processing..." : (isEditing ? "Update Manifest" : "Execute Ingestion")}
-                  </button>
-                  <button type="button" onClick={resetForm} className="border border-white/10 text-white px-8 py-4 font-heading text-xl uppercase hover:bg-white/5 transition-all">
-                    Cancel
-                  </button>
-                </div>
-              </form>
+                  <Box sx={{ display: 'flex', gap: 2, mt: 4, pt: 4, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Button 
+                      type="submit" 
+                      disabled={submitting} 
+                      className="btn-metallica"
+                      sx={{ px: 6 }}
+                    >
+                      {submitting ? "Processing..." : (isEditing ? "Update Manifest" : "Execute Ingestion")}
+                    </Button>
+                    <Button 
+                      onClick={resetForm}
+                      sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.1)' }}
+                    >
+                      Cancel
+                    </Button>
+                  </Box>
+                </form>
+              </div>
             </div>
           </motion.div>
         )}

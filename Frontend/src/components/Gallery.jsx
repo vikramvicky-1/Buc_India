@@ -1,11 +1,119 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
+import { 
+  motion, 
+  AnimatePresence, 
+  useScroll, 
+  useTransform, 
+  useSpring,
+  useMotionValue 
+} from "framer-motion";
+import { 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  Play, 
+  Pause, 
+  X, 
+  ChevronRight,
+  Maximize2
+} from "lucide-react";
 import { galleryService } from "../services/api";
+
+const GalleryCard = ({ item, index, onClick }) => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [10, -10]), { stiffness: 150, damping: 15 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-10, 10]), { stiffness: 150, damping: 15 });
+  
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  // No offsets for symmetrical grid
+  const xOffset = "0%";
+  const yOffset = "0px";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, delay: (index % 3) * 0.1 }}
+      style={{ x: xOffset, y: yOffset }}
+      className="relative mb-12"
+    >
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onClick={() => onClick(item)}
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        className="group relative aspect-[4/5] bg-carbon border border-white/5 overflow-hidden cursor-none"
+      >
+        {/* Hover Aura */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[radial-gradient(circle_at_var(--x)_var(--y),rgba(184,115,51,0.15)_0%,transparent_70%)] pointer-events-none" 
+             style={{ "--x": "50%", "--y": "50%" }}></div>
+
+        {item.type === "video" ? (
+          <video
+            src={item.src}
+            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-110 group-hover:scale-100"
+            muted
+            loop
+            onMouseEnter={(e) => e.currentTarget.play()}
+            onMouseLeave={(e) => {
+              e.currentTarget.pause();
+              e.currentTarget.currentTime = 0;
+            }}
+          />
+        ) : (
+          <img
+            src={item.src}
+            alt={item.title}
+            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-110 group-hover:scale-100"
+          />
+        )}
+
+        {/* Content Overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end p-8 translate-z-[40px] opacity-0 group-hover:opacity-100 transition-all duration-500">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] font-bold text-copper uppercase tracking-[0.2em]">{item.category}</span>
+          </div>
+          <h3 className="font-heading text-2xl text-white uppercase leading-none mb-4">{item.title}</h3>
+          
+          <div className="flex items-center gap-6 text-white/60">
+            <div className="flex items-center gap-1.5"><Heart size={14} /> <span className="text-xs font-bold">{item.likes}</span></div>
+            <div className="flex items-center gap-1.5"><MessageCircle size={14} /> <span className="text-xs font-bold">{item.comments || 0}</span></div>
+            <div className="ml-auto w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-copper group-hover:bg-copper group-hover:text-carbon transition-all">
+               <Maximize2 size={14} />
+            </div>
+          </div>
+        </div>
+        
+        {/* Top Right Tag */}
+        <div className="absolute top-4 right-4 flex items-center justify-center w-8 h-8 border border-white/10 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+           {item.type === "video" ? <Play size={12} className="text-white" /> : <ChevronRight size={12} className="text-white" />}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 const Gallery = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(9);
 
   const categories = [
     { id: "all", name: "All Media" },
@@ -27,68 +135,51 @@ const Gallery = () => {
       const title = filename.replace(/[-_]/g, " ").replace(/\.[^.]+$/, "");
       const isVideo = /\.(mp4|webm|mov)$/i.test(filename);
       const normalizedPath = path.toLowerCase();
-      const lowerFile = filename.toLowerCase();
       let category = "rides";
       if (normalizedPath.includes("/rallies/")) category = "rallies";
-      else if (
-        normalizedPath.includes("/rides/") ||
-        normalizedPath.includes("/group-rides/")
-      )
-        category = "rides";
-      else if (lowerFile.includes("rally")) category = "rallies";
-      else if (lowerFile.includes("ride")) category = "rides";
+      else if (normalizedPath.includes("/bikes/")) category = "bikes";
+      else if (normalizedPath.includes("/events/")) category = "events";
+      else if (normalizedPath.includes("/highlights/")) category = "highlights";
+      else if (normalizedPath.includes("/rides/")) category = "rides";
+      
       return {
-        id: 1000 + index,
+        id: `local-${index}`,
         type: isVideo ? "video" : "image",
         src: mod.default,
         title,
         category,
-        likes: Math.floor(Math.random() * 100) + 10,
-        author: "BUC Team",
+        likes: Math.floor(Math.random() * 200) + 50,
+        author: "BUC MEDIA",
       };
     });
     return items;
   }, []);
 
-  const baseMediaItems = useMemo(
-    () =>
-      galleryItems.map((item) => ({
-        id: item._id,
-        type: "image",
-        src: item.imageUrl,
-        title: item.eventName,
-        category: item.category || "all",
-        author: "BUC Admin",
-        eventDate: item.eventDate,
-        likes: 0,
-        comments: 0,
-        fromBackend: true,
-      })),
-    [galleryItems],
-  );
-
   const mediaItems = useMemo(() => {
-    const combined = [...baseMediaItems, ...autoGalleryItems];
-    return combined.sort((a, b) => {
-      const dateA = a.eventDate ? new Date(a.eventDate) : new Date(0);
-      const dateB = b.eventDate ? new Date(b.eventDate) : new Date(0);
-      return dateB - dateA;
-    });
-  }, [baseMediaItems, autoGalleryItems]);
+    const backend = galleryItems.map(item => ({
+      id: item._id,
+      type: "image",
+      src: item.imageUrl,
+      title: item.eventName,
+      category: item.category || "rides",
+      author: "CENTRAL COMMAND",
+      likes: 0,
+    }));
+    return [...backend, ...autoGalleryItems];
+  }, [galleryItems, autoGalleryItems]);
 
-  const filteredMedia =
-    activeCategory === "all"
-      ? mediaItems
-      : mediaItems.filter((item) => item.category === activeCategory);
+  const filteredMedia = useMemo(() => 
+    activeCategory === "all" ? mediaItems : mediaItems.filter(i => i.category === activeCategory)
+  , [mediaItems, activeCategory]);
 
   useEffect(() => {
     const fetchGallery = async () => {
       setLoading(true);
       try {
         const data = await galleryService.getAll();
-        setGalleryItems(data);
+        setGalleryItems(data || []);
       } catch (err) {
-        console.warn("Using local assets only.");
+        console.warn("Using local intelligence only.");
       } finally {
         setLoading(false);
       }
@@ -97,384 +188,148 @@ const Gallery = () => {
   }, []);
 
   return (
-    <Box
-      component="section"
-      id="gallery"
-      sx={{
-        position: "relative",
-        pt: { xs: 8, md: 12 },
-        pb: 12,
-        bgcolor: "#020617",
-        overflow: "hidden",
-      }}
-    >
+    <section id="gallery" className="relative pt-40 pb-32 bg-carbon-dark min-h-screen">
       {/* Background Decor */}
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: "0%",
-          right: "0%",
-          width: "50%",
-          height: "50%",
-          bgcolor:
-            "radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%)",
-          zIndex: 0,
-        }}
-      />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[20%] -left-[10%] w-[600px] h-[600px] bg-copper/5 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[20%] -right-[10%] w-[500px] h-[500px] bg-copper/5 rounded-full blur-[100px]"></div>
+        
+        {/* Kinetic Watermark */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] select-none pointer-events-none">
+           <h2 className="text-[40vw] font-heading leading-none text-white whitespace-nowrap">VAULT</h2>
+        </div>
+      </div>
 
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10 }}>
-        {/* Header */}
-        <Box sx={{ textAlign: "center", mb: 8 }}>
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              px: 2,
-              py: 0.5,
-              mb: 3,
-              borderRadius: "full",
-              border: "1px solid",
-              borderColor: "rgba(59, 130, 246, 0.2)",
-              bgcolor: "rgba(59, 130, 246, 0.05)",
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                color: "#8B5CF6",
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: 2,
-              }}
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <header className="flex flex-col md:flex-row justify-between items-end gap-12 mb-24">
+          <div className="max-w-2xl">
+            <motion.span 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="text-copper font-body tracking-[0.5em] text-xs uppercase mb-4 block font-bold"
             >
-              Moments on the Road
-            </Typography>
-          </Box>
-          <Typography
-            variant="h2"
-            sx={{
-              color: "text.primary",
-              mb: 2,
-              fontSize: { xs: "2.5rem", md: "3.5rem" },
-              fontWeight: 900,
-              fontFamily: "'Audiowide', sans-serif",
-            }}
-          >
-            Our{" "}
-            <Box component="span" sx={{ color: "primary.main" }}>
-              Gallery
-            </Box>
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: "text.secondary",
-              maxWidth: 700,
-              mx: "auto",
-              mb: 6,
-              fontSize: "1.1rem",
-              lineHeight: 1.8,
-            }}
-          >
-            Relive the memories and share your adventures with the community.
-            From epic rides to unforgettable events.
-          </Typography>
-
-          {/* Category Filter */}
-          <Box sx={{ display: "flex", justifyContent: "center", mb: 6 }}>
-            <ToggleButtonGroup
-              value={activeCategory}
-              exclusive
-              onChange={(_, val) => val && setActiveCategory(val)}
-              sx={{
-                flexWrap: "wrap",
-                justifyContent: "center",
-                gap: 1.5,
-                "& .MuiToggleButton-root": {
-                  border: "1px solid rgba(0, 0, 0, 0.05)",
-                  bgcolor: "rgba(255,255,255,0.02)",
-                  borderRadius: "12px !important",
-                  px: 3,
-                  py: 1,
-                  textTransform: "uppercase",
-                  fontWeight: 800,
-                  fontSize: "0.75rem",
-                  letterSpacing: 1,
-                  color: "text.secondary",
-                  "&.Mui-selected": {
-                    bgcolor: "primary.main",
-                    color: "white",
-                    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
-                    "&:hover": { bgcolor: "primary.dark" },
-                  },
-                },
-              }}
+              The BUC Chronicles
+            </motion.span>
+            <motion.h2 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="font-heading text-7xl md:text-8xl text-white uppercase leading-none"
             >
-              {categories.map((category) => (
-                <ToggleButton key={category.id} value={category.id}>
-                  {category.name}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          </Box>
-        </Box>
-
-        {/* Media Grid */}
-        <Grid container spacing={3}>
-          {displayedMedia.map((item) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
-              <Card
-                sx={{
-                  cursor: "pointer",
-                  overflow: "hidden",
-                  bgcolor: "rgba(255, 255, 255, 0.02)",
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255, 255, 255, 0.05)",
-                  borderRadius: 3 /* M3 soft rounded corners */,
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                  "&:hover": {
-                    transform: "scale(1.02)",
-                    borderColor: "rgba(0, 0, 0, 0.3)",
-                    boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
-                  },
-                }}
-                onClick={() => setSelectedMedia(item)}
+              The <span className="text-copper">Vault</span>
+            </motion.h2>
+          </div>
+          
+          <nav className="flex flex-wrap gap-x-12 gap-y-6">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`relative group font-heading text-sm uppercase tracking-widest transition-colors ${activeCategory === cat.id ? "text-white" : "text-white/40 hover:text-white"}`}
               >
-                <Box sx={{ position: "relative" }}>
-                  {item.type === "video" ? (
-                    <CardMedia
-                      component="video"
-                      src={item.src}
-                      sx={{
-                        aspectRatio: "1 / 1",
-                        width: "100%",
-                        height: "auto",
-                        objectFit: "cover",
-                      }}
-                      preload="metadata"
-                      muted
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const video = e.currentTarget;
-                        if (video.paused) {
-                          video
-                            .play()
-                            .then(() =>
-                              setPlayingVideos((prev) =>
-                                new Set(prev).add(item.id),
-                              ),
-                            );
-                        } else {
-                          video.pause();
-                          setPlayingVideos((prev) => {
-                            const s = new Set(prev);
-                            s.delete(item.id);
-                            return s;
-                          });
-                        }
-                      }}
-                      onEnded={() =>
-                        setPlayingVideos((prev) => {
-                          const s = new Set(prev);
-                          s.delete(item.id);
-                          return s;
-                        })
-                      }
-                    />
-                  ) : (
-                    <CardMedia
-                      component="img"
-                      src={item.src}
-                      alt={item.title}
-                      sx={{
-                        aspectRatio: "1 / 1",
-                        width: "100%",
-                        height: "auto",
-                        objectFit: "cover",
-                        filter: "brightness(0.9)",
-                        transition: "all 0.5s",
-                        "&:hover": { filter: "brightness(1.1)" },
-                      }}
-                    />
-                  )}
-                  {/* Overlay on Hover UI Elements */}
-                  <Box
-                    className="media-overlay"
-                    sx={{
-                      position: "absolute",
-                      inset: 0,
-                      bg: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "flex-end",
-                      p: 3,
-                      opacity: 0.8,
-                      transition: "opacity 0.3s",
-                    }}
-                  >
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ color: "white", fontWeight: 800, mb: 0.5 }}
-                    >
-                      {item.title}
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 0.5,
-                          color: "rgba(255,255,255,0.7)",
-                        }}
-                      >
-                        <FavoriteBorderIcon sx={{ fontSize: 16 }} />
-                        <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                          {item.likes}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 0.5,
-                          color: "rgba(255,255,255,0.7)",
-                        }}
-                      >
-                        <ChatBubbleOutlineIcon sx={{ fontSize: 16 }} />
-                        <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                          {item.comments}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
+                {cat.name}
+                <motion.div 
+                  initial={false}
+                  animate={{ width: activeCategory === cat.id ? "100%" : "0%" }}
+                  className="absolute -bottom-2 left-0 h-[1px] bg-copper transition-all"
+                ></motion.div>
+                <div className="absolute -bottom-2 left-0 w-0 h-[1px] bg-copper group-hover:w-full transition-all duration-300 opacity-50"></div>
+              </button>
+            ))}
+          </nav>
+        </header>
 
-                  {item.type === "video" && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 15,
-                        right: 15,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor: "rgba(0,0,0,0.5)",
-                        backdropFilter: "blur(5px)",
-                        borderRadius: "full",
-                        width: 40,
-                        height: 40,
-                      }}
-                    >
-                      {playingVideos.has(item.id) ? (
-                        <PauseIcon sx={{ fontSize: 20, color: "white" }} />
-                      ) : (
-                        <PlayArrowIcon sx={{ fontSize: 20, color: "white" }} />
-                      )}
-                    </Box>
-                  )}
-                </Box>
-              </Card>
-            </Grid>
+        {/* Broken Grid Masonry */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-24">
+          {filteredMedia.slice(0, visibleCount).map((item, index) => (
+            <GalleryCard 
+              key={item.id} 
+              item={item} 
+              index={index} 
+              onClick={setSelectedMedia} 
+            />
           ))}
-        </Grid>
+        </div>
 
-        {/* Load More */}
+        {/* Load More Strategem */}
         {visibleCount < filteredMedia.length && (
-          <Box sx={{ textAlign: "center", mt: 6 }}>
-            <Button
-              variant="outlined"
-              onClick={() => setVisibleCount(filteredMedia.length)}
-              sx={{ px: 4 }}
+          <div className="mt-32 flex justify-center">
+            <button 
+              onClick={() => setVisibleCount(prev => prev + 6)}
+              className="relative px-12 py-5 group overflow-hidden border border-white/10"
             >
-              Load More Media
-            </Button>
-          </Box>
+              <div className="absolute inset-0 bg-copper translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+              <span className="relative z-10 font-heading text-xs tracking-[0.4em] uppercase text-white group-hover:text-carbon transition-colors duration-500">
+                Explore Visual Archive
+              </span>
+            </button>
+          </div>
         )}
+      </div>
 
-        {/* Lightbox Dialog */}
-        <Dialog
-          open={!!selectedMedia}
-          onClose={() => setSelectedMedia(null)}
-          maxWidth="md"
-          fullWidth
-        >
-          {selectedMedia && (
-            <>
-              <Box sx={{ position: "relative" }}>
+      {/* Cinematic Quad-Split Lightbox */}
+      <AnimatePresence>
+        {selectedMedia && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 md:p-20 bg-carbon-dark/95 backdrop-blur-2xl"
+          >
+            {/* Split Reveal Shutter Effects could be added here as motion divs */}
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-6xl aspect-video md:aspect-auto md:h-full bg-carbon border border-white/5 overflow-hidden flex flex-col md:flex-row shadow-[0_50px_100px_-20px_rgba(0,0,0,1)]"
+            >
+              <div className="flex-1 bg-black relative">
                 {selectedMedia.type === "video" ? (
-                  <video
-                    src={selectedMedia.src}
-                    style={{
-                      width: "100%",
-                      maxHeight: 400,
-                      objectFit: "cover",
-                    }}
-                    controls
-                    autoPlay
-                    muted
-                  />
+                  <video src={selectedMedia.src} className="w-full h-full object-contain" autoPlay controls />
                 ) : (
-                  <Box
-                    component="img"
-                    src={selectedMedia.src}
-                    alt={selectedMedia.title}
-                    sx={{ width: "100%", maxHeight: 400, objectFit: "cover" }}
-                  />
+                  <img src={selectedMedia.src} alt={selectedMedia.title} className="w-full h-full object-contain" />
                 )}
-                <IconButton
-                  onClick={() => setSelectedMedia(null)}
-                  sx={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    bgcolor: "rgba(0,0,0,0.5)",
-                    color: "white",
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </Box>
-              <DialogContent>
-                <Typography
-                  variant="h5"
-                  sx={{ color: "text.primary", mb: 1, fontWeight: 700 }}
-                >
-                  {selectedMedia.title}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "text.secondary", mb: 3 }}
-                >
-                  by {selectedMedia.author}
-                </Typography>
-                <Box sx={{ display: "flex", gap: 3 }}>
-                  <Button
-                    startIcon={<FavoriteBorderIcon />}
-                    size="small"
-                    sx={{ color: "text.secondary" }}
-                  >
-                    {selectedMedia.likes} likes
-                  </Button>
-                  <Button
-                    startIcon={<ChatBubbleOutlineIcon />}
-                    size="small"
-                    sx={{ color: "text.secondary" }}
-                  >
-                    {selectedMedia.comments} comments
-                  </Button>
-                  <Button
-                    startIcon={<ShareIcon />}
-                    size="small"
-                    sx={{ color: "text.secondary" }}
-                  >
-                    Share
-                  </Button>
-                </Box>
-              </DialogContent>
-            </>
-          )}
-        </Dialog>
-      </Container>
-    </Box>
+              </div>
+              
+              <div className="w-full md:w-80 p-8 flex flex-col justify-between border-l border-white/5">
+                <div>
+                  <div className="flex items-center gap-2 mb-6">
+                    <div className="w-2 h-2 rounded-full bg-copper"></div>
+                    <span className="text-[10px] font-bold text-copper uppercase tracking-[0.2em]">{selectedMedia.category}</span>
+                  </div>
+                  <h3 className="font-heading text-3xl text-white uppercase mb-4 leading-tight">{selectedMedia.title}</h3>
+                  <p className="text-steel-dim text-xs uppercase tracking-widest mb-12">SOURCE: {selectedMedia.author}</p>
+                  
+                  <div className="space-y-6">
+                     <div className="flex items-center justify-between text-white/40 text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-4">
+                        <span>Affiliation</span>
+                        <span className="text-white">BUC INDIA</span>
+                     </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 mt-12">
+                   <button className="flex-1 py-4 border border-white/10 hover:border-copper flex items-center justify-center gap-2 text-white/60 hover:text-copper transition-all">
+                      <Heart size={16} />
+                      <span className="text-[10px] font-bold uppercase">{selectedMedia.likes}</span>
+                   </button>
+                   <button className="flex-1 py-4 border border-white/10 hover:border-copper flex items-center justify-center gap-2 text-white/60 hover:text-copper transition-all">
+                      <Share2 size={16} />
+                   </button>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setSelectedMedia(null)}
+                className="absolute top-8 right-8 w-12 h-12 border border-white/10 flex items-center justify-center text-white/40 hover:text-copper hover:border-copper transition-all rounded-full"
+              >
+                <X size={20} />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
   );
 };
 
