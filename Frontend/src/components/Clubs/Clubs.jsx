@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -12,57 +12,9 @@ import {
   XCircle,
 } from "lucide-react";
 import { clubMembershipService, clubService } from "../../services/api";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardMedia from "@mui/material/CardMedia";
-import CardContent from "@mui/material/CardContent";
-import CardActions from "@mui/material/CardActions";
-import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import CircularProgress from "@mui/material/CircularProgress";
-import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
-
-/* ── Single-Club Popup ── */
-const SingleClubPopup = ({ onClose }) => (
-  <div className="clubs-popup-overlay" onClick={onClose}>
-    <div className="clubs-popup" onClick={(e) => e.stopPropagation()}>
-      <div className="clubs-popup-icon">
-        <AlertCircle size={32} />
-      </div>
-      <h3>One Club Per Rider</h3>
-      <p>
-        You're already a member of a club. BUC allows only one active club
-        membership per rider to keep the community focused and fair.
-      </p>
-      <p className="clubs-popup-sub">
-        Leave your current club first if you'd like to join a different one.
-      </p>
-      <button className="clubs-popup-close" onClick={onClose}>
-        Got it
-      </button>
-    </div>
-  </div>
-);
-
-const generateSlug = (name) =>
-  name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-");
 
 const Clubs = () => {
   const navigate = useNavigate();
-
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [membership, setMembership] = useState(null);
@@ -91,7 +43,6 @@ const Clubs = () => {
       setClubs(clubList);
       setMembership(myClub.membership || null);
     } catch (error) {
-      console.error("Failed to load clubs:", error);
       toast.error("Failed to load clubs. Please try again.");
     } finally {
       setLoading(false);
@@ -111,11 +62,10 @@ const Clubs = () => {
     setJoining(true);
     try {
       await clubMembershipService.join(clubId, userEmail, userPhone);
-      toast.success("You have joined the club!");
+      toast.success("Joined the brotherhood!");
       await loadData();
     } catch (error) {
-      console.error("Join club error:", error);
-      toast.error(error.response?.data?.message || "Unable to join club");
+      toast.error(error.response?.data?.message || "Unable to join");
     } finally {
       setJoining(false);
     }
@@ -124,7 +74,7 @@ const Clubs = () => {
   const handleLeave = async () => {
     if (!membership || !membership.clubId) return;
     if (!leaveReason.trim()) {
-      toast.error("Please share a short reason before leaving the club.");
+      toast.error("Please provide a reason to leave.");
       return;
     }
     setLeaving(true);
@@ -135,486 +85,157 @@ const Clubs = () => {
         userPhone,
         leaveReason.trim(),
       );
-      toast.success("You have left the club.");
+      toast.success("Left the club.");
       setLeaveReason("");
       await loadData();
     } catch (error) {
-      console.error("Leave club error:", error);
-      toast.error(error.response?.data?.message || "Unable to leave club");
+      toast.error(error.response?.data?.message || "Unable to leave");
     } finally {
       setLeaving(false);
     }
   };
 
   const goToClub = (club) => {
-    const slug = club.slug || generateSlug(club.name);
+    const slug = club.slug || club.name.toLowerCase().replace(/ /g, "-");
     navigate(`/clubs/${slug}`, { state: { club } });
   };
 
-  const handleCollaborate = () => {
-    if (!isLoggedIn) {
-      toast.info("Please login / sign up to collaborate with BUC.");
-      navigate("/login");
-      return;
-    }
-    navigate("/clubs/collaborate");
-  };
-
   return (
-    <Box
-      component="section"
-      id="clubs"
-      sx={{
-        position: "relative",
-        pt: { xs: 8, md: 12 },
-        pb: 12,
-        bgcolor: "#020617",
-        overflow: "hidden",
-      }}
-    >
-      {/* Background Decor */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: "20%",
-          right: "-10%",
-          width: "40%",
-          height: "40%",
-          bgcolor:
-            "radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%)",
-          zIndex: 0,
-        }}
-      />
-
-      {/* Confirm Member Exclusion Dialog */}
-      <Dialog
-        open={showSingleClubPopup}
-        onClose={() => setShowSingleClubPopup(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1.5,
-            fontWeight: 800,
-          }}
-        >
-          <AlertCircle color="#3B82F6" /> One Club Per Rider
-        </DialogTitle>
-        <DialogContent>
-          <Typography sx={{ color: "text.secondary", lineHeight: 1.7 }}>
-            You're already a member of a club. BUC allows only one active club
-            membership per rider to keep the community focused and fair.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ pb: 3, px: 3 }}>
-          <Button
-            variant="contained"
-            onClick={() => setShowSingleClubPopup(false)}
-            sx={{ borderRadius: 2, fontWeight: 800 }}
+    <section id="clubs" className="section-container py-24 bg-carbon text-white">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
+          <div>
+            <span className="text-copper font-body tracking-ultra text-xs md:text-sm uppercase mb-2 block font-bold">The network</span>
+            <h2 className="font-heading text-6xl md:text-8xl uppercase leading-none">Global <span className="text-transparent outline-title">Chapters</span></h2>
+          </div>
+          
+          <button 
+            onClick={() => navigate("/clubs/collaborate")}
+            className="flex items-center gap-4 bg-white text-carbon px-8 py-4 font-heading text-lg uppercase hover:bg-copper transition-all duration-500"
           >
-            Got it
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <Handshake size={20} />
+            Partner With BUC
+          </button>
+        </div>
 
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10 }}>
-        {/* Header Section */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            justifyContent: "space-between",
-            alignItems: { xs: "center", md: "flex-end" },
-            mb: 8,
-            gap: 4,
-          }}
-        >
-          <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
-            <Box
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                px: 2,
-                py: 0.5,
-                mb: 3,
-                borderRadius: "full",
-                border: "1px solid",
-                borderColor: "rgba(59, 130, 246, 0.2)",
-                bgcolor: "rgba(59, 130, 246, 0.05)",
-              }}
-            >
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#3B82F6",
-                  fontWeight: 800,
-                  textTransform: "uppercase",
-                  letterSpacing: 2,
-                }}
-              >
-                Stronger Together
-              </Typography>
-            </Box>
-            <Typography
-              variant="h2"
-              sx={{
-                color: "text.primary",
-                fontWeight: 900,
-                fontFamily: "'Audiowide', sans-serif",
-                fontSize: { xs: "2.5rem", md: "3.5rem" },
-                mb: 2,
-              }}
-            >
-              Partner{" "}
-              <Box component="span" sx={{ color: "primary.main" }}>
-                Clubs
-              </Box>
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: "text.secondary",
-                maxWidth: 500,
-                lineHeight: 1.8,
-                fontWeight: 500,
-              }}
-            >
-              Join BUC-approved riding communities across India. One club per
-              rider, many adventures together.
-            </Typography>
-          </Box>
-
-          <Button
-            variant="contained"
-            onClick={handleCollaborate}
-            startIcon={<Handshake />}
-            sx={{
-              py: 2,
-              px: 4,
-              borderRadius: 1.25,
-              fontWeight: 900,
-              boxShadow: "0 8px 25px rgba(59, 130, 246, 0.3)",
-              textTransform: "none",
-              fontSize: "1rem",
-            }}
-          >
-            Collaborate with BUC
-          </Button>
-        </Box>
-
-        {/* Clubs Grid */}
         {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
-            <CircularProgress size={56} sx={{ color: "primary.main" }} />
-          </Box>
-        ) : clubs.length === 0 ? (
-          <Box
-            sx={{
-              textAlign: "center",
-              py: 12,
-              bgcolor: "rgba(255,255,255,0.02)",
-              borderRadius: 1.25,
-              border: "1px solid rgba(255,255,255,0.05)",
-            }}
-          >
-            <Shield size={64} style={{ opacity: 0.1, marginBottom: 16 }} />
-            <Typography
-              variant="h6"
-              sx={{ color: "text.secondary", fontWeight: 600 }}
-            >
-              No partner clubs identified yet.
-            </Typography>
-          </Box>
+          <div className="flex justify-center py-20">
+            <div className="w-12 h-12 border-4 border-copper/30 border-t-copper rounded-full animate-spin"></div>
+          </div>
         ) : (
-          <Grid container spacing={4}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
             {clubs.map((club) => {
-              const isMyClub =
-                membership &&
-                membership.clubId &&
-                (membership.clubId._id || membership.clubId) === club.id;
-
+              const isMyClub = membership?.clubId && (membership.clubId._id || membership.clubId) === club.id;
+              
               return (
-                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={club.id}>
-                  <Card
-                    sx={{
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      bgcolor: "rgba(255, 255, 255, 0.02)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255, 255, 255, 0.05)",
-                      borderRadius: 1.25,
-                      transition: "all 0.4s ease",
-                      "&:hover": {
-                        transform: "translateY(-10px)",
-                        borderColor: "rgba(59, 130, 246, 0.3)",
-                        bgcolor: "rgba(255, 255, 255, 0.04)",
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        position: "relative",
-                        pt: "56.25%",
-                        bgcolor: "rgba(255,255,255,0.03)",
-                      }}
-                    >
-                      {club.logoUrl ? (
-                        <CardMedia
-                          component="img"
-                          image={club.logoUrl}
-                          alt={club.name}
-                          sx={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "3rem",
-                            fontWeight: 900,
-                            color: "rgba(255,255,255,0.1)",
-                          }}
-                        >
-                          {club.name.charAt(0)}
-                        </Box>
-                      )}
-                      {isMyClub && (
-                        <Chip
-                          icon={<CheckCircle size={14} />}
-                          label="Your Club"
-                          sx={{
-                            position: "absolute",
-                            top: 15,
-                            right: 15,
-                            bgcolor: "primary.main",
-                            color: "white",
-                            fontWeight: 800,
-                            fontSize: "0.65rem",
-                          }}
-                        />
-                      )}
-                    </Box>
+                <div key={club.id} className="group border border-white/5 bg-carbon-light p-8 hover:border-copper/30 transition-all duration-500">
+                  <div className="relative w-24 h-24 mb-8 grayscale group-hover:grayscale-0 transition-all duration-500">
+                     {club.logoUrl ? (
+                       <img src={club.logoUrl} alt={club.name} className="w-full h-full object-contain" />
+                     ) : (
+                       <div className="w-full h-full border border-white/10 flex items-center justify-center font-heading text-4xl text-white/10">
+                         {club.name.charAt(0)}
+                       </div>
+                     )}
+                  </div>
+                  
+                  <h3 className="font-heading text-3xl uppercase mb-2 group-hover:text-copper transition-colors">{club.name}</h3>
+                  <p className="font-text text-steel-dim text-sm italic mb-8">"{club.moto || "Brotherhood on wheels."}"</p>
+                  
+                  <div className="flex gap-6 mb-8">
+                     <div className="flex items-center gap-2">
+                        <Users size={14} className="text-copper" />
+                        <span className="font-body text-[10px] uppercase tracking-widest text-steel-dim">{club.participantCount || 0} RIDERS</span>
+                     </div>
+                     <div className="flex items-center gap-2">
+                        <Calendar size={14} className="text-copper" />
+                        <span className="font-body text-[10px] uppercase tracking-widest text-steel-dim">EST. {club.startedOn ? new Date(club.startedOn).getFullYear() : "2024"}</span>
+                     </div>
+                  </div>
 
-                    <CardContent sx={{ flexGrow: 1, p: 3.5 }}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: "text.primary",
-                          fontWeight: 900,
-                          mb: 1,
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {club.name}
-                      </Typography>
-                      {club.moto && (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: "text.secondary",
-                            fontStyle: "italic",
-                            mb: 3,
-                          }}
-                        >
-                          "{club.moto}"
-                        </Typography>
-                      )}
-                      <Box sx={{ display: "flex", gap: 3, mb: 3 }}>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <Users size={16} color="#3B82F6" />
-                          <Typography
-                            variant="caption"
-                            sx={{ fontWeight: 700, color: "text.secondary" }}
-                          >
-                            {club.participantCount || 0} RIDERS
-                          </Typography>
-                        </Box>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <Calendar size={16} color="#8B5CF6" />
-                          <Typography
-                            variant="caption"
-                            sx={{ fontWeight: 700, color: "text.secondary" }}
-                          >
-                            SINCE{" "}
-                            {club.startedOn
-                              ? new Date(club.startedOn).getFullYear()
-                              : "N/A"}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-
-                    <CardActions sx={{ p: 3, pt: 0, gap: 1.5 }}>
-                      {isMyClub ? (
-                        <Button
-                          variant="outlined"
-                          fullWidth
-                          disabled
-                          sx={{
-                            borderRadius: 2,
-                            borderColor: "rgba(16, 185, 129, 0.4)",
-                            color: "#10B981",
-                            fontWeight: 800,
-                          }}
-                        >
-                          JOINED
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="contained"
-                          fullWidth
-                          onClick={(e) => handleJoin(e, club.id)}
-                          disabled={joining}
-                          sx={{ borderRadius: 2, fontWeight: 900 }}
-                        >
-                          Join Club
-                        </Button>
-                      )}
-                      <Button
-                        variant="outlined"
-                        fullWidth
-                        onClick={() => goToClub(club)}
-                        endIcon={<ArrowRight size={16} />}
-                        sx={{
-                          borderRadius: 2,
-                          fontWeight: 800,
-                          borderColor: "rgba(255,255,255,0.1)",
-                          color: "text.secondary",
-                        }}
-                      >
-                        Details
-                      </Button>
-                    </CardActions>
-                  </Card>
-                </Grid>
+                  <div className="flex gap-4">
+                     {isMyClub ? (
+                       <button className="flex-1 py-4 border border-copper/50 text-copper font-body text-[10px] uppercase tracking-widest bg-copper/5">
+                         JOINED
+                       </button>
+                     ) : (
+                       <button 
+                         onClick={(e) => handleJoin(e, club.id)}
+                         disabled={joining}
+                         className="flex-1 py-4 bg-white text-carbon font-body text-[10px] uppercase tracking-widest hover:bg-copper transition-all duration-500"
+                       >
+                         {joining ? "..." : "JOIN CLUB"}
+                       </button>
+                     )}
+                     <button 
+                       onClick={() => goToClub(club)}
+                       className="px-6 py-4 border border-white/10 text-white hover:bg-white/5 transition-colors"
+                     >
+                       <ArrowRight size={18} />
+                     </button>
+                  </div>
+                </div>
               );
             })}
-          </Grid>
+          </div>
         )}
 
-        {/* Active Membership Footer Bar */}
+        {/* Current Membership Bar */}
         {isLoggedIn && membership && membership.clubId && (
-          <Box
-            sx={{
-              position: "fixed",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 1000,
-              p: 2,
-              background:
-                "linear-gradient(to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0.8))",
-              backdropFilter: "blur(20px)",
-              borderTop: "1px solid rgba(255,255,255,0.05)",
-            }}
-          >
-            <Container maxWidth="lg">
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", sm: "row" },
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 3,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Box
-                    sx={{
-                      p: 1,
-                      borderRadius: 2,
-                      bgcolor: "rgba(16, 185, 129, 0.1)",
-                      border: "1px solid rgba(16, 185, 129, 0.2)",
-                    }}
-                  >
-                    <CheckCircle color="#10B981" size={20} />
-                  </Box>
-                  <Box>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "text.secondary",
-                        fontWeight: 800,
-                        fontSize: "0.65rem",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Current Active Membership
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: "text.primary",
-                        fontWeight: 900,
-                        lineHeight: 1,
-                      }}
-                    >
-                      {membership.clubId.name}
-                    </Typography>
-                  </Box>
-                </Box>
+          <div className="fixed bottom-0 left-0 right-0 z-[1000] p-6 bg-carbon/90 backdrop-blur-2xl border-t border-white/5 animate-slide-up">
+             <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-6">
+                   <div className="w-12 h-12 bg-copper/10 border border-copper/30 flex items-center justify-center rounded-full">
+                      <CheckCircle size={20} className="text-copper" />
+                   </div>
+                   <div>
+                      <span className="block font-body text-[10px] text-steel-dim uppercase tracking-[0.2em]">Active Membership</span>
+                      <span className="block font-heading text-2xl uppercase">{membership.clubId.name}</span>
+                   </div>
+                </div>
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    w: { xs: "100%", sm: "auto" },
-                    gap: 2,
-                    alignItems: "center",
-                  }}
-                >
-                  <TextField
-                    size="small"
-                    placeholder="Leave reason..."
-                    value={leaveReason}
-                    onChange={(e) => setLeaveReason(e.target.value)}
-                    sx={{
-                      flexGrow: 1,
-                      minWidth: { sm: 250 },
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: 2,
-                        bgcolor: "rgba(255,255,255,0.03)",
-                        fontSize: "0.875rem",
-                      },
-                    }}
-                  />
-                  <Button
-                    variant="text"
-                    color="error"
-                    onClick={handleLeave}
-                    disabled={leaving}
-                    startIcon={<XCircle size={14} />}
-                    sx={{ fontWeight: 800, textTransform: "none" }}
-                  >
-                    Leave Club
-                  </Button>
-                </Box>
-              </Box>
-            </Container>
-          </Box>
+                <div className="flex w-full md:w-auto gap-4">
+                   <input 
+                     type="text" 
+                     placeholder="Share reason to leave..."
+                     value={leaveReason}
+                     onChange={(e) => setLeaveReason(e.target.value)}
+                     className="flex-1 md:w-64 bg-transparent border border-white/10 px-6 py-3 font-body text-xs focus:border-red-500/50 outline-none transition-colors"
+                   />
+                   <button 
+                     onClick={handleLeave}
+                     disabled={leaving}
+                     className="px-8 py-3 border border-red-500/30 text-red-500 font-body text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all duration-500"
+                   >
+                     {leaving ? "..." : "LEAVE CLUB"}
+                   </button>
+                </div>
+             </div>
+          </div>
         )}
-      </Container>
-    </Box>
+      </div>
+
+      {/* One Club Popup */}
+      {showSingleClubPopup && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-carbon/95 backdrop-blur-xl">
+           <div className="max-w-md w-full bg-carbon-light border border-white/10 p-10 text-center">
+              <div className="w-20 h-20 bg-copper/10 border border-copper/30 flex items-center justify-center rounded-full mx-auto mb-8">
+                 <AlertCircle size={32} className="text-copper" />
+              </div>
+              <h3 className="font-heading text-3xl uppercase mb-4">ONE CLUB LIMIT</h3>
+              <p className="font-text text-steel-dim mb-10">
+                To keep the community focused, BUC allows only one active club membership per rider. Leave your current chapter before joining a new one.
+              </p>
+              <button 
+                onClick={() => setShowSingleClubPopup(false)}
+                className="w-full py-4 bg-copper text-carbon font-heading text-lg uppercase hover:bg-white transition-all duration-500"
+              >
+                Got It
+              </button>
+           </div>
+        </div>
+      )}
+    </section>
   );
 };
 

@@ -18,9 +18,9 @@ const GlareHover = ({
     style = {},
 }) => {
     const ref = useRef(null);
-    const [hoveindigo, setHoveindigo] = useState(false);
+    const [hovered, setHovered] = useState(false);
     const [hasPlayed, setHasPlayed] = useState(false);
-    const [glareStyle, setGlareStyle] = useState({});
+    const [glareStyle, setGlareStyle] = useState({ opacity: 0 });
 
     const handleMouseMove = (e) => {
         if (playOnce && hasPlayed) return;
@@ -38,12 +38,12 @@ const GlareHover = ({
 
     const handleMouseEnter = () => {
         if (playOnce && hasPlayed) return;
-        setHoveindigo(true);
+        setHovered(true);
     };
 
     const handleMouseLeave = () => {
         if (playOnce && hasPlayed) return;
-        setHoveindigo(false);
+        setHovered(false);
         if (playOnce) setHasPlayed(true);
         setGlareStyle((prev) => ({ ...prev, opacity: 0 }));
     };
@@ -71,7 +71,7 @@ const GlareHover = ({
                     width: glareSize,
                     height: glareSize,
                     background: `radial-gradient(circle, ${glareColor} 0%, transparent 70%)`,
-                    transition: hoveindigo ? "none" : `opacity ${transitionDuration}ms ease-out`,
+                    transition: hovered ? "none" : `opacity ${transitionDuration}ms ease-out`,
                 }}
             />
             <div className="glare-hover-content">{children}</div>

@@ -1,642 +1,211 @@
-import React, { useState, useEffect, useRef } from "react";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Grid from "@mui/material/Grid";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Alert from "@mui/material/Alert";
-import Paper from "@mui/material/Paper";
-import Link from "@mui/material/Link";
-import ShieldIcon from "@mui/icons-material/Shield";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import PhoneIcon from "@mui/icons-material/Phone";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
-import PeopleIcon from "@mui/icons-material/People";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
-import CircleIcon from "@mui/icons-material/Circle";
+import React, { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { PhoneCall } from "lucide-react";
 import groupRidingImg from "../assets/gallery/WhatsApp Image 2025-08-09 at 21.22.15_0472380c.jpg";
 
+const Character = ({ char, index, progress, total }) => {
+  // Ensure the entire animation finishes before reaching the very end (by 80% scroll)
+  const range = 0.8;
+  const start = (index / total) * range;
+  const end = ((index + 3) / total) * range; 
+  
+  const opacity = useTransform(progress, [start, end], [0.1, 1]);
+  const y = useTransform(progress, [start, end], [5, 0]);
+  const scale = useTransform(progress, [start, end], [0.95, 1]);
+  
+  return (
+    <motion.span 
+      style={{ opacity, y, scale }} 
+      className="inline-block"
+    >
+      {char === " " ? "\u00A0" : char}
+    </motion.span>
+  );
+};
+
 const Safety = () => {
-  const [pledgeText, setPledgeText] = useState("");
   const pledgeRef = useRef(null);
-  const [pledgeStarted, setPledgeStarted] = useState(false);
   const fullPledge =
-    "As members of All Bikers Unity Community, we pledge to prioritize safety in all our riding activities. We commit to wearing proper protective gear, following traffic laws, riding within our abilities, and looking out for our fellow riders. Together, we ensure that every ride ends with everyone returning home safely.";
+    "As members of Bikers Unity Calls, we pledge to prioritize safety in all our riding activities. We commit to wearing proper protective gear, following traffic laws, riding within our abilities, and looking out for our fellow riders. Together, we ensure that every ride ends with everyone returning home safely.";
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !pledgeStarted) {
-          setPledgeStarted(true);
-        }
-      },
-      { threshold: 0.3 },
-    );
-    if (pledgeRef.current) observer.observe(pledgeRef.current);
-    return () => observer.disconnect();
-  }, [pledgeStarted]);
+  const { scrollYProgress } = useScroll({
+    target: pledgeRef,
+    offset: ["start start", "end end"]
+  });
 
-  useEffect(() => {
-    if (pledgeStarted) {
-      let index = 0;
-      const speed = 15;
-      const animate = () => {
-        if (index <= fullPledge.length) {
-          setPledgeText(fullPledge.substring(0, index));
-          index++;
-          setTimeout(animate, speed);
-        }
-      };
-      animate();
-    }
-  }, [pledgeStarted]);
+  const pledgeChars = fullPledge.split("");
+  
+  // Background atmosphere scale/opacity
+  const glowOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.2, 0.4, 0.2]);
+  const glowScale = useTransform(scrollYProgress, [0, 1], [0.8, 1.2]);
 
   const safetyTips = [
-    {
-      icon: <ShieldIcon sx={{ fontSize: 40, color: "primary.main" }} />,
-      title: "Protective Gear",
-      description:
-        "Always wear DOT-approved helmet, protective jacket, gloves, and boots.",
-      tips: [
-        "Helmet should fit snugly without pressure points",
-        "Wear bright colors for better visibility",
-        "Replace gear after any accident",
-        "Check gear condition regularly",
-      ],
-    },
-    {
-      icon: <WarningAmberIcon sx={{ fontSize: 40, color: "primary.main" }} />,
-      title: "Road Awareness",
-      description: "Stay alert and anticipate potential hazards on the road.",
-      tips: [
-        "Maintain safe following distance",
-        "Check blind spots frequently",
-        "Use turn signals early and clearly",
-        "Avoid riding in bad weather when possible",
-      ],
-    },
-    {
-      icon: <CheckCircleIcon sx={{ fontSize: 40, color: "primary.main" }} />,
-      title: "Pre-Ride Inspection",
-      description: "Perform thorough bike inspection before every ride.",
-      tips: [
-        "Check tire pressure and tread",
-        "Test brakes and lights",
-        "Verify fluid levels",
-        "Inspect chain and sprockets",
-      ],
-    },
+    { title: "Protective Gear", description: "Always wear DOT-approved helmet, protective jacket, gloves, and boots." },
+    { title: "Road Awareness", description: "Stay alert and anticipate potential hazards on the road." },
+    { title: "Pre-Ride Inspection", description: "Perform thorough bike inspection before every ride." },
   ];
 
   const emergencyContacts = [
-    {
-      service: "Child Abuse & Safety",
-      number: "1098",
-      description: "Dedicated helpline for children in distress",
+    { 
+      label: "CHILD ABUSE & SAFETY", 
+      number: "1098", 
+      desc: "Dedicated helpline for children in distress" 
     },
-    {
-      service: "Emergency Services",
-      number: "112",
-      description: "For immediate life-threatening emergencies",
+    { 
+      label: "EMERGENCY SERVICES", 
+      number: "112", 
+      desc: "For immediate life-threatening emergencies" 
     },
-    {
-      service: "Community Emergency Line",
-      number: "88677 18080",
-      description: "Community member assistance and roadside help",
+    { 
+      label: "COMMUNITY EMERGENCY LINE", 
+      number: "88677 18080", 
+      desc: "Community member assistance and roadside help" 
     },
-    {
-      service: "Roadside Assistance",
-      number: "1033-HELP",
-      description: "Motorcycle towing and breakdown assistance",
+    { 
+      label: "ROADSIDE ASSISTANCE", 
+      number: "1033-HELP", 
+      desc: "Motorcycle towing and breakdown assistance" 
     },
-  ];
-
-  const safetyResources = [
-    {
-      title: "Motorcycle Safety Foundation (MSF)",
-      description: "Comprehensive riding courses and safety resources",
-      link: "#",
-    },
-    {
-      title: "Advanced Rider Training",
-      description: "Improve your skills with professional instruction",
-      link: "#",
-    },
-    {
-      title: "Weather Riding Guide",
-      description: "Tips for riding safely in various weather conditions",
-      link: "#",
-    },
-    {
-      title: "Group Riding Etiquette",
-      description: "Best practices for safe group riding",
-      link: "#",
-    },
-  ];
-
-  const groupSafetyTips = [
-    "Attend pre-ride briefings and follow designated routes",
-    "Maintain proper formation and spacing",
-    "Use hand signals and communicate with other riders",
-    "Never ride beyond your skill level or comfort zone",
   ];
 
   return (
-    <Box
-      component="section"
-      id="safety"
-      sx={{ position: "relative", py: { xs: 8, md: 12 }, overflow: "hidden" }}
-    >
-      {/* Background Decor */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: "30%",
-          right: "-10%",
-          width: "40%",
-          height: "40%",
-          bgcolor:
-            "radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)",
-          zIndex: 0,
-        }}
-      />
+    <section id="safety" className="section-container pt-24 bg-carbon-light relative">
+      <div className="max-w-7xl mx-auto px-6 mb-16 flex flex-col md:flex-row justify-between items-end reveal-text visible">
+        <div>
+          <span className="text-copper font-body tracking-ultra text-xs md:text-sm uppercase mb-2 block font-bold">Safety Standards</span>
+          <h2 className="font-heading text-6xl md:text-7xl text-white uppercase leading-none">Ride <span className="text-copper">Safe</span></h2>
+        </div>
+        <div className="hidden md:block w-32 h-[1px] bg-white/20 mb-4"></div>
+      </div>
 
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10 }}>
-        {/* Section Header */}
-        <Box sx={{ textAlign: "center", mb: 10 }}>
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              px: 2,
-              py: 0.5,
-              mb: 3,
-              borderRadius: "full",
-              border: "1px solid",
-              borderColor: "rgba(59, 130, 246, 0.2)",
-              bgcolor: "rgba(59, 130, 246, 0.05)",
-            }}
+      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8 mb-24">
+        {safetyTips.map((tip, index) => (
+          <div key={index} className="group p-8 border border-white/5 bg-carbon transition-all duration-500 hover:border-copper/30 hover:-translate-y-2">
+            <div className="w-12 h-12 bg-copper/10 border border-copper/20 flex items-center justify-center mb-6 transition-transform duration-500 group-hover:rotate-[360deg]">
+               <span className="text-copper font-heading text-xl">0{index + 1}</span>
+            </div>
+            <h3 className="font-heading text-2xl text-white uppercase mb-4">{tip.title}</h3>
+            <p className="font-text text-steel-dim text-sm leading-relaxed">{tip.description}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Safety Pledge - Pinning Container */}
+      <div ref={pledgeRef} className="h-[250vh] relative mt-12">
+        <div className="sticky top-0 h-screen flex flex-col justify-center items-center overflow-hidden">
+          {/* Atmospheric Glow */}
+          <motion.div 
+            style={{ opacity: glowOpacity, scale: glowScale }}
+            className="absolute w-[600px] h-[600px] bg-copper/20 rounded-full blur-[150px] pointer-events-none z-0"
+          ></motion.div>
+
+          <div className="max-w-5xl w-full mx-auto px-6 relative z-10">
+            <div className="p-12 md:p-16 text-center border-y border-white/5 bg-carbon/40 backdrop-blur-sm relative">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-32 bg-gradient-to-b from-copper to-transparent"></div>
+              
+              <h3 className="font-heading text-4xl md:text-5xl text-white uppercase mb-10 tracking-widest outline-title">Our Safety Pledge</h3>
+              
+              <div className="min-h-[150px] md:min-h-[100px]">
+                <p className="font-text text-xl md:text-2xl text-steel-dim leading-relaxed max-w-4xl mx-auto">
+                  "
+                  {pledgeChars.map((char, i) => (
+                    <Character
+                      key={i}
+                      char={char}
+                      index={i}
+                      progress={scrollYProgress}
+                      total={pledgeChars.length}
+                    />
+                  ))}
+                  "
+                </p>
+              </div>
+
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1px] h-32 bg-gradient-to-t from-copper/20 to-transparent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Emergency Contacts Section */}
+      <div className="max-w-7xl mx-auto px-6 mb-32">
+        <div className="flex flex-col items-center mb-16 relative">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex items-center gap-4 mb-4"
           >
-            <Typography
-              variant="caption"
-              sx={{
-                color: "#3B82F6",
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: 2,
-              }}
+            <PhoneCall className="text-copper w-6 h-6 animate-pulse" />
+            <h2 className="font-heading text-6xl md:text-7xl text-white uppercase tracking-tighter mb-4">
+              Emergency <span className="text-copper">Contacts</span>
+            </h2>
+          </motion.div>
+          <motion.div 
+            initial={{ width: 0 }}
+            whileInView={{ width: "100px" }}
+            viewport={{ once: true }}
+            className="h-[1px] bg-gradient-to-r from-transparent via-copper to-transparent"
+          ></motion.div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {emergencyContacts.map((contact, index) => (
+            <motion.div
+              key={contact.number}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="group relative h-[280px]"
             >
-              Safety First
-            </Typography>
-          </Box>
-          <Typography
-            variant="h2"
-            sx={{
-              color: "text.primary",
-              mb: 3,
-              fontSize: { xs: "2.5rem", md: "3.5rem" },
-              fontWeight: 900,
-              fontFamily: "'Audiowide', sans-serif",
-            }}
-          >
-            Ride{" "}
-            <Box component="span" sx={{ color: "primary.main" }}>
-              Safe
-            </Box>
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: "text.secondary",
-              maxWidth: 720,
-              mx: "auto",
-              fontSize: { xs: "1.1rem", md: "1.25rem" },
-              lineHeight: 1.8,
-            }}
-          >
-            Learn essential riding tips, emergency procedures, and best
-            practices to ensure every ride is a safe one.
-          </Typography>
-        </Box>
-
-        {/* Safety Tips Cards */}
-        <Grid container spacing={3} sx={{ mb: 12 }}>
-          {safetyTips.map((tip, index) => (
-            <Grid size={{ xs: 12, md: 4 }} key={index}>
-              <Card
-                sx={{
-                  height: "100%",
-                  p: 1,
-                  bgcolor: "rgba(255, 255, 255, 0.02)",
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255, 255, 255, 0.05)",
-                  borderRadius: 1.25,
-                  transition: "all 0.3s ease-in-out",
-                  "&:hover": {
-                    transform: "translateY(-8px)",
-                    bgcolor: "rgba(255, 255, 255, 0.04)",
-                    borderColor:
-                      index === 0
-                        ? "rgba(59, 130, 246, 0.3)"
-                        : "rgba(59, 130, 246, 0.3)",
-                  },
-                }}
-              >
-                <CardContent>
-                  <Box
-                    sx={{
-                      mb: 3,
-                      width: 56,
-                      height: 56,
-                      borderRadius: 3,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      bgcolor:
-                        index === 0
-                          ? "rgba(59, 130, 246, 0.1)"
-                          : "rgba(59, 130, 246, 0.1)",
-                      border: "1px solid",
-                      borderColor:
-                        index === 0
-                          ? "rgba(59, 130, 246, 0.2)"
-                          : "rgba(59, 130, 246, 0.2)",
-                    }}
-                  >
-                    {tip.icon}
-                  </Box>
-                  <Typography
-                    variant="h5"
-                    sx={{ color: "text.primary", mb: 2, fontWeight: 800 }}
-                  >
-                    {tip.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "text.secondary", mb: 3, lineHeight: 1.8 }}
-                  >
-                    {tip.description}
-                  </Typography>
-                  <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
-                  >
-                    {tip.tips.map((item, tipIndex) => (
-                      <Box
-                        key={tipIndex}
-                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
-                      >
-                        <Box
-                          sx={{
-                            width: 4,
-                            height: 4,
-                            borderRadius: "full",
-                            bgcolor: index === 0 ? "#3B82F6" : "#8B5CF6",
-                          }}
-                        />
-                        <Typography
-                          sx={{
-                            color: "text.secondary",
-                            fontWeight: 500,
-                            fontSize: "0.85rem",
-                          }}
-                        >
-                          {item}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-
-        {/* Emergency Contacts */}
-        <Box
-          sx={{
-            p: { xs: 4, md: 8 },
-            mb: 12,
-            borderRadius: 2.5,
-            bgcolor: "rgba(239, 68, 68, 0.02)",
-            border: "1px solid rgba(239, 68, 68, 0.1)",
-            backdropFilter: "blur(10px)",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              mb: 6,
-              justifyContent: "center",
-            }}
-          >
-            <PhoneIcon sx={{ fontSize: 32, color: "#EF4444" }} />
-            <Typography
-              variant="h4"
-              sx={{
-                color: "text.primary",
-                fontWeight: 900,
-                fontFamily: "'Audiowide', sans-serif",
-              }}
-            >
-              Emergency Contacts
-            </Typography>
-          </Box>
-          <Grid container spacing={3}>
-            {emergencyContacts.map((contact, index) => (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
-                <Box
-                  sx={{
-                    p: 3,
-                    textAlign: "center",
-                    bgcolor: "rgba(255, 255, 255, 0.03)",
-                    borderRadius: 1.25,
-                    border: "1px solid rgba(255, 255, 255, 0.05)",
-                    transition: "transform 0.2s",
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                      bgcolor: "rgba(255, 255, 255, 0.05)",
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="overline"
-                    sx={{
-                      color: "text.secondary",
-                      fontSize: "0.7rem",
-                      fontWeight: 800,
-                      letterSpacing: 1,
-                    }}
-                  >
-                    {contact.service}
-                  </Typography>
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      color: "#EF4444",
-                      fontWeight: 900,
-                      fontSize: "1.4rem",
-                      my: 1.5,
-                      letterSpacing: -0.5,
-                    }}
-                  >
+              <div className="absolute inset-0 bg-carbon border border-white/5 transition-all duration-500 group-hover:border-copper/30 group-hover:bg-carbon-light group-hover:-translate-y-2 z-10 flex flex-col p-8 items-center text-center justify-between">
+                <span className="font-body text-[10px] tracking-[0.3em] text-white/40 uppercase group-hover:text-copper/60 transition-colors">
+                  {contact.label}
+                </span>
+                <div className="flex flex-col gap-2">
+                  <span className="font-heading text-3xl md:text-4xl text-copper tracking-tighter group-hover:tracking-normal transition-all duration-500">
                     {contact.number}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "text.secondary", fontWeight: 500 }}
-                  >
-                    {contact.description}
-                  </Typography>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        {/* Safety Resources */}
-        <Box sx={{ mb: 12 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
-            <MenuBookIcon sx={{ fontSize: 28, color: "#8B5CF6" }} />
-            <Typography
-              variant="h4"
-              sx={{
-                color: "text.primary",
-                fontWeight: 800,
-                fontFamily: "'Audiowide', sans-serif",
-              }}
-            >
-              Safety Resources
-            </Typography>
-          </Box>
-          <Grid container spacing={3}>
-            {safetyResources.map((resource, index) => (
-              <Grid size={{ xs: 12, md: 6 }} key={index}>
-                <Card
-                  sx={{
-                    p: 3,
-                    cursor: "pointer",
-                    bgcolor: "rgba(255, 255, 255, 0.02)",
-                    border: "1px solid rgba(255, 255, 255, 0.05)",
-                    borderRadius: 1.25,
-                    "&:hover": {
-                      borderColor: "primary.main",
-                      bgcolor: "rgba(255, 255, 255, 0.04)",
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{ color: "text.primary", mb: 1.5, fontWeight: 700 }}
-                  >
-                    {resource.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "text.secondary", mb: 3, lineHeight: 1.7 }}
-                  >
-                    {resource.description}
-                  </Typography>
-                  <Link
-                    href={resource.link}
-                    underline="none"
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 1,
-                      color: "primary.main",
-                      fontWeight: 800,
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    EXPLORE RESOURCE <ArrowForwardIcon sx={{ fontSize: 16 }} />
-                  </Link>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        {/* Group Riding Safety */}
-        <Box
-          sx={{
-            p: { xs: 4, md: 8 },
-            mb: 12,
-            borderRadius: 2.5,
-            bgcolor: "rgba(255, 255, 255, 0.02)",
-            border: "1px solid rgba(255, 255, 255, 0.05)",
-            backdropFilter: "blur(10px)",
-          }}
-        >
-          <Grid container spacing={5} alignItems="center">
-            <Grid size={{ xs: 12, lg: 7 }}>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}
-              >
-                <PeopleIcon sx={{ fontSize: 28, color: "primary.main" }} />
-                <Typography
-                  variant="h4"
-                  sx={{
-                    color: "text.primary",
-                    fontWeight: 900,
-                    fontFamily: "'Audiowide', sans-serif",
-                  }}
-                >
-                  Group Riding
-                </Typography>
-              </Box>
-              <Typography
-                variant="body1"
-                sx={{ color: "text.secondary", mb: 4, lineHeight: 1.8 }}
-              >
-                Riding in a group requires additional safety considerations.
-                Follow these guidelines to ensure everyone's safety during club
-                rides.
-              </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {groupSafetyTips.map((item, i) => (
-                  <Box
-                    key={i}
-                    sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                  >
-                    <Box
-                      sx={{
-                        minWidth: 24,
-                        height: 24,
-                        borderRadius: "full",
-                        bgcolor: "rgba(16, 185, 129, 0.1)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <CheckCircleIcon
-                        sx={{ color: "#10B981", fontSize: 16 }}
-                      />
-                    </Box>
-                    <Typography
-                      sx={{
-                        color: "text.secondary",
-                        fontWeight: 600,
-                        fontSize: "0.95rem",
-                      }}
-                    >
-                      {item}
-                    </Typography>
-                  </Box>
+                  </span>
+                  <div className="h-[2px] w-0 bg-copper group-hover:w-full transition-all duration-700 mx-auto"></div>
+                </div>
+                <p className="font-text text-steel-dim text-xs leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
+                  {contact.desc}
+                </p>
+              </div>
+              {/* Card Shadow/Glow */}
+              <div className="absolute inset-0 bg-copper/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-0"></div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Group Riding Section */}
+      <div className="max-w-7xl mx-auto px-6 mt-20">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+           <div className="order-2 lg:order-1">
+              <img src={groupRidingImg} alt="Group Riding" className="w-full grayscale hover:grayscale-0 transition-all duration-700 border border-white/10" />
+           </div>
+           <div className="order-1 lg:order-2">
+              <span className="text-copper font-body tracking-ultra text-xs md:text-sm uppercase mb-4 block font-bold">Group Protocol</span>
+              <h2 className="font-heading text-5xl md:text-6xl text-white uppercase leading-tight mb-8">Synchronized <br/><span className="text-transparent" style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)" }}>Riding</span></h2>
+              <ul className="space-y-4">
+                {[
+                  "Attend pre-ride briefings and follow designated routes",
+                  "Maintain proper formation and spacing",
+                  "Use hand signals and communicate with other riders",
+                  "Never ride beyond your skill level or comfort zone"
+                ].map((tip, i) => (
+                  <li key={i} className="flex items-center gap-4 group">
+                    <div className="w-2 h-2 bg-copper rotate-45 transition-all duration-300 group-hover:bg-white group-hover:scale-125"></div>
+                    <span className="font-body text-sm uppercase tracking-widest text-steel-dim group-hover:text-white transition-colors">{tip}</span>
+                  </li>
                 ))}
-              </Box>
-            </Grid>
-            <Grid size={{ xs: 12, lg: 5 }}>
-              <Box
-                component="img"
-                src={groupRidingImg}
-                alt="Group of motorcycles riding safely"
-                sx={{
-                  width: "100%",
-                  borderRadius: 1.25,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  filter: "grayscale(0.5) contrast(1.2)",
-                }}
-              />
-            </Grid>
-          </Grid>
-        </Box>
-
-        {/* Safety Pledge */}
-        <Paper
-          ref={pledgeRef}
-          sx={{
-            p: { xs: 6, md: 10 },
-            textAlign: "center",
-            position: "relative",
-            overflow: "hidden",
-            borderRadius: 2.5,
-            bgcolor: "rgba(255,255,255,0.02)",
-            border: "1px solid rgba(255,255,255,0.05)",
-            backdropFilter: "blur(20px)",
-          }}
-        >
-          <AssignmentTurnedInIcon
-            sx={{
-              position: "absolute",
-              top: -20,
-              right: -20,
-              fontSize: 180,
-              color: "primary.main",
-              opacity: 0.03,
-            }}
-          />
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 2,
-              mb: 6,
-            }}
-          >
-            <Box
-              sx={{
-                p: 1,
-                borderRadius: 2,
-                bgcolor: "rgba(59, 130, 246, 0.1)",
-                border: "1px solid rgba(59, 130, 246, 0.2)",
-              }}
-            >
-              <AssignmentTurnedInIcon
-                sx={{ fontSize: 24, color: "primary.main" }}
-              />
-            </Box>
-            <Typography
-              variant="h4"
-              sx={{
-                color: "text.primary",
-                fontWeight: 900,
-                fontFamily: "'Audiowide', sans-serif",
-              }}
-            >
-              Our Safety Pledge
-            </Typography>
-          </Box>
-          <Box sx={{ maxWidth: 850, mx: "auto" }}>
-            <Typography
-              variant="h5"
-              sx={{
-                color: "text.secondary",
-                lineHeight: 1.8,
-                fontStyle: "italic",
-                fontWeight: 500,
-                fontSize: { xs: "1.2rem", md: "1.35rem" },
-                minHeight: { xs: 200, md: 120 },
-              }}
-            >
-              "{pledgeText}"
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-block",
-                  width: 3,
-                  height: 28,
-                  bgcolor: "primary.main",
-                  ml: 1,
-                  verticalAlign: "middle",
-                  animation: "pulse 1s infinite",
-                }}
-              />
-            </Typography>
-          </Box>
-        </Paper>
-      </Container>
-    </Box>
+              </ul>
+           </div>
+        </div>
+      </div>
+    </section>
   );
 };
 

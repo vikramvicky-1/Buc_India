@@ -37,7 +37,7 @@ const Profile = () => {
   const [profileImagePreview, setProfileImagePreview] = useState(null);
   const [licenseImage, setLicenseImage] = useState(null);
   const [licenseImagePreview, setLicenseImagePreview] = useState(null);
-  const [registeredEvents, setRegisteindigoEvents] = useState([]);
+  const [registeredEvents, setRegisteredEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
 
   const [profileData, setProfileData] = useState({
@@ -82,7 +82,7 @@ const Profile = () => {
         if (profile.licenseImage) {
           setLicenseImagePreview(profile.licenseImage);
         }
-        loadRegisteindigoEvents(userEmail, userPhone);
+        loadRegisteredEvents(userEmail, userPhone);
       } else {
         // If no user data, show empty form
         toast.info("Please complete your profile information");
@@ -98,11 +98,11 @@ const Profile = () => {
     }
   };
 
-  const loadRegisteindigoEvents = async (email, phone) => {
+  const loadRegisteredEvents = async (email, phone) => {
     setLoadingEvents(true);
     try {
       const registrations = await registrationService.getByUser(email, phone);
-      setRegisteindigoEvents(registrations);
+      setRegisteredEvents(registrations);
     } catch (error) {
       console.error("Error loading registered events:", error);
     } finally {
@@ -636,7 +636,7 @@ const Profile = () => {
                   <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
                     <Calendar className="w-6 h-6 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-white">My Registeindigo Events</h2>
+                  <h2 className="text-2xl font-bold text-white">My Registered Events</h2>
                 </div>
                 
                 {loadingEvents ? (

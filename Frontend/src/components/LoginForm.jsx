@@ -1,24 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import InputAdornment from "@mui/material/InputAdornment";
-import IconButton from "@mui/material/IconButton";
-import CircularProgress from "@mui/material/CircularProgress";
-import EmailIcon from "@mui/icons-material/Email";
-import LockIcon from "@mui/icons-material/Lock";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import LoginIcon from "@mui/icons-material/Login";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import PinIcon from "@mui/icons-material/Pin";
+import { 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  ArrowLeft, 
+  LogIn, 
+  Key,
+  ShieldCheck,
+  Zap
+} from "lucide-react";
 import { profileService, otpService, userAuthService } from "../services/api";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -32,7 +25,7 @@ const LoginForm = () => {
   // Forgot Password State
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
-  const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1: Email, 2: OTP & New Password
+  const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
   const [forgotPasswordOtp, setForgotPasswordOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -71,7 +64,6 @@ const LoginForm = () => {
       toast.success("Logged in successfully!");
       navigate("/profile");
     } catch (error) {
-      console.error("Login error:", error);
       toast.error(
         error.response?.data?.message ||
           "Login failed. Please check your credentials.",
@@ -93,7 +85,6 @@ const LoginForm = () => {
       setCountdown(60);
       toast.success("Reset OTP sent to your email!");
     } catch (error) {
-      console.error("Forgot password error:", error);
       toast.error(error.response?.data?.message || "Failed to send reset OTP.");
     } finally {
       setIsSendingOtp(false);
@@ -121,7 +112,6 @@ const LoginForm = () => {
       setForgotPasswordOtp("");
       setNewPassword("");
     } catch (error) {
-      console.error("Reset password error:", error);
       toast.error(error.response?.data?.message || "Failed to reset password.");
     } finally {
       setIsResetting(false);
@@ -129,291 +119,224 @@ const LoginForm = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        bgcolor: "background.default",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className="min-h-screen bg-carbon text-white flex flex-col">
       <Header />
-      <Box
-        sx={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          p: 3,
-          pt: { xs: 10, sm: 12 },
-          pb: 6,
-        }}
-      >
-        <Paper
-          sx={{
-            maxWidth: 440,
-            width: "100%",
-            p: 4,
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 1.25,
-          }}
-        >
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate("/")}
-            sx={{
-              color: "text.secondary",
-              textTransform: "none",
-              mb: 2,
-              ml: -1,
-            }}
-          >
-            Back to Home
-          </Button>
+      
+      <main className="flex-grow flex items-center justify-center px-6 py-24 md:py-32">
+        <div className="w-full max-w-md">
+           {/* Back Button */}
+           <button
+             onClick={() => navigate("/")}
+             className="flex items-center gap-2 font-body text-[10px] tracking-widest uppercase text-steel-dim hover:text-copper transition-colors mb-12"
+           >
+             <ArrowLeft size={14} />
+             Back to Home
+           </button>
 
-          <Typography
-            variant="h4"
-            sx={{ fontWeight: 700, color: "text.primary", mb: 1 }}
-          >
-            Welcome Back
-          </Typography>
-          <Typography variant="body2" sx={{ color: "text.secondary", mb: 4 }}>
-            Login to access your profile and events
-          </Typography>
+           <div className="bg-carbon-light border border-white/5 p-8 md:p-12 relative overflow-hidden group">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <LogIn size={80} />
+              </div>
+              
+              <div className="relative z-10">
+                <span className="text-copper font-body text-xs tracking-widest uppercase mb-2 block">Secure Portal</span>
+                <h1 className="font-heading text-4xl uppercase mb-2">Welcome Back</h1>
+                <p className="font-text text-steel-dim mb-10">Identify yourself to access the brotherhood network.</p>
 
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
-          >
-            <TextField
-              label="Email Address"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              fullWidth
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailIcon sx={{ color: "text.secondary" }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Email */}
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Email Address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={18} />
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-sm outline-none focus:border-copper transition-colors"
+                        placeholder="rider@bucindia.com"
+                      />
+                    </div>
+                  </div>
 
-            <Box>
-              <TextField
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-                fullWidth
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LockIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
+                  {/* Password */}
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={18} />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full bg-carbon border border-white/10 pl-12 pr-12 py-4 font-body text-sm outline-none focus:border-copper transition-colors"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        size="small"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-steel-dim hover:text-white transition-colors"
                       >
-                        {showPassword ? (
-                          <VisibilityOffIcon />
-                        ) : (
-                          <VisibilityIcon />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <Box sx={{ textAlign: "right", mt: 1 }}>
-                <Button
-                  onClick={() => setForgotPasswordOpen(true)}
-                  sx={{
-                    color: "primary.main",
-                    textTransform: "none",
-                    p: 0,
-                    minWidth: "auto",
-                    fontSize: "0.8125rem",
-                  }}
-                >
-                  Forgot Password?
-                </Button>
-              </Box>
-            </Box>
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
 
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={isSubmitting}
-              startIcon={isSubmitting ? null : <LoginIcon />}
-              sx={{ py: 1.5, mt: 1, borderRadius: 1.25 }}
-            >
-              {isSubmitting ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Login"
-              )}
-            </Button>
-          </Box>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setForgotPasswordOpen(true)}
+                      className="font-body text-[10px] uppercase tracking-widest text-copper hover:text-white transition-colors"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
 
-          <Box sx={{ textAlign: "center", mt: 4 }}>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              Don't have an account?{" "}
-              <Button
-                onClick={() => navigate("/signup")}
-                sx={{
-                  color: "primary.main",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  p: 0,
-                  minWidth: "auto",
-                }}
-              >
-                Sign Up
-              </Button>
-            </Typography>
-          </Box>
-        </Paper>
-      </Box>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="btn-metallica w-full py-5 flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-6 h-6 border-2 border-carbon/30 border-t-carbon rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <LogIn size={20} />
+                        Login
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="mt-12 pt-8 border-t border-white/5 text-center">
+                   <p className="font-text text-steel-dim text-sm">
+                     Not part of the tribe yet?{" "}
+                     <button
+                       onClick={() => navigate("/signup")}
+                       className="text-copper uppercase font-body text-xs tracking-widest ml-2 hover:text-white transition-colors"
+                     >
+                       Join the Circle
+                     </button>
+                   </p>
+                </div>
+              </div>
+           </div>
+        </div>
+      </main>
+
       <Footer />
 
-      {/* Forgot Password Dialog */}
-      <Dialog
-        open={forgotPasswordOpen}
-        onClose={() =>
-          !isResetting && !isSendingOtp && setForgotPasswordOpen(false)
-        }
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 1.25 } }}
-      >
-        <DialogTitle sx={{ fontWeight: 700 }}>Reset Password</DialogTitle>
-        <DialogContent sx={{ pt: 1 }}>
-          <Typography variant="body2" sx={{ color: "text.secondary", mb: 3 }}>
-            {forgotPasswordStep === 1
-              ? "Enter your registered email address and we'll send you an OTP to reset your password."
-              : `Enter the OTP sent to ${forgotPasswordEmail} and your new password.`}
-          </Typography>
+      {/* Forgot Password Modal Overlay */}
+      {forgotPasswordOpen && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-carbon/90 backdrop-blur-sm">
+          <div className="bg-carbon-light border border-white/10 p-8 md:p-12 w-full max-w-md relative">
+            <button 
+              onClick={() => !isResetting && !isSendingOtp && setForgotPasswordOpen(false)}
+              className="absolute top-6 right-6 text-steel-dim hover:text-white"
+            >
+              ✕
+            </button>
+            
+            <span className="text-copper font-body text-[10px] tracking-widest uppercase mb-2 block">Identity Recovery</span>
+            <h2 className="font-heading text-3xl uppercase mb-4">Reset Password</h2>
+            <p className="font-text text-steel-dim mb-8 text-sm">
+              {forgotPasswordStep === 1
+                ? "Provide your registered email. We will transmit a temporary verification code."
+                : `Input the transmission code sent to ${forgotPasswordEmail}.`}
+            </p>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-            {forgotPasswordStep === 1 ? (
-              <>
-                <TextField
-                  label="Email Address"
-                  type="email"
-                  fullWidth
-                  value={forgotPasswordEmail}
-                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailIcon sx={{ color: "text.secondary" }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={handleSendResetOtp}
-                  disabled={isSendingOtp}
-                  sx={{ py: 1.25, borderRadius: 1.25 }}
-                >
-                  {isSendingOtp ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    "Send OTP"
-                  )}
-                </Button>
-              </>
-            ) : (
-              <>
-                <TextField
-                  label="Enter OTP"
-                  type="text"
-                  fullWidth
-                  value={forgotPasswordOtp}
-                  onChange={(e) => setForgotPasswordOtp(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PinIcon sx={{ color: "text.secondary" }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="New Password"
-                  type="password"
-                  fullWidth
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockIcon sx={{ color: "text.secondary" }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <Box sx={{ display: "flex", gap: 1.5 }}>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => setForgotPasswordStep(1)}
-                    disabled={isResetting}
-                    sx={{ py: 1.25, borderRadius: 1.25 }}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={handleResetPassword}
-                    disabled={isResetting}
-                    sx={{ py: 1.25, borderRadius: 1.25 }}
-                  >
-                    {isResetting ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      "Reset"
-                    )}
-                  </Button>
-                </Box>
-                {countdown > 0 && (
-                  <Typography
-                    variant="caption"
-                    sx={{ textAlign: "center", color: "text.secondary" }}
-                  >
-                    Resend OTP in {countdown}s
-                  </Typography>
-                )}
-                {countdown === 0 && (
-                  <Button
+            <div className="space-y-6">
+              {forgotPasswordStep === 1 ? (
+                <>
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Email Address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={18} />
+                      <input
+                        type="email"
+                        value={forgotPasswordEmail}
+                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                        className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-sm outline-none focus:border-copper transition-colors"
+                        placeholder="rider@bucindia.com"
+                      />
+                    </div>
+                  </div>
+                  <button
                     onClick={handleSendResetOtp}
-                    sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                    disabled={isSendingOtp}
+                    className="btn-metallica w-full py-4 flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    Resend OTP
-                  </Button>
-                )}
-              </>
-            )}
-          </Box>
-        </DialogContent>
-      </Dialog>
-    </Box>
+                    {isSendingOtp ? "Transmitting..." : "Send Code"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Verification Code</label>
+                    <div className="relative">
+                      <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={18} />
+                      <input
+                        type="text"
+                        value={forgotPasswordOtp}
+                        onChange={(e) => setForgotPasswordOtp(e.target.value)}
+                        className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-sm outline-none focus:border-copper transition-colors text-center tracking-[0.5em]"
+                        placeholder="••••••"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">New Password</label>
+                    <div className="relative">
+                      <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={18} />
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-sm outline-none focus:border-copper transition-colors"
+                        placeholder="New Password"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setForgotPasswordStep(1)}
+                      disabled={isResetting}
+                      className="flex-1 border border-white/10 font-body text-[10px] uppercase tracking-widest hover:bg-white/5 transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handleResetPassword}
+                      disabled={isResetting}
+                      className="btn-metallica flex-[2] py-4 disabled:opacity-50"
+                    >
+                      {isResetting ? "Resetting..." : "Set New Password"}
+                    </button>
+                  </div>
+                  
+                  {countdown > 0 ? (
+                    <p className="text-center font-body text-[10px] uppercase tracking-widest text-steel-dim">
+                      New code available in {countdown}s
+                    </p>
+                  ) : (
+                    <button
+                      onClick={handleSendResetOtp}
+                      className="w-full text-center font-body text-[10px] uppercase tracking-widest text-copper hover:text-white transition-colors pt-2"
+                    >
+                      Resend Verification Code
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

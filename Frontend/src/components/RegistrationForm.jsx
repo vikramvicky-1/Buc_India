@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import InputAdornment from "@mui/material/InputAdornment";
-import IconButton from "@mui/material/IconButton";
-import CircularProgress from "@mui/material/CircularProgress";
-import CloseIcon from "@mui/icons-material/Close";
-import PersonIcon from "@mui/icons-material/Person";
-import EmailIcon from "@mui/icons-material/Email";
-import PhoneIcon from "@mui/icons-material/Phone";
-import LockIcon from "@mui/icons-material/Lock";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import PinIcon from "@mui/icons-material/Pin";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  X, 
+  User, 
+  Mail, 
+  Phone, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  UserPlus, 
+  CheckCircle,
+  Key,
+  ShieldCheck,
+  Zap
+} from "lucide-react";
 import { profileService, otpService } from "../services/api";
 
 const RegistrationForm = ({
@@ -80,7 +75,6 @@ const RegistrationForm = ({
       setCountdown(60);
       toast.success("OTP sent to your email!");
     } catch (err) {
-      console.error("OTP send error:", err);
       const errorMessage = err.response?.data?.message || "Failed to send OTP.";
       setError(errorMessage);
     } finally {
@@ -155,7 +149,6 @@ const RegistrationForm = ({
         }
       }, 2000);
     } catch (err) {
-      console.error("Registration error:", err);
       const errorMessage =
         err.response?.data?.message || "Registration failed. Please try again.";
       setError(errorMessage);
@@ -165,259 +158,222 @@ const RegistrationForm = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={isSubmitting || showSuccess ? undefined : onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 1.25,
-          border: "1px solid",
-          borderColor: "divider",
-        },
-      }}
-    >
-      {showSuccess ? (
-        <Box sx={{ p: 5, textAlign: "center" }}>
-          <CheckCircleOutlineIcon
-            sx={{ fontSize: 80, color: "success.main", mb: 2 }}
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-6">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={!isSubmitting && !showSuccess ? onClose : undefined}
+            className="absolute inset-0 bg-carbon/95 backdrop-blur-md"
           />
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: 700, color: "text.primary", mb: 1 }}
+
+          {/* Modal Container */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="relative w-full max-w-xl bg-carbon-light border border-white/5 overflow-hidden"
           >
-            {type === "community"
-              ? "Registration Successful!"
-              : "Event Registration Complete!"}
-          </Typography>
-          <Typography variant="body1" sx={{ color: "text.secondary", mb: 4 }}>
-            Welcome to the community! You can now access your profile and
-            register for events.
-          </Typography>
-          <CircularProgress size={32} color="success" />
-        </Box>
-      ) : (
-        <>
-          <DialogTitle
-            sx={{
-              m: 0,
-              p: 3,
-              pb: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <PersonAddIcon sx={{ color: "primary.main", fontSize: 28 }} />
-              <Typography
-                variant="h5"
-                sx={{ fontWeight: 700, color: "text.primary" }}
-              >
-                {type === "community"
-                  ? "Join Community"
-                  : `Register for ${eventTitle}`}
-              </Typography>
-            </Box>
-            <IconButton
-              aria-label="close"
+            {/* Close Button */}
+            <button
               onClick={onClose}
               disabled={isSubmitting}
-              sx={{ color: "text.secondary" }}
+              className="absolute top-6 right-6 text-steel-dim hover:text-white transition-colors z-20"
             >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent sx={{ p: 3 }}>
-            <Typography variant="body2" sx={{ color: "text.secondary", mb: 3 }}>
-              {type === "community"
-                ? "Create an account to join India's largest riding community and get access to exclusive events."
-                : "Enter your details to register for this event. You will also be joined to the community."}
-            </Typography>
+              <X size={24} />
+            </button>
 
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
-            >
-              {error && (
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: "error.main",
-                    textAlign: "center",
-                    p: 1,
-                    borderRadius: 1.25,
-                    bgcolor: "rgba(244, 67, 54, 0.1)",
-                  }}
-                >
-                  {error}
-                </Typography>
-              )}
+            {showSuccess ? (
+              <div className="p-12 md:p-20 text-center animate-fade-in">
+                <div className="flex justify-center mb-8">
+                  <div className="w-24 h-24 bg-copper/10 rounded-full flex items-center justify-center">
+                    <CheckCircle className="text-copper" size={48} />
+                  </div>
+                </div>
+                <h2 className="font-heading text-4xl uppercase mb-4">Success</h2>
+                <p className="font-text text-steel-dim mb-8">
+                  {type === "community"
+                    ? "Welcome to the circle. Your profile is ready."
+                    : `You are enlisted for ${eventTitle}.`}
+                </p>
+                <div className="flex justify-center">
+                  <div className="w-8 h-8 border-2 border-copper/30 border-t-copper rounded-full animate-spin"></div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col md:flex-row">
+                {/* Left Side Info (Optional) */}
+                <div className="md:w-1/3 bg-copper/5 p-12 flex-col justify-between border-r border-white/5 hidden md:flex">
+                   <div>
+                     <Zap className="text-copper mb-8" size={32} />
+                     <h2 className="font-heading text-4xl uppercase leading-none mb-4">Join The Pack</h2>
+                     <p className="font-text text-xs text-steel-dim leading-relaxed">
+                        Become part of the most elite motorcycle brotherhood in the country.
+                     </p>
+                   </div>
+                   <div className="text-[10px] font-body tracking-ultra uppercase opacity-30">
+                      BUC INDIA • RIDE TOGETHER
+                   </div>
+                </div>
 
-              <TextField
-                label="Full Name"
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                required
-                fullWidth
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                {/* Main Form */}
+                <div className="flex-1 p-8 md:p-12 max-h-[85vh] overflow-y-auto custom-scrollbar">
+                  <span className="text-copper font-body text-[10px] tracking-widest uppercase mb-2 block">Registration Portal</span>
+                  <h3 className="font-heading text-3xl uppercase mb-8">
+                    {type === "community" ? "Member Admission" : `Enlist: ${eventTitle}`}
+                  </h3>
 
-              <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
-                <TextField
-                  label="Email Address"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  disabled={otpSent && countdown > 0}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailIcon sx={{ color: "text.secondary" }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <Button
-                  variant="outlined"
-                  onClick={handleSendOtp}
-                  disabled={isSendingOtp || countdown > 0}
-                  sx={{ height: 56, minWidth: 100, borderRadius: 1.25 }}
-                >
-                  {isSendingOtp ? (
-                    <CircularProgress size={20} />
-                  ) : countdown > 0 ? (
-                    `${countdown}s`
-                  ) : otpSent ? (
-                    "Resend"
-                  ) : (
-                    "Send OTP"
-                  )}
-                </Button>
-              </Box>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                      <div className="bg-red-500/10 border border-red-500/20 p-4 font-body text-[10px] uppercase tracking-widest text-red-500 text-center animate-shake">
+                        {error}
+                      </div>
+                    )}
 
-              {otpSent && (
-                <TextField
-                  label="Enter OTP"
-                  type="text"
-                  name="otp"
-                  value={formData.otp}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  helperText="Enter the 6-digit code sent to your email"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PinIcon sx={{ color: "text.secondary" }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              )}
+                    <div className="space-y-4">
+                      {/* Full Name */}
+                      <div className="space-y-1">
+                        <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Full Name</label>
+                        <div className="relative">
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
+                          <input
+                            type="text"
+                            name="fullName"
+                            value={formData.fullName}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-xs outline-none focus:border-copper transition-colors"
+                            placeholder="YOUR NAME"
+                          />
+                        </div>
+                      </div>
 
-              <TextField
-                label="Mobile Number"
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                required
-                fullWidth
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PhoneIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                      {/* Email Row */}
+                      <div className="space-y-1">
+                        <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Email Transmission</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-grow">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
+                            <input
+                              type="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleInputChange}
+                              required
+                              disabled={otpSent && countdown > 0}
+                              className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-xs outline-none focus:border-copper transition-colors disabled:opacity-50"
+                              placeholder="EMAIL@DOMAIN.COM"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleSendOtp}
+                            disabled={isSendingOtp || countdown > 0}
+                            className="px-4 bg-white/5 border border-white/10 font-body text-[10px] uppercase tracking-widest hover:bg-copper hover:text-carbon transition-all disabled:opacity-50 min-w-[90px]"
+                          >
+                            {isSendingOtp ? "..." : countdown > 0 ? `${countdown}s` : "SEND"}
+                          </button>
+                        </div>
+                      </div>
 
-              <TextField
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-                fullWidth
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LockIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
-                        {showPassword ? (
-                          <VisibilityOffIcon />
-                        ) : (
-                          <VisibilityIcon />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                      {/* OTP Input */}
+                      {otpSent && (
+                        <div className="space-y-1 animate-fade-in">
+                          <label className="font-body text-[10px] uppercase tracking-widest text-copper">Verification Code</label>
+                          <div className="relative">
+                            <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-copper" size={16} />
+                            <input
+                              type="text"
+                              name="otp"
+                              value={formData.otp}
+                              onChange={handleInputChange}
+                              required
+                              className="w-full bg-carbon border border-copper/30 pl-12 pr-4 py-4 font-body text-xs outline-none focus:border-copper transition-colors text-center tracking-[0.5em]"
+                              placeholder="••••••"
+                            />
+                          </div>
+                        </div>
+                      )}
 
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                disabled={isSubmitting}
-                startIcon={isSubmitting ? null : <PersonAddIcon />}
-                sx={{ py: 1.5, mt: 1, borderRadius: 1.25 }}
-              >
-                {isSubmitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  "Sign Up"
-                )}
-              </Button>
-            </Box>
+                      {/* Phone */}
+                      <div className="space-y-1">
+                        <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Phone Link</label>
+                        <div className="relative">
+                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
+                          <input
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-xs outline-none focus:border-copper transition-colors"
+                            placeholder="PHONE NUMBER"
+                          />
+                        </div>
+                      </div>
 
-            <Box sx={{ textAlign: "center", mt: 3 }}>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                Already a member?{" "}
-                <Button
-                  onClick={() => {
-                    onClose();
-                    navigate("/login");
-                  }}
-                  disabled={isSubmitting}
-                  sx={{
-                    color: "primary.main",
-                    fontWeight: 600,
-                    textTransform: "none",
-                    p: 0,
-                    minWidth: "auto",
-                  }}
-                >
-                  Login
-                </Button>
-              </Typography>
-            </Box>
-          </DialogContent>
-        </>
+                      {/* Password */}
+                      <div className="space-y-1">
+                        <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Secret Key</label>
+                        <div className="relative">
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full bg-carbon border border-white/10 pl-12 pr-12 py-4 font-body text-xs outline-none focus:border-copper transition-colors"
+                            placeholder="••••••••"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-steel-dim hover:text-white transition-colors"
+                          >
+                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="btn-metallica w-full py-5 flex items-center justify-center gap-3 disabled:opacity-50"
+                    >
+                      {isSubmitting ? (
+                        <div className="w-6 h-6 border-2 border-carbon/30 border-t-carbon rounded-full animate-spin"></div>
+                      ) : (
+                        <>
+                          <UserPlus size={20} />
+                          Finalize Admission
+                        </>
+                      )}
+                    </button>
+                  </form>
+
+                  <div className="mt-8 text-center">
+                     <p className="font-text text-steel-dim text-[10px] uppercase tracking-widest">
+                       Already a brother?{" "}
+                       <button
+                         onClick={() => { onClose(); navigate("/login"); }}
+                         className="text-copper hover:text-white transition-colors ml-2"
+                       >
+                         Access Portal
+                       </button>
+                     </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
       )}
-    </Dialog>
+    </AnimatePresence>
   );
 };
 

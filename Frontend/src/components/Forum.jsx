@@ -1,22 +1,13 @@
 import React, { useState } from "react";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
-import Avatar from "@mui/material/Avatar";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import PushPinIcon from "@mui/icons-material/PushPin";
-import ReplyIcon from "@mui/icons-material/Reply";
-import ThumbUpIcon from "@mui/icons-material/ThumbUp";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import PersonIcon from "@mui/icons-material/Person";
-import AddIcon from "@mui/icons-material/Add";
+import { 
+  PushPin, 
+  MessageSquare, 
+  ThumbsUp, 
+  Clock, 
+  User, 
+  Plus,
+  ArrowRight
+} from "lucide-react";
 
 const Forum = () => {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -70,182 +61,102 @@ const Forum = () => {
   ];
 
   return (
-    <Box
-      component="section"
-      id="forum"
-      sx={{ position: "relative", pt: { xs: 8, md: 10 }, pb: 10, overflow: "hidden" }}
-    >
-      {/* Background Image */}
-      <Box sx={{ position: "absolute", inset: 0, zIndex: 0 }}>
-        <Box
-          component="img"
-          src="https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
-          alt=""
-          sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(to bottom, rgba(15,18,20,0.7), rgba(15,18,20,0.92), rgba(15,18,20,0.98))",
-          }}
-        />
-      </Box>
+    <section id="forum" className="section-container py-24 bg-carbon text-white">
+       <div className="max-w-7xl mx-auto px-6">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
+          <div>
+            <span className="text-copper font-body tracking-ultra text-xs md:text-sm uppercase mb-2 block font-bold">The Discussion</span>
+            <h2 className="font-heading text-6xl md:text-8xl uppercase leading-none">The <span className="text-transparent outline-title">Forum</span></h2>
+          </div>
+          
+          <button className="flex items-center gap-4 bg-copper text-carbon px-8 py-4 font-heading text-lg uppercase hover:bg-white transition-all duration-500">
+            <Plus size={20} />
+            New Topic
+          </button>
+        </div>
 
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10 }}>
-        {/* Header */}
-        <Box sx={{ textAlign: "center", mb: 8 }}>
-          <Typography variant="h2" sx={{
-            fontWeight: 900,
-            color: "text.primary",
-            mb: 2,
-            fontSize: { xs: "2.5rem", md: "3.5rem" },
-            fontFamily: "'Audiowide', sans-serif",
-          }}>
-            Community{" "}
-            <Box component="span" sx={{ color: "primary.main" }}>
-              Forum
-            </Box>
-          </Typography>
-          <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 700, mx: "auto" }}>
-            Connect with fellow riders, share experiences, ask questions, and be part of our vibrant community discussions.
-          </Typography>
-        </Box>
-
-        <Grid container spacing={3}>
-          {/* Sidebar */}
-          <Grid size={{ xs: 12, md: 3 }}>
-            <Card sx={{ position: "sticky", top: 80 }}>
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                  Categories
-                </Typography>
-                <List disablePadding>
-                  {categories.map((category) => (
-                    <ListItemButton
-                      key={category.id}
-                      onClick={() => setActiveCategory(category.id)}
-                      selected={activeCategory === category.id}
-                      sx={{ borderRadius: 2, mb: 0.5, py: 1 }}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+           {/* Categories Sidebar */}
+           <div className="lg:col-span-3">
+              <div className="space-y-2 sticky top-32">
+                 <h3 className="font-body text-[10px] uppercase tracking-[0.3em] text-steel-dim mb-6">Categories</h3>
+                 {categories.map((cat) => (
+                    <button 
+                      key={cat.id}
+                      onClick={() => setActiveCategory(cat.id)}
+                      className={`w-full flex items-center justify-between p-4 border transition-all duration-500 ${
+                        activeCategory === cat.id 
+                        ? "bg-copper/10 border-copper/30 text-copper" 
+                        : "bg-carbon-light border-white/5 text-steel-dim hover:border-white/20 hover:text-white"
+                      }`}
                     >
-                      <ListItemText
-                        primary={category.name}
-                        primaryTypographyProps={{
-                          fontSize: "0.8125rem",
-                          fontWeight: activeCategory === category.id ? 700 : 400,
-                        }}
-                      />
-                      <Chip
-                        label={category.count}
-                        size="small"
-                        sx={{
-                          height: 22,
-                          fontSize: "0.7rem",
-                          bgcolor: activeCategory === category.id ? "primary.main" : "action.hover",
-                          color: activeCategory === category.id ? "white" : "text.secondary",
-                        }}
-                      />
-                    </ListItemButton>
-                  ))}
-                </List>
+                       <span className="font-body text-xs uppercase tracking-widest">{cat.name}</span>
+                       <span className="font-heading text-sm opacity-50">{cat.count}</span>
+                    </button>
+                 ))}
+              </div>
+           </div>
 
-                <Button
-                  variant="contained"
-                  fullWidth
-                  startIcon={<AddIcon />}
-                  sx={{ mt: 2 }}
-                >
-                  New Topic
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
+           {/* Posts Area */}
+           <div className="lg:col-span-9">
+              <div className="space-y-6">
+                 {filteredPosts.map((post) => (
+                    <div key={post.id} className="group bg-carbon-light border border-white/5 p-8 hover:border-copper/30 transition-all duration-500 cursor-pointer">
+                       <div className="flex justify-between items-start mb-6">
+                          <div className="flex items-center gap-4">
+                             {post.isPinned && <PushPin size={16} className="text-copper rotate-45" />}
+                             <h3 className="font-heading text-2xl uppercase group-hover:text-copper transition-colors">{post.title}</h3>
+                          </div>
+                          <span className="bg-white/5 px-3 py-1 font-body text-[10px] uppercase tracking-widest text-steel-dim group-hover:bg-copper group-hover:text-carbon transition-colors">
+                            {post.category}
+                          </span>
+                       </div>
 
-          {/* Posts */}
-          <Grid size={{ xs: 12, md: 9 }}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {filteredPosts.map((post) => (
-                <Card
-                  key={post.id}
-                  sx={{
-                    cursor: "pointer",
-                    "&:hover": { borderColor: "primary.main", transform: "translateY(-1px)" },
-                  }}
-                >
-                  <CardContent sx={{ display: "flex", gap: 2 }}>
-                    <Avatar sx={{ bgcolor: "surface.containerHigh", width: 44, height: 44 }}>
-                      <PersonIcon sx={{ color: "text.secondary" }} />
-                    </Avatar>
+                       <p className="font-text text-steel-dim text-sm mb-8 line-clamp-2 max-w-3xl">{post.preview}</p>
 
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                        {post.isPinned && <PushPinIcon sx={{ fontSize: 16, color: "primary.main" }} />}
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
-                          {post.title}
-                        </Typography>
-                      </Box>
+                       <div className="flex flex-wrap items-center justify-between gap-6 border-t border-white/5 pt-6">
+                          <div className="flex items-center gap-8">
+                             <div className="flex items-center gap-2">
+                                <User size={14} className="text-copper" />
+                                <span className="font-body text-[10px] uppercase tracking-widest text-steel-dim">BY {post.author}</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                <Clock size={14} className="text-copper" />
+                                <span className="font-body text-[10px] uppercase tracking-widest text-steel-dim">{post.lastActivity}</span>
+                             </div>
+                          </div>
 
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1.5, flexWrap: "wrap" }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                          <PersonIcon sx={{ fontSize: 14, color: "text.secondary" }} />
-                          <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                            {post.author}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                          <AccessTimeIcon sx={{ fontSize: 14, color: "text.secondary" }} />
-                          <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                            {post.lastActivity}
-                          </Typography>
-                        </Box>
-                        <Chip
-                          label={categories.find((c) => c.id === post.category)?.name}
-                          size="small"
-                          sx={{ height: 22, fontSize: "0.7rem" }}
-                        />
-                      </Box>
+                          <div className="flex items-center gap-8">
+                             <div className="flex items-center gap-2">
+                                <MessageSquare size={14} className="text-steel-dim" />
+                                <span className="font-heading text-sm text-white">{post.replies}</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                <ThumbsUp size={14} className="text-steel-dim" />
+                                <span className="font-heading text-sm text-white">{post.likes}</span>
+                             </div>
+                             <button className="text-copper hover:translate-x-2 transition-transform">
+                                <ArrowRight size={20} />
+                             </button>
+                          </div>
+                       </div>
+                    </div>
+                 ))}
+              </div>
 
-                      <Typography variant="body2" sx={{ color: "text.secondary", mb: 2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                        {post.preview}
-                      </Typography>
-
-                      <Box sx={{ display: "flex", gap: 3 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "text.secondary", cursor: "pointer", "&:hover": { color: "primary.main" } }}>
-                          <ReplyIcon sx={{ fontSize: 16 }} />
-                          <Typography variant="caption">{post.replies} replies</Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "text.secondary", cursor: "pointer", "&:hover": { color: "primary.main" } }}>
-                          <ThumbUpIcon sx={{ fontSize: 16 }} />
-                          <Typography variant="caption">{post.likes} likes</Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              ))}
-            </Box>
-          </Grid>
-        </Grid>
-
-        {/* Stats Bar */}
-        <Card sx={{ mt: 8, bgcolor: "rgba(59, 130, 246, 0.06)", border: "1px solid rgba(59, 130, 246, 0.15)" }}>
-          <CardContent>
-            <Grid container spacing={3}>
-              {stats.map((stat, i) => (
-                <Grid size={{ xs: 6, md: 3 }} key={i} sx={{ textAlign: "center" }}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: "text.primary" }}>
-                    {stat.value}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    {stat.label}
-                  </Typography>
-                </Grid>
-              ))}
-            </Grid>
-          </CardContent>
-        </Card>
-      </Container>
-    </Box>
+              {/* Forum Stats Strip */}
+              <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 py-12 border-y border-white/5">
+                 {stats.map((stat, i) => (
+                    <div key={i} className="text-center">
+                       <span className="font-heading text-5xl block mb-2">{stat.value}</span>
+                       <span className="font-body text-[10px] text-steel-dim tracking-[0.3em] uppercase">{stat.label}</span>
+                    </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+       </div>
+    </section>
   );
 };
 

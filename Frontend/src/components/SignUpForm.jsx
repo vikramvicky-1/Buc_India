@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import InputAdornment from "@mui/material/InputAdornment";
-import IconButton from "@mui/material/IconButton";
-import CircularProgress from "@mui/material/CircularProgress";
-import PersonIcon from "@mui/icons-material/Person";
-import EmailIcon from "@mui/icons-material/Email";
-import PhoneIcon from "@mui/icons-material/Phone";
-import LockIcon from "@mui/icons-material/Lock";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import PinIcon from "@mui/icons-material/Pin";
+import { 
+  User, 
+  Mail, 
+  Phone, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  ArrowLeft, 
+  UserPlus, 
+  Key,
+  Zap
+} from "lucide-react";
 import { profileService, otpService } from "../services/api";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -69,7 +64,6 @@ const SignUpForm = () => {
       setCountdown(60);
       toast.success("OTP sent to your email!");
     } catch (error) {
-      console.error("OTP send error:", error);
       toast.error(
         error.response?.data?.message ||
           "Failed to send OTP. Please try again.",
@@ -108,7 +102,6 @@ const SignUpForm = () => {
       toast.success("Account created successfully!");
       navigate("/profile");
     } catch (error) {
-      console.error("Registration error:", error);
       toast.error(
         error.response?.data?.message ||
           "Registration failed. Please try again.",
@@ -119,229 +112,171 @@ const SignUpForm = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        bgcolor: "background.default",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className="min-h-screen bg-carbon text-white flex flex-col">
       <Header />
-      <Box
-        sx={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          p: 3,
-          pt: { xs: 10, sm: 12 },
-          pb: 6,
-        }}
-      >
-        <Paper
-          sx={{
-            maxWidth: 440,
-            width: "100%",
-            p: 4,
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 1.25,
-          }}
-        >
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate("/")}
-            sx={{
-              color: "text.secondary",
-              textTransform: "none",
-              mb: 2,
-              ml: -1,
-            }}
-          >
-            Back to Home
-          </Button>
+      
+      <main className="flex-grow flex items-center justify-center px-6 py-24 md:py-32">
+        <div className="w-full max-w-md">
+           {/* Back Button */}
+           <button
+             onClick={() => navigate("/")}
+             className="flex items-center gap-2 font-body text-[10px] tracking-widest uppercase text-steel-dim hover:text-copper transition-colors mb-12"
+           >
+             <ArrowLeft size={14} />
+             Back to Home
+           </button>
 
-          <Typography
-            variant="h4"
-            sx={{ fontWeight: 700, color: "text.primary", mb: 1 }}
-          >
-            Create Account
-          </Typography>
-          <Typography variant="body2" sx={{ color: "text.secondary", mb: 4 }}>
-            Join India's largest riding community
-          </Typography>
+           <div className="bg-carbon-light border border-white/5 p-8 md:p-12 relative overflow-hidden group">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <UserPlus size={80} />
+              </div>
+              
+              <div className="relative z-10">
+                <span className="text-copper font-body text-xs tracking-widest uppercase mb-2 block">Initiation</span>
+                <h1 className="font-heading text-4xl uppercase mb-2">Join the Tribe</h1>
+                <p className="font-text text-steel-dim mb-10">Enlist in India's largest riding collective.</p>
 
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
-          >
-            <TextField
-              label="Full Name"
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              required
-              fullWidth
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon sx={{ color: "text.secondary" }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Full Name */}
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Full Name</label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={18} />
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-sm outline-none focus:border-copper transition-colors"
+                        placeholder="RIDERS NAME"
+                      />
+                    </div>
+                  </div>
 
-            <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
-              <TextField
-                label="Email Address"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-                fullWidth
-                disabled={otpSent && countdown > 0}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <Button
-                variant="outlined"
-                onClick={handleSendOtp}
-                disabled={isSendingOtp || countdown > 0}
-                sx={{ height: 56, minWidth: 100, borderRadius: 1.25 }}
-              >
-                {isSendingOtp ? (
-                  <CircularProgress size={20} />
-                ) : countdown > 0 ? (
-                  `${countdown}s`
-                ) : otpSent ? (
-                  "Resend"
-                ) : (
-                  "Send OTP"
-                )}
-              </Button>
-            </Box>
+                  {/* Email & OTP Row */}
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Email Transmission</label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-grow">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={18} />
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          required
+                          disabled={otpSent && countdown > 0}
+                          className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-sm outline-none focus:border-copper transition-colors disabled:opacity-50"
+                          placeholder="rider@bucindia.com"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={isSendingOtp || countdown > 0}
+                        className="btn-metallica px-6 disabled:opacity-50 min-w-[100px]"
+                      >
+                        {isSendingOtp ? "..." : countdown > 0 ? `${countdown}s` : "Get OTP"}
+                      </button>
+                    </div>
+                  </div>
 
-            {otpSent && (
-              <TextField
-                label="Enter OTP"
-                type="text"
-                name="otp"
-                value={formData.otp}
-                onChange={handleInputChange}
-                required
-                fullWidth
-                helperText="Enter the 6-digit code sent to your email"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PinIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            )}
+                  {/* OTP Input */}
+                  {otpSent && (
+                    <div className="space-y-2 animate-fade-in">
+                      <label className="font-body text-[10px] uppercase tracking-widest text-copper">Verification Code</label>
+                      <div className="relative">
+                        <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-copper" size={18} />
+                        <input
+                          type="text"
+                          name="otp"
+                          value={formData.otp}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full bg-carbon border border-copper/30 pl-12 pr-4 py-4 font-body text-sm outline-none focus:border-copper transition-colors text-center tracking-[0.5em]"
+                          placeholder="••••••"
+                        />
+                      </div>
+                    </div>
+                  )}
 
-            <TextField
-              label="Mobile Number"
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              required
-              fullWidth
-              helperText={
-                formData.phone && formData.phone.length !== 10
-                  ? "Must be 10 digits"
-                  : ""
-              }
-              error={formData.phone.length > 0 && formData.phone.length !== 10}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PhoneIcon sx={{ color: "text.secondary" }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
+                  {/* Phone */}
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Mobile Link</label>
+                    <div className="relative">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={18} />
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-sm outline-none focus:border-copper transition-colors"
+                        placeholder="10 DIGIT NUMBER"
+                      />
+                    </div>
+                  </div>
 
-            <TextField
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              fullWidth
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon sx={{ color: "text.secondary" }} />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      size="small"
-                    >
-                      {showPassword ? (
-                        <VisibilityOffIcon />
-                      ) : (
-                        <VisibilityIcon />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
+                  {/* Password */}
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim">Secure Key</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={18} />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full bg-carbon border border-white/10 pl-12 pr-12 py-4 font-body text-sm outline-none focus:border-copper transition-colors"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-steel-dim hover:text-white transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
 
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={isSubmitting}
-              startIcon={isSubmitting ? null : <PersonAddIcon />}
-              sx={{ py: 1.5, mt: 1, borderRadius: 1.25 }}
-            >
-              {isSubmitting ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Sign Up"
-              )}
-            </Button>
-          </Box>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="btn-metallica w-full py-5 flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-6 h-6 border-2 border-carbon/30 border-t-carbon rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <UserPlus size={20} />
+                        Create Account
+                      </>
+                    )}
+                  </button>
+                </form>
 
-          <Box sx={{ textAlign: "center", mt: 4 }}>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              Already have an account?{" "}
-              <Button
-                onClick={() => navigate("/login")}
-                sx={{
-                  color: "primary.main",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  p: 0,
-                  minWidth: "auto",
-                }}
-              >
-                Login
-              </Button>
-            </Typography>
-          </Box>
-        </Paper>
-      </Box>
+                <div className="mt-12 pt-8 border-t border-white/5 text-center">
+                   <p className="font-text text-steel-dim text-sm">
+                     Already registered?{" "}
+                     <button
+                       onClick={() => navigate("/login")}
+                       className="text-copper uppercase font-body text-xs tracking-widest ml-2 hover:text-white transition-colors"
+                     >
+                       Access Portal
+                     </button>
+                   </p>
+                </div>
+              </div>
+           </div>
+        </div>
+      </main>
+
       <Footer />
-    </Box>
+    </div>
   );
 };
 

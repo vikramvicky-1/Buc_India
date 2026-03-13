@@ -2,43 +2,29 @@ import React, { useState, useEffect } from "react";
 import { eventService, registrationService } from "../../services/api";
 import TimePicker from "../EventPicker/TimePicker";
 import { toast } from "react-toastify";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardMedia from "@mui/material/CardMedia";
-import CardContent from "@mui/material/CardContent";
-import CardActions from "@mui/material/CardActions";
-import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Chip from "@mui/material/Chip";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import CircularProgress from "@mui/material/CircularProgress";
-import IconButton from "@mui/material/IconButton";
-import Paper from "@mui/material/Paper";
-import InputAdornment from "@mui/material/InputAdornment";
-import Collapse from "@mui/material/Collapse";
-import AddIcon from "@mui/icons-material/Add";
-import ShareIcon from "@mui/icons-material/Share";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import PeopleIcon from "@mui/icons-material/People";
-import VerifiedIcon from "@mui/icons-material/Verified";
-import SearchIcon from "@mui/icons-material/Search";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Plus, 
+  Share2, 
+  Edit3, 
+  Trash2, 
+  Users, 
+  Award, 
+  Search, 
+  Calendar, 
+  TriangleAlert,
+  X,
+  MapPin,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Image as ImageIcon
+} from "lucide-react";
 
 const EventManagement = () => {
   const [events, setEvents] = useState([]);
   const [registrations, setRegistrations] = useState([]);
-  const [filteredEvents, setFilteindigoEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
   const [activeTab, setActiveTab] = useState("upcoming");
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
@@ -65,17 +51,17 @@ const EventManagement = () => {
       const [eventsData, registrationsData] = await Promise.all([
         eventService.getAll(), registrationService.getAll()
       ]);
-      setEvents(eventsData);
-      setRegistrations(registrationsData);
+      setEvents(eventsData || []);
+      setRegistrations(registrationsData || []);
     } catch (error) {
-      toast.error("Failed to load data");
+      toast.error("Failed to load operational data");
     } finally {
       setLoading(false);
     }
   };
 
   const getRegistrationCount = (eventId) => {
-    return registrations.filter(reg =>
+    return (registrations || []).filter(reg =>
       (typeof reg.eventId === 'object' ? reg.eventId?._id : reg.eventId) === eventId
     ).length;
   };
@@ -83,12 +69,12 @@ const EventManagement = () => {
   const handleShare = (eventId) => {
     const registrationLink = `${window.location.origin}/event-register/${eventId}`;
     navigator.clipboard.writeText(registrationLink).then(() => {
-      toast.success("Registration link copied to clipboard!");
+      toast.success("Deployment link copied to clipboard");
     }).catch(() => { toast.error("Failed to copy link"); });
   };
 
   const filterEventsFn = () => {
-    let filtered = [...events];
+    let filtered = [...(events || [])];
     const now = new Date(); now.setHours(0, 0, 0, 0);
     filtered = filtered.filter((event) => {
       const eventDate = new Date(event.eventDate); eventDate.setHours(0, 0, 0, 0);
@@ -105,7 +91,7 @@ const EventManagement = () => {
         return d === filterDate;
       });
     }
-    setFilteindigoEvents(filtered);
+    setFilteredEvents(filtered);
   };
 
   const handleInputChange = (e) => {
@@ -124,7 +110,7 @@ const EventManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!editingEvent && !bannerFile) { toast.error("Event banner is mandatory"); return; }
+    if (!editingEvent && !bannerFile) { toast.error("Deployment banner is mandatory"); return; }
     const data = new FormData();
     Object.keys(formData).forEach(key => data.append(key, formData[key]));
     if (bannerFile) data.append('banner', bannerFile);
@@ -132,14 +118,14 @@ const EventManagement = () => {
     try {
       if (editingEvent) {
         await eventService.update(editingEvent._id, data);
-        toast.success("Event updated successfully");
+        toast.success("Expedition updated successfully");
       } else {
         await eventService.create(data);
-        toast.success("Event created successfully");
+        toast.success("New Expedition published");
       }
       resetForm(); loadEvents();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+      toast.error(error.response?.data?.message || "Communication failure during deployment");
     } finally { setSubmitLoading(false); }
   };
 
@@ -160,6 +146,7 @@ const EventManagement = () => {
     });
     setBannerPreview(event.banner);
     setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = (eventId) => { setEventToDelete(eventId); setShowDeleteConfirm(true); };
@@ -169,173 +156,305 @@ const EventManagement = () => {
     setDeleting(true);
     try {
       await eventService.delete(eventToDelete);
-      toast.success("Event deleted successfully");
+      toast.success("Expedition terminated");
       loadEvents(); setShowDeleteConfirm(false); setEventToDelete(null);
-    } catch (error) { toast.error("Failed to delete event"); }
+    } catch (error) { toast.error("Failed to terminate expedition"); }
     finally { setDeleting(false); }
   };
 
   return (
-    <Box>
+    <div className="space-y-8 pb-20">
       {/* Page Header */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4, flexWrap: "wrap", gap: 2 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: "text.primary" }}>Event Management</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => { resetForm(); setShowForm(true); }} disabled={loading || submitLoading}>
-          Post New Event
-        </Button>
-      </Box>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+          <span className="text-copper font-body text-[10px] tracking-ultra uppercase mb-2 block font-bold">Logistics Division</span>
+          <h2 className="font-heading text-4xl uppercase leading-none text-white">Expedition <span className="text-transparent outline-title">Management</span></h2>
+        </div>
+        <button 
+          onClick={() => { resetForm(); setShowForm(true); }}
+          disabled={loading || submitLoading}
+          className="btn-metallica flex items-center gap-3 disabled:opacity-50"
+        >
+          <Plus size={20} /> Deploy New
+        </button>
+      </div>
 
-      {/* Event Form */}
-      <Collapse in={showForm}>
-        <Paper sx={{ p: { xs: 3, md: 4 }, mb: 4 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-            {editingEvent ? "Edit Event" : "Create New Event"}
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-            <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField label="Event Title" name="title" value={formData.title} onChange={handleInputChange} required />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField label="Event Date" name="eventDate" type="date" value={formData.eventDate} onChange={handleInputChange} required InputLabelProps={{ shrink: true }} />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Box sx={{ "& input": { width: "100%", p: "16.5px 14px", borderRadius: 3, border: "1px solid rgba(255,255,255,0.23)", bgcolor: "transparent", color: "text.primary", fontSize: "1rem", "&:focus": { outline: "none", borderColor: "primary.main" } } }}>
-                  <Typography variant="caption" sx={{ color: "text.secondary", mb: 0.5, display: "block" }}>Event Time *</Typography>
-                  <TimePicker name="eventTime" value={formData.eventTime} onChange={handleInputChange} />
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField label="Location" name="location" value={formData.location} onChange={handleInputChange} required />
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <TextField label="Meeting Point" name="meetingPoint" value={formData.meetingPoint} onChange={handleInputChange} required />
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <Button variant="outlined" component="label" sx={{ borderStyle: "dashed", py: 2 }}>
-                  {editingEvent ? "Change Event Banner" : "Upload Event Banner *"}
-                  <input type="file" accept="image/*" hidden onChange={handleImageChange} />
-                </Button>
-                {bannerPreview && (
-                  <Box component="img" src={bannerPreview} alt="Preview" sx={{ width: "100%", height: 128, objectFit: "cover", borderRadius: 3, mt: 2, border: "1px solid", borderColor: "divider" }} />
-                )}
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <TextField label="Event Description" name="description" value={formData.description} onChange={handleInputChange} required multiline rows={4} />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <FormControlLabel control={<Switch checked={formData.isActive} onChange={handleInputChange} name="isActive" color="primary" />} label={formData.isActive ? "Visible (Public)" : "Hidden (Draft)"} />
-                <Typography variant="caption" sx={{ color: "text.secondary", display: "block", ml: 5 }}>
-                  {formData.isActive ? "This event is currently live and visible on the public website." : "This event is hidden from the public."}
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <FormControlLabel control={<Switch checked={formData.certificateEnabled} onChange={handleInputChange} name="certificateEnabled" color="primary" />} label={formData.certificateEnabled ? "E‑Certificate Enabled" : "E‑Certificate Disabled"} />
-                <Typography variant="caption" sx={{ color: "text.secondary", display: "block", ml: 5 }}>
-                  When enabled, riders can download a participation certificate.
-                </Typography>
-              </Grid>
-            </Grid>
-            <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
-              <Button type="submit" variant="contained" disabled={submitLoading}>
-                {submitLoading ? <CircularProgress size={20} color="inherit" /> : (editingEvent ? "Update Event" : "Create Event")}
-              </Button>
-              <Button variant="outlined" onClick={resetForm} disabled={submitLoading}>Cancel</Button>
-            </Box>
-          </Box>
-        </Paper>
-      </Collapse>
+      {/* Deployment Form */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-carbon-light border border-white/5 p-8 md:p-12 mb-12 shadow-2xl relative">
+              <button onClick={resetForm} className="absolute top-6 right-6 text-steel-dim hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+              
+              <h3 className="font-heading text-2xl uppercase text-white mb-8 border-b border-white/5 pb-4">
+                {editingEvent ? "Modify Mission" : "Instate New Mission"}
+              </h3>
 
-      {/* Tabs */}
-      <ToggleButtonGroup
-        value={activeTab}
-        exclusive
-        onChange={(_, val) => val && setActiveTab(val)}
-        sx={{ mb: 3, "& .MuiToggleButton-root": { border: "1px solid", borderColor: "divider", borderRadius: "100px !important", px: 3, py: 1, textTransform: "none", fontWeight: 600, color: "text.secondary", "&.Mui-selected": { bgcolor: "primary.main", color: "primary.contrastText", borderColor: "primary.main" } } }}
-      >
-        <ToggleButton value="upcoming">Upcoming Events</ToggleButton>
-        <ToggleButton value="past">Past Events</ToggleButton>
-      </ToggleButtonGroup>
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Mission Designation</label>
+                    <input name="title" value={formData.title} onChange={handleInputChange} required className="w-full bg-carbon border border-white/10 p-4 font-body text-xs text-white outline-none focus:border-copper transition-colors" placeholder="EVENT NAME" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Deployment Date</label>
+                    <input name="eventDate" type="date" value={formData.eventDate} onChange={handleInputChange} required className="w-full bg-carbon border border-white/10 p-4 font-body text-xs text-white outline-none focus:border-copper transition-colors [color-scheme:dark]" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Time Window</label>
+                    <TimePicker name="eventTime" value={formData.eventTime} onChange={handleInputChange} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Sector/Location</label>
+                    <input name="location" value={formData.location} onChange={handleInputChange} required className="w-full bg-carbon border border-white/10 p-4 font-body text-xs text-white outline-none focus:border-copper transition-colors" placeholder="COORDINATES" />
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Rendezvous Point</label>
+                    <input name="meetingPoint" value={formData.meetingPoint} onChange={handleInputChange} required className="w-full bg-carbon border border-white/10 p-4 font-body text-xs text-white outline-none focus:border-copper transition-colors" placeholder="MEETING POINT" />
+                  </div>
+                  
+                  <div className="md:col-span-2 space-y-4">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Visual Asset (Banner)</label>
+                    <label className="w-full border-2 border-dashed border-white/10 p-8 flex flex-col items-center gap-4 cursor-pointer hover:bg-white/5 transition-all group">
+                       <ImageIcon size={32} className="text-steel-dim group-hover:text-copper" />
+                       <span className="font-body text-[10px] uppercase tracking-widest font-bold">Select Intelligence Interface</span>
+                       <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                    </label>
+                    {bannerPreview && (
+                      <div className="relative group rounded-sm overflow-hidden border border-white/10">
+                        <img src={bannerPreview} alt="Preview" className="w-full h-48 object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                        <div className="absolute inset-0 bg-carbon/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                           <span className="font-body text-[10px] uppercase tracking-widest font-bold text-white">Currently Selected Artifact</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-      {/* Filters */}
-      <Box sx={{ display: "flex", gap: 2, mb: 4, flexWrap: "wrap", alignItems: "center" }}>
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-          {activeTab === 'upcoming' ? 'Upcoming' : 'Past'} Events ({filteredEvents.length})
-        </Typography>
-        <Box sx={{ flex: 1 }} />
-        <TextField placeholder="Search by event name..." value={filterName} onChange={(e) => setFilterName(e.target.value)} size="small" sx={{ width: { xs: "100%", sm: 260 } }}
-          InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
-        />
-        <TextField type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} size="small" sx={{ width: 180 }} InputLabelProps={{ shrink: true }}
-          InputProps={{ startAdornment: <InputAdornment position="start"><CalendarMonthIcon /></InputAdornment> }}
-        />
-        {(filterName || filterDate) && (
-          <Button variant="text" onClick={() => { setFilterName(""); setFilterDate(""); }}>Clear</Button>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Mission Briefing</label>
+                    <textarea name="description" value={formData.description} onChange={handleInputChange} required rows={4} className="w-full bg-carbon border border-white/10 p-4 font-body text-xs text-white outline-none focus:border-copper transition-colors resize-none" placeholder="DETAILS..." />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-8">
+                     <label className="flex items-center gap-4 cursor-pointer">
+                        <div className={`w-10 h-6 rounded-full relative transition-colors ${formData.isActive ? 'bg-copper' : 'bg-carbon-light border border-white/10'}`}>
+                           <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${formData.isActive ? 'left-5 bg-carbon' : 'left-1 bg-steel-dim'}`} />
+                        </div>
+                        <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleInputChange} className="hidden" />
+                        <div>
+                           <div className="font-body text-[10px] uppercase tracking-widest font-bold text-white">Public Deployment</div>
+                           <div className="text-[8px] text-steel-dim uppercase tracking-wider">{formData.isActive ? "Live in public nodes" : "Internal intelligence only"}</div>
+                        </div>
+                     </label>
+
+                     <label className="flex items-center gap-4 cursor-pointer">
+                        <div className={`w-10 h-6 rounded-full relative transition-colors ${formData.certificateEnabled ? 'bg-copper' : 'bg-carbon-light border border-white/10'}`}>
+                           <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${formData.certificateEnabled ? 'left-5 bg-carbon' : 'left-1 bg-steel-dim'}`} />
+                        </div>
+                        <input type="checkbox" name="certificateEnabled" checked={formData.certificateEnabled} onChange={handleInputChange} className="hidden" />
+                        <div>
+                           <div className="font-body text-[10px] uppercase tracking-widest font-bold text-white">Merit Credentials</div>
+                           <div className="text-[8px] text-steel-dim uppercase tracking-wider">{formData.certificateEnabled ? "Certificates active" : "Certificates restricted"}</div>
+                        </div>
+                     </label>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 border-t border-white/5 pt-8">
+                  <button type="submit" disabled={submitLoading} className="btn-metallica px-12 disabled:opacity-50">
+                    {submitLoading ? "Processing..." : (editingEvent ? "Update Protocol" : "Initialize Protocol")}
+                  </button>
+                  <button type="button" onClick={resetForm} className="border border-white/10 text-white px-8 py-4 font-heading text-xl uppercase hover:bg-white/5 transition-all">
+                    Abort
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
         )}
-      </Box>
+      </AnimatePresence>
+
+      {/* Tabs and Filters */}
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="p-1 bg-carbon-light border border-white/5 inline-flex">
+            <button 
+              onClick={() => setActiveTab("upcoming")}
+              className={`px-6 py-2 font-body text-[10px] uppercase tracking-widest font-bold transition-all ${activeTab === "upcoming" ? 'bg-copper text-carbon' : 'text-steel-dim hover:text-white'}`}
+            >
+              Upcoming Operations
+            </button>
+            <button 
+              onClick={() => setActiveTab("past")}
+              className={`px-6 py-2 font-body text-[10px] uppercase tracking-widest font-bold transition-all ${activeTab === "past" ? 'bg-copper text-carbon' : 'text-steel-dim hover:text-white'}`}
+            >
+              Archived Operations
+            </button>
+          </div>
+          
+          <div className="flex-grow md:flex-grow-0 relative">
+            <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" />
+            <input 
+              placeholder="SEARCH MANIFEST..." 
+              value={filterName} 
+              onChange={(e) => setFilterName(e.target.value)}
+              className="bg-carbon border border-white/10 pl-10 pr-4 py-2 w-full md:w-64 font-body text-[10px] uppercase tracking-widest text-white outline-none focus:border-copper"
+            />
+          </div>
+
+          <div className="relative">
+            <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim pointer-events-none" />
+            <input 
+              type="date" 
+              value={filterDate} 
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="bg-carbon border border-white/10 pl-10 pr-4 py-2 w-full md:w-48 font-body text-[10px] uppercase tracking-widest text-white outline-none focus:border-copper [color-scheme:dark]"
+            />
+          </div>
+
+          {(filterName || filterDate) && (
+            <button onClick={() => { setFilterName(""); setFilterDate(""); }} className="text-copper font-body text-[8px] uppercase tracking-widest font-bold hover:underline">
+              Clear Filters
+            </button>
+          )}
+        </div>
+
+        <h3 className="font-heading text-xl uppercase tracking-widest text-white">
+          Active Records: {filteredEvents.length}
+        </h3>
+      </div>
 
       {/* Events Grid */}
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}><CircularProgress size={48} /></Box>
+        <div className="flex justify-center py-24">
+          <div className="w-12 h-12 border-4 border-copper/10 border-t-copper rounded-full animate-spin"></div>
+        </div>
       ) : filteredEvents.length === 0 ? (
-        <Paper sx={{ p: 6, textAlign: "center" }}>
-          <Typography sx={{ color: "text.secondary" }}>
-            {events.length === 0 ? "No events yet. Create your first event!" : "No events match your filters."}
-          </Typography>
-        </Paper>
+        <div className="p-20 border border-white/5 bg-carbon-light text-center">
+            <p className="font-text text-steel-dim uppercase tracking-ultra italic">No relevant intelligence found in this sector.</p>
+        </div>
       ) : (
-        <Grid container spacing={3}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredEvents.map((event) => (
-            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={event._id}>
-              <Card sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
-                <CardMedia component="img" height="160" image={event.banner} alt={event.title} sx={{ objectFit: "cover" }} />
-                <CardContent sx={{ flex: 1 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", flex: 1 }} noWrap>{event.title}</Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      {activeTab === 'upcoming' && (<IconButton size="small" onClick={() => handleShare(event._id)} title="Share"><ShareIcon fontSize="small" /></IconButton>)}
-                      <Chip label={event.isActive ? "Active" : "Inactive"} size="small" color={event.isActive ? "success" : "default"} />
-                    </Box>
-                  </Box>
-                  <Typography variant="body2" sx={{ color: "text.secondary", mb: 2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            <div key={event._id} className="bg-carbon-light border border-white/10 group hover:border-copper/50 transition-all duration-500 flex flex-col h-full relative overflow-hidden">
+               {/* Accent line */}
+               <div className="absolute top-0 left-0 w-full h-[1px] bg-copper opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+
+               <div className="relative h-48 overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-1000">
+                  <img src={event.banner} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000" />
+                  <div className="absolute top-4 right-4 flex gap-2">
+                     {activeTab === 'upcoming' && (
+                       <button onClick={() => handleShare(event._id)} className="p-2 bg-carbon/80 text-white hover:bg-copper hover:text-carbon transition-colors rounded-sm" title="Share link">
+                          <Share2 size={14} />
+                       </button>
+                     )}
+                     <span className={`px-2 py-1 font-body text-[8px] uppercase font-bold tracking-widest ${event.isActive ? 'bg-green-500 text-white' : 'bg-red-500/80 text-white'}`}>
+                        {event.isActive ? "Active" : "Internal"}
+                     </span>
+                  </div>
+               </div>
+
+               <div className="p-8 flex-grow space-y-4">
+                  <h4 className="font-heading text-2xl uppercase text-white truncate group-hover:text-copper transition-colors">{event.title}</h4>
+                  <p className="font-text text-steel-dim text-xs line-clamp-2 leading-relaxed h-8">
                     {event.description}
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2 }}>
-                    <Chip icon={<PeopleIcon />} label={`${getRegistrationCount(event._id)} Registeindigo`} size="small" variant="outlined" />
-                    {event.certificateEnabled && <Chip icon={<VerifiedIcon />} label="E‑Certificate On" size="small" color="success" variant="outlined" />}
-                  </Box>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>📅 {new Date(event.eventDate).toLocaleDateString()} at {event.eventTime}</Typography>
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>📍 {event.location}</Typography>
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>🏁 {event.meetingPoint}</Typography>
-                  </Box>
-                </CardContent>
-                <CardActions sx={{ px: 2, pb: 2, gap: 1 }}>
-                  <Button size="small" startIcon={<EditIcon />} onClick={() => handleEdit(event)}>Edit</Button>
-                  <Button size="small" startIcon={<DeleteIcon />} color="error" onClick={() => handleDelete(event._id)}>Delete</Button>
-                </CardActions>
-              </Card>
-            </Grid>
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-3 py-2">
+                    <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 border border-white/5">
+                      <Users size={12} className="text-copper" />
+                      <span className="font-body text-[10px] uppercase font-bold text-white tracking-widest">{getRegistrationCount(event._id)}</span>
+                    </div>
+                    {event.certificateEnabled && (
+                      <div className="flex items-center gap-2 bg-copper/5 px-3 py-1.5 border border-copper/10">
+                        <Award size={12} className="text-copper" />
+                        <span className="font-body text-[10px] uppercase font-bold text-copper tracking-widest">Merit</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5 text-steel-dim">
+                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest">
+                        <Calendar size={12} className="text-copper/50" />
+                        <span>{new Date(event.eventDate).toLocaleDateString()} @ {event.eventTime}</span>
+                     </div>
+                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest truncate">
+                        <MapPin size={12} className="text-copper/50" />
+                        <span>{event.location}</span>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="p-4 bg-carbon/50 mt-auto flex items-center justify-between border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="flex gap-2">
+                    <button onClick={() => handleEdit(event)} className="p-3 text-steel-dim hover:text-white hover:bg-white/5 transition-all">
+                       <Edit3 size={16} />
+                    </button>
+                    <button onClick={() => handleDelete(event._id)} className="p-3 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-all">
+                       <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <button onClick={() => handleShare(event._id)} className="font-body text-[8px] uppercase tracking-widest font-bold text-steel-dim hover:text-copper transition-colors">
+                     Open Manifest →
+                  </button>
+               </div>
+            </div>
           ))}
-        </Grid>
+        </div>
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteConfirm} onClose={() => { setShowDeleteConfirm(false); setEventToDelete(null); }} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: 700 }}>
-          <WarningAmberIcon color="warning" /> Confirm Delete
-        </DialogTitle>
-        <DialogContent>
-          <Typography sx={{ color: "text.secondary" }}>Are you sure you want to delete this event? This action cannot be undone.</Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-          <Button variant="outlined" onClick={() => { setShowDeleteConfirm(false); setEventToDelete(null); }} disabled={deleting}>Cancel</Button>
-          <Button variant="contained" color="error" onClick={confirmDelete} disabled={deleting}>
-            {deleting ? <CircularProgress size={20} color="inherit" /> : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDeleteConfirm(false)}
+              className="absolute inset-0 bg-carbon/90 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-carbon-light border border-white/10 p-8 md:p-12 max-w-lg w-full relative z-[101]"
+            >
+               <div className="flex items-center gap-4 text-copper mb-6">
+                  <TriangleAlert size={32} />
+                  <h3 className="font-heading text-3xl uppercase">Terminate Mission?</h3>
+               </div>
+               <p className="font-text text-steel-dim text-sm leading-relaxed mb-10 pb-6 border-b border-white/5 italic">
+                 This action will permanently purge the expedition data from the master manifest. This cannot be undone. Are you certain you wish to proceed with termination?
+               </p>
+               <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={confirmDelete}
+                    disabled={deleting}
+                    className="flex-1 bg-red-500 text-white font-heading text-lg uppercase py-4 hover:bg-red-600 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {deleting ? "Purging..." : "Confirm Termination"}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleting}
+                    className="flex-1 border border-white/10 text-white font-heading text-lg uppercase py-4 hover:bg-white/5 transition-all active:scale-95"
+                  >
+                    Abort
+                  </button>
+               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

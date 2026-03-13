@@ -98,13 +98,10 @@ const Registration = () => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-12">
           <button
             onClick={() => navigate("/signup")}
-            className="group relative px-12 py-4 rounded-xl font-bold text-lg transition-all duration-300 overflow-hidden"
+            className="btn-metallica px-12 py-4 flex items-center justify-center gap-3"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-violet-600 transition-transform group-hover:scale-110"></div>
-            <div className="relative flex items-center space-x-3 text-white">
-              <UserPlus className="h-5 w-5" />
-              <span>START YOUR JOURNEY</span>
-            </div>
+            <UserPlus className="h-5 w-5" />
+            <span>START YOUR JOURNEY</span>
           </button>
 
           <button

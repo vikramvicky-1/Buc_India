@@ -1,303 +1,240 @@
 import React, { useState, useEffect, useRef } from "react";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Grid from "@mui/material/Grid";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import PeopleIcon from "@mui/icons-material/People";
-import EventIcon from "@mui/icons-material/Event";
-import ShieldIcon from "@mui/icons-material/Shield";
-import { useNavigate } from "react-router-dom";
-import SplitText from "./animations/SplitText";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import gsap from "gsap";
 import heroVideo from "../assets/gallery/WhatsApp Video 2025-08-09 at 21.21.40_0c2cbf8a.mp4";
+import GlareHover from "./animations/GlareHover";
 
-const AnimatedNumber = ({ value, suffix = "" }) => {
-  const ref = useRef(null);
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-          let start = 0;
-          const duration = 2000;
-          const startTime = performance.now();
-          const step = (currentTime) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            if (ref.current) {
-              ref.current.textContent = Math.floor(eased * value) + suffix;
-            }
-            if (progress < 1) requestAnimationFrame(step);
-          };
-          requestAnimationFrame(step);
-        }
-      },
-      { threshold: 0.5 },
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [value, suffix, hasAnimated]);
-
-  return <span ref={ref}>0{suffix}</span>;
+const SplitText = ({ text, className, id }) => {
+  return (
+    <span id={id} className={className}>
+      {text.split("").map((char, i) => (
+        <span key={i} className="inline-block" style={{ perspective: "1000px" }}>
+          <span className="split-char inline-block">
+            {char === " " ? "\u00A0" : char}
+          </span>
+        </span>
+      ))}
+    </span>
+  );
 };
 
 const Hero = () => {
   const navigate = useNavigate();
+  const { isLoading } = useOutletContext();
   const [isLoggedIn, setIsLoggedIn] = useState(
     sessionStorage.getItem("userLoggedIn") === "true",
   );
+  const containerRef = useRef(null);
+  const curtainLeftRef = useRef(null);
+  const curtainRightRef = useRef(null);
+  const videoRef = useRef(null);
+  const contentRef = useRef(null);
+  const spotlightRef = useRef(null);
 
   useEffect(() => {
     const loginHandler = () =>
       setIsLoggedIn(sessionStorage.getItem("userLoggedIn") === "true");
     window.addEventListener("user-login-change", loginHandler);
-    return () => window.removeEventListener("user-login-change", loginHandler);
-  }, []);
 
-  const scrollToEvents = () => navigate("/events");
+    if (!isLoading) {
+      // Advanced Loading Timeline - Optimized for synchronized reveal
+      const tl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
+
+      tl.fromTo(
+          ".split-char",
+          { 
+            y: 60, 
+            opacity: 0, 
+            rotateX: -45,
+            skewX: 10,
+            filter: "blur(10px)"
+          },
+          {
+            y: 0,
+            opacity: 1,
+            rotateX: 0,
+            skewX: 0,
+            filter: "blur(0px)",
+            duration: 1.2,
+            stagger: 0.015,
+            ease: "expo.out",
+          },
+          "+=0.8" // Wait for split curtains to open significantly
+        )
+        .fromTo(
+          contentRef.current.querySelectorAll(".reveal-item"),
+          { y: 30, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1, stagger: 0.2, ease: "power3.out" },
+          "-=0.5"
+        )
+        .fromTo(
+          videoRef.current,
+          { filter: "brightness(0) grayscale(1)" },
+          { filter: "brightness(0.4) grayscale(1)", duration: 2 },
+          "-=1.5"
+        );
+    }
+
+    // Spotlight Movement
+    const handleMouseMove = (e) => {
+      const { clientX, clientY } = e;
+      if (spotlightRef.current) {
+        gsap.to(spotlightRef.current, {
+          x: clientX,
+          y: clientY,
+          duration: 1.5,
+          ease: "power2.out"
+        });
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    // Kinetic Color-Shift Animation (3s transition cycles)
+    const colorTl = gsap.timeline({ repeat: -1 });
+    colorTl
+      .to("#hero-together-top", { color: "#ffffff", duration: 1.5, ease: "power2.inOut" }, "+=3")
+      .to("#hero-together-bottom", { color: "#C19A6B", duration: 1.5, ease: "power2.inOut" }, "<")
+      .to("#hero-together-top", { color: "#C19A6B", duration: 1.5, ease: "power2.inOut" }, "+=3")
+      .to("#hero-together-bottom", { color: "#ffffff", duration: 1.5, ease: "power2.inOut" }, "<");
+
+    return () => {
+      window.removeEventListener("user-login-change", loginHandler);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [isLoading]);
+
   const handleJoinClick = () => {
     if (!isLoggedIn) navigate("/signup");
   };
 
-  const stats = [
-    {
-      icon: <PeopleIcon sx={{ fontSize: 32, color: "#3B82F6" }} />,
-      value: 500,
-      suffix: "+",
-      label: "Members",
-    },
-    {
-      icon: <EventIcon sx={{ fontSize: 32, color: "#8B5CF6" }} />,
-      value: 10,
-      suffix: "+",
-      label: "Yearly Events",
-    },
-    {
-      icon: <ShieldIcon sx={{ fontSize: 32, color: "#3B82F6" }} />,
-      value: 4,
-      suffix: "+",
-      label: "Years Strong",
-    },
-  ];
-
   return (
-    <Box
-      component="section"
-      id="home"
-      sx={{
-        position: "relative",
-        minHeight: { xs: "auto", md: "100vh" },
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "hidden",
-        bgcolor: "#020617", // Modern deep slate
-        mt: -10, // Pull up to meet header if needed
-        pt: { xs: 12, md: 0 },
-      }}
+    <section 
+      ref={containerRef}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-carbon"
     >
+      {/* Moving Glow Style */}
+      <style>{`
+        .moving-glow {
+          background: linear-gradient(to right, #ffffff00 0%, #C19A6B88 50%, #ffffff00 100%);
+          background-size: 200% auto;
+          background-clip: text;
+          -webkit-background-clip: text;
+          animation: glowMove 8s linear infinite;
+        }
+        @keyframes glowMove {
+          0% { background-position: -100% center; }
+          100% { background-position: 100% center; }
+        }
+      `}</style>
+
+      {/* Hero Background Spotlight Glare - Subtler & Softer */}
+      <div 
+        ref={spotlightRef}
+        className="fixed top-0 left-0 w-[1000px] h-[1000px] -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none z-[1]"
+        style={{ background: "radial-gradient(circle, rgba(193, 154, 107, 0.06) 0%, transparent 70%)", filter: "blur(120px)" }}
+      />
+
+      {/* Loading Curtains - Optimized with Framer Motion and GPU Acceleration */}
+      <motion.div 
+        ref={curtainLeftRef}
+        initial={{ x: 0 }}
+        animate={{ x: "-100%" }}
+        transition={{ duration: 1.7, ease: [0.85, 0, 0.15, 1] }}
+        className="absolute inset-0 left-0 w-1/2 bg-carbon z-[60] border-r border-white/5 will-change-transform"
+        style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
+      ></motion.div>
+      <motion.div 
+        ref={curtainRightRef}
+        initial={{ x: 0 }}
+        animate={{ x: "100%" }}
+        transition={{ duration: 1.7, ease: [0.85, 0, 0.15, 1] }}
+        className="absolute inset-0 right-0 left-1/2 w-1/2 bg-carbon z-[60] border-l border-white/5 will-change-transform"
+        style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "translateZ(0)" }}
+      ></motion.div>
+
       {/* Video Background */}
-      <Box sx={{ position: "absolute", inset: 0, zIndex: 0 }}>
+      <div className="absolute inset-0 z-0">
         <video
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          ref={videoRef}
+          className="w-full h-full object-cover contrast-125"
           autoPlay
           muted
           loop
           playsInline
-          poster="https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
         >
           <source src={heroVideo} type="video/mp4" />
         </video>
-        {/* Sleek Gradient Overlay */}
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to bottom, rgba(2, 6, 23, 0.4) 0%, rgba(2, 6, 23, 0.8) 100%)",
-            zIndex: 1,
-          }}
-        />
-      </Box>
+        {/* Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/80 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-carbon via-transparent to-carbon"></div>
+      </div>
 
       {/* Content */}
-      <Container
-        maxWidth="lg"
-        sx={{
-          position: "relative",
-          zIndex: 10,
-          textAlign: "center",
-          py: { xs: 8, md: 10 },
-        }}
-      >
-        <Box sx={{ mb: 6 }}>
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              px: 3,
-              py: 0.8,
-              mb: 4,
-              borderRadius: "999px",
-              border: "1px solid",
-              borderColor: "#d1d5db",
-              bgcolor: "rgba(156, 163, 175, 0.1)",
-              backdropFilter: "blur(5px)",
-              boxShadow:
-                "0 0 12px rgba(209, 213, 219, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.1)",
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                color: "#d1d5db",
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: 3,
-                textShadow: "0px 1px 3px rgba(0,0,0,0.8)",
-              }}
-            >
-              India's Premier Riding Community
-            </Typography>
-          </Box>
-          <Typography
-            variant="h1"
-            sx={{
-              fontSize: {
-                xs: "2.5rem",
-                sm: "3.5rem",
-                md: "4.5rem",
-                lg: "5.5rem",
-              },
-              fontWeight: 900,
-              color: "text.primary",
-              mb: 3,
-              lineHeight: 1.1,
-              letterSpacing: "-0.04em",
-              fontFamily: '\"Audiowide\", sans-serif',
-              textShadow: "0 0 20px rgba(59, 130, 246, 0.2)",
-            }}
-          >
-            <SplitText
-              text="Bikers Unity Calls"
-              delay={40}
-              duration={1}
-              ease="power4.out"
-              splitType="chars"
-              from={{ opacity: 0, scale: 0.8, y: 50 }}
-              to={{ opacity: 1, scale: 1, y: 0 }}
-              textAlign="center"
-              tag="span"
-            />
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              fontSize: { xs: "1rem", sm: "1.25rem" },
-              color: "text.secondary",
-              mb: 5,
-              maxWidth: 800,
-              mx: "auto",
-              lineHeight: 1.8,
-              fontWeight: 400,
-              opacity: 0.9,
-            }}
-          >
-            Where passion meets the pavement. Join a community of riders across
-            India who share the love for the open road, adventure, and the
-            unbreakable bonds forged on two wheels.
-          </Typography>
-
-          {/* CTAs */}
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              gap: 2.5,
-              justifyContent: "center",
-              alignItems: "center",
-              mb: 8,
-            }}
-          >
-            {!isLoggedIn && (
-              <Button
-                variant="contained"
-                size="large"
-                onClick={handleJoinClick}
-                endIcon={<ArrowForwardIcon />}
-                sx={{
-                  px: 5,
-                  py: 1.8,
-                  fontSize: "1.05rem",
-                  width: { xs: "100%", sm: "auto" },
-                  borderRadius: 1.25,
-                  fontWeight: 900,
-                  boxShadow: "0 4px 20px rgba(59, 130, 246, 0.4)",
-                  bgcolor: "primary.main",
-                  "&:hover": { bgcolor: "primary.dark" },
-                }}
-              >
-                Join the Brotherhood
-              </Button>
-            )}
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={scrollToEvents}
-              sx={{
-                px: 5,
-                py: 1.8,
-                fontSize: "1.05rem",
-                width: { xs: "100%", sm: "auto" },
-                borderRadius: 2.5,
-                fontWeight: 900,
-                border: "2px solid rgba(255,255,255,0.1)",
-                color: "text.primary",
-                backdropFilter: "blur(10px)",
-                "&:hover": {
-                  border: "2px solid #3B82F6",
-                  bgcolor: "rgba(59, 130, 246, 0.05)",
-                },
-              }}
-            >
-              Upcoming Rides
-            </Button>
-          </Box>
-        </Box>
-
-        {/* Stats Cards - New Layout */}
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 pb-12">
-          <dl className="grid grid-cols-1 gap-x-8 gap-y-12 text-center lg:grid-cols-3">
-            {[
-              { label: "Members", value: "500", suffix: "+" },
-              { label: "Events This Year", value: "10", suffix: "+" },
-              { label: "Years Strong", value: "4", suffix: "+" },
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className="mx-auto flex max-w-xs flex-col gap-y-4"
-              >
-                <dt className="text-base/7 text-gray-400 font-medium tracking-wide uppercase">
-                  {stat.label}
-                </dt>
-                <dd className="order-first text-4xl font-semibold tracking-tight text-white sm:text-6xl font-['Audiowide']">
-                  <AnimatedNumber
-                    value={parseInt(stat.value)}
-                    suffix={stat.suffix}
-                  />
-                </dd>
-              </div>
-            ))}
-          </dl>
+      <div ref={contentRef} className="relative z-10 flex flex-col items-center text-center px-6 max-w-5xl w-full pt-20">
+        {/* Top Label */}
+        <div className="reveal-item flex items-center justify-center gap-4 mb-8">
+          <div className="h-[1px] w-12 bg-copper"></div>
+          <span className="font-body text-copper tracking-[0.4em] text-[10px] md:text-xs uppercase font-bold">
+            India's Premier Riding Community
+          </span>
+          <div className="h-[1px] w-12 bg-copper"></div>
         </div>
-      </Container>
-    </Box>
+        
+        {/* Main Heading */}
+        <div className="flex flex-col gap-0 mb-10 overflow-hidden">
+          <div className="flex flex-col md:flex-row items-center justify-center md:gap-4 overflow-hidden relative">
+            <SplitText text="RIDE" className="font-heading text-[12vw] md:text-[100px] lg:text-[130px] leading-tight text-white uppercase moving-glow" />
+            <SplitText id="hero-together-top" text="TOGETHER." className="font-heading text-[12vw] md:text-[100px] lg:text-[130px] leading-tight text-copper uppercase moving-glow" />
+          </div>
+          <div className="flex flex-col md:flex-row items-center justify-center md:gap-4 -mt-4 overflow-hidden relative">
+            <SplitText text="STAND" className="font-heading text-[12vw] md:text-[100px] lg:text-[130px] leading-tight text-white uppercase moving-glow" />
+            <SplitText id="hero-together-bottom" text="TOGETHER." className="font-heading text-[12vw] md:text-[100px] lg:text-[130px] leading-tight text-white uppercase moving-glow" />
+          </div>
+        </div>
+        
+        {/* Subtext */}
+        <p className="reveal-item font-body text-white/70 max-w-3xl mb-12 text-sm md:text-lg font-medium leading-relaxed tracking-wide">
+          Where passion meets the pavement. Join a community of riders across India who share the love for the open road, adventure, and the unbreakable bonds forged on two wheels.
+        </p>
+        
+        {/* Buttons */}
+        <div className="reveal-item flex flex-col md:flex-row items-center justify-center gap-6">
+          {!isLoggedIn && (
+            <div className="interactive-item overflow-hidden">
+              <GlareHover borderRadius="0" glareColor="#C19A6B" glareOpacity={0.2}>
+                <button 
+                  onClick={handleJoinClick}
+                  className="group relative px-12 py-4 bg-transparent border border-copper/50 text-white font-body font-bold uppercase tracking-widest text-sm overflow-hidden transition-all duration-500"
+                >
+                  <span className="relative z-10 transition-colors duration-500 group-hover:text-carbon">Join The Brotherhood</span>
+                  <div className="absolute inset-0 bg-copper translate-x-[-105%] group-hover:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.7,0,0.3,1)]"></div>
+                </button>
+              </GlareHover>
+            </div>
+          )}
+          <button 
+            onClick={() => navigate("/events")}
+            className="font-body text-white/50 hover:text-white transition-colors tracking-[0.3em] text-xs md:text-sm border-b border-white/10 pb-1 interactive-item"
+          >
+            EXPLORE RIDES
+          </button>
+        </div>
+      </div>
+      
+      {/* Scroll Indicator - Pill Shape */}
+      <div className="reveal-item absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-10">
+        <div className="w-6 h-10 border-2 border-white/10 rounded-full flex justify-center p-1">
+          <motion.div 
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="w-1 h-2 bg-copper rounded-full"
+          />
+        </div>
+        <span className="text-[8px] tracking-[0.4em] uppercase text-white/20 font-body">Scroll</span>
+      </div>
+    </section>
   );
 };
 

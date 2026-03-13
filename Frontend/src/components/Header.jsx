@@ -1,485 +1,426 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import Drawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Divider from "@mui/material/Divider";
-import Avatar from "@mui/material/Avatar";
-import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";
-import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
-import EventIcon from "@mui/icons-material/Event";
-import GroupsIcon from "@mui/icons-material/Groups";
-import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
-import ForumIcon from "@mui/icons-material/Forum";
-import PersonIcon from "@mui/icons-material/Person";
-import LogoutIcon from "@mui/icons-material/Logout";
-import LoginIcon from "@mui/icons-material/Login";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import RegistrationForm from "./RegistrationForm.jsx";
-const buclogo = "/logo.jpg";
-import { profileService } from "../services/api";
+import { motion, AnimatePresence } from "framer-motion";
+import gsap from "gsap";
+import GlareHover from "./animations/GlareHover";
 
 const navigation = [
-  { name: "Events", path: "/events", icon: <EventIcon /> },
-  { name: "Gallery", path: "/gallery", icon: <PhotoLibraryIcon /> },
-  { name: "Members", path: "/members", icon: <GroupsIcon /> },
-  { name: "Forum", path: "/forum", icon: <ForumIcon /> },
-  { name: "Clubs", path: "/clubs", icon: <TwoWheelerIcon /> },
+  { name: "HOME", path: "/", label: "WELCOME" },
+  { name: "EVENTS", path: "/events", label: "EXPERIENCE" },
+  { name: "GALLERY", path: "/gallery", label: "VISUALS" },
+  { name: "MEMBERS", path: "/members", label: "BROTHERHOOD" },
+  { name: "FORUM", path: "/forum", label: "COMMUNITY" },
+  { name: "CLUBS", path: "/clubs", label: "NETWORK" },
+  { name: "INTERNATIONAL", path: "/international", label: "GLOBAL" },
 ];
 
+const ExhaustParticles = ({ x, y, angle, isHovered }) => {
+  const particleCount = isHovered ? 30 : 6;
+  return [...Array(particleCount)].map((_, i) => (
+    <motion.circle
+      key={i}
+      cx={x}
+      cy={y}
+      r={isHovered ? 1.2 : 0.8}
+      fill={isHovered ? (i % 2 === 0 ? "#FF8C00" : "#FFD700") : "#A1A1AA"}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{
+        opacity: [0, 1, 0],
+        scale: [0, isHovered ? 2 : 1.2, 0.2],
+        x: [0, Math.cos(angle) * (isHovered ? 60 : 25)],
+        y: [0, Math.sin(angle) * (isHovered ? 60 : 25)],
+      }}
+      transition={{
+        duration: isHovered ? 0.5 : 0.8,
+        repeat: Infinity,
+        delay: i * (isHovered ? 0.01 : 0.12),
+        ease: "easeOut",
+      }}
+    />
+  ));
+};
+
 const Header = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
-  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const menuRef = useRef(null);
+  const linksRef = useRef([]);
 
-  const handler = () =>
-    setIsLoggedIn(sessionStorage.getItem("userLoggedIn") === "true");
-  const loginHandler = () => {
-    handler();
-    const email = sessionStorage.getItem("userEmail");
-    const phone = sessionStorage.getItem("userPhone");
-    if (email || phone) {
-      fetchProfile(email, phone);
-    } else {
-      setUserProfile(null);
-    }
-  };
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   useEffect(() => {
-    loginHandler();
-    const openReg = () => setShowRegistrationForm(true);
-    window.addEventListener("user-login-change", loginHandler);
-    window.addEventListener("storage", loginHandler);
-    window.addEventListener("open-registration", openReg);
-    return () => {
-      window.removeEventListener("user-login-change", loginHandler);
-      window.removeEventListener("storage", loginHandler);
-      window.removeEventListener("open-registration", openReg);
-    };
-  }, []);
-
-  const fetchProfile = async (email, phone) => {
-    try {
-      const profile = await profileService.get(email || "", phone || "");
-      if (profile) setUserProfile(profile);
-    } catch (err) {
-      console.warn("Profile fetch failed:", err);
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      // GSAP Staggered Animation for Links
+      gsap.fromTo(
+        linksRef.current,
+        { y: 100, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: "power4.out",
+          delay: 0.3,
+        },
+      );
+    } else {
+      document.body.style.overflow = "auto";
     }
-  };
+  }, [isOpen]);
 
-  const handleLogout = () => {
-    sessionStorage.clear();
-    setIsLoggedIn(false);
-    setUserProfile(null);
-    window.dispatchEvent(new Event("user-login-change"));
-    navigate("/");
-    setIsMenuOpen(false);
-  };
-
-  const handleNavigation = (path) => {
+  const handleNavigate = (path) => {
+    setIsOpen(false);
     navigate(path);
-    setIsMenuOpen(false);
-  };
-
-  const getInitials = (name) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   return (
     <>
-      <AppBar
-        position="fixed"
-        sx={{
-          bgcolor: "rgba(15, 18, 20, 0.85)",
-          backdropFilter: "blur(12px)",
-          borderBottom: "1px solid",
-          borderColor: "divider",
-        }}
+      {/* Logo */}
+      <div
+        onClick={() => navigate("/")}
+        className="fixed top-5 left-5 z-[1001] cursor-pointer group interactive-item"
       >
-        <Toolbar
-          sx={{
-            maxWidth: "1440px",
-            width: "100%",
-            mx: "auto",
-            px: { xs: 3, sm: 5 },
-            minHeight: { xs: 72, sm: 84 } /* Increased height to ~80-90px */,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          {/* Left: Logo */}
-          <Box
-            onClick={() => handleNavigation("/")}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              cursor: "pointer",
-              flex: 1 /* Takes exactly 1/3 of the space */,
-              justifyContent: "flex-start",
-            }}
-          >
-            <Avatar
-              src={buclogo}
-              alt="BUC India"
-              sx={{
-                width: 56,
-                height: 56,
-                border: "2px solid",
-                borderColor: "rgba(255,255,255,0.1)",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
-              }}
-            />
-            <Box>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontFamily: "'Audiowide', 'Inter', sans-serif",
-                  fontWeight: 900 /* Bold typography */,
-                  color: "text.primary",
-                  fontSize: {
-                    xs: "1.4rem",
-                    sm: "1.6rem",
-                  } /* Larger font size */,
-                  lineHeight: 1.1,
-                  letterSpacing: "-0.5px" /* Modern tight tracking */,
-                }}
-              >
-                Buc_India
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "text.secondary" /* Light grey */,
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.5px",
-                  fontWeight: 500,
-                  display: { xs: "none", sm: "block" },
-                }}
-              >
-                Ride Together, Stand Together
-              </Typography>
-            </Box>
-          </Box>
+        <img
+          src="/bucpng.png"
+          alt="BUC India"
+          className="h-20 w-auto brightness-0 invert opacity-100 group-hover:opacity-100 transition-opacity duration-500"
+        />
+      </div>
 
-          {/* Center: Desktop Nav — Premium Pill Style */}
-          <Box
-            sx={{
-              display: { xs: "none", md: "flex" },
-              alignItems: "center",
-              justifyContent: "center" /* Perfectly centered */,
-              gap: 1 /* Expanded spacing */,
-              bgcolor: "rgba(255, 255, 255, 0.03)",
-              borderRadius: "999px",
-              border: "1px solid",
-              borderColor: "rgba(255, 255, 255, 0.08)",
-              p: 0.75,
-              backdropFilter: "blur(20px)" /* Apple-like glassmorphism */,
-              boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            {navigation.map((item) => (
-              <Button
-                key={item.name}
-                onClick={() => handleNavigation(item.path)}
-                sx={{
-                  color:
-                    location.pathname === item.path
-                      ? "white"
-                      : "text.secondary",
-                  bgcolor:
-                    location.pathname === item.path
-                      ? "primary.main"
-                      : "transparent",
-                  fontWeight: location.pathname === item.path ? 700 : 500,
-                  fontSize: "0.9rem",
-                  letterSpacing: "0.2px",
-                  px: 3 /* Increased padding */,
-                  py: 1.2 /* Increased padding */,
-                  borderRadius: "999px",
-                  textTransform: "none",
-                  minWidth: "auto",
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  "&:hover": {
-                    bgcolor:
-                      location.pathname === item.path
-                        ? "primary.dark"
-                        : "rgba(255, 255, 255, 0.08)",
-                    color: "white",
-                  },
-                }}
-              >
-                {item.name}
-              </Button>
-            ))}
-          </Box>
-
-          {/* Right: Desktop Actions */}
-          <Box
-            sx={{
-              display: { xs: "none", md: "flex" },
-              alignItems: "center",
-              gap: 2,
-              flex: 1 /* Takes exact 1/3 of the space to keep nav centered */,
-              justifyContent: "flex-end",
-            }}
-          >
-            {isLoggedIn ? (
-              <Button
-                onClick={() => handleNavigation("/profile")}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  textTransform: "none",
-                  color: "text.primary",
-                  borderRadius: "999px",
-                  px: 2,
-                  py: 0.75,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
-                }}
-              >
-                <Avatar
-                  src={userProfile?.profileImage}
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    bgcolor: "primary.main",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  {getInitials(userProfile?.fullName)}
-                </Avatar>
-                <Box sx={{ textAlign: "left", flexShrink: 0 }}>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "text.primary",
-                      fontWeight: 700,
-                      display: "block",
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {userProfile?.fullName || "Member"}
-                  </Typography>
-                </Box>
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="text"
-                  size="large"
-                  onClick={() => handleNavigation("/login")}
-                  sx={{
-                    color: "text.secondary",
-                    fontSize: "0.9rem",
-                    fontWeight: 600,
-                    textTransform: "none",
-                    "&:hover": { color: "white" },
-                  }}
-                >
-                  Login
-                </Button>
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={() => handleNavigation("/signup")}
-                  sx={{
-                    fontSize: "0.9rem",
-                    fontWeight: 700,
-                    px: 3.5,
-                    py: 1.2,
-                    borderRadius: "999px",
-                    textTransform: "none",
-                    boxShadow: "0 4px 20px rgba(59, 130, 246, 0.3)",
-                  }}
-                >
-                  Join Now
-                </Button>
-              </>
-            )}
-          </Box>
-
-          {/* Mobile Hamburger */}
-          <IconButton
-            sx={{ display: { md: "none" }, ml: "auto", color: "text.primary" }}
-            onClick={() => setIsMenuOpen(true)}
-          >
-            <MenuIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-
-      {/* Mobile Drawer */}
-      <Drawer
-        anchor="right"
-        open={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-        PaperProps={{
-          sx: {
-            width: 280,
-            bgcolor: "background.paper",
-            borderLeft: "1px solid",
-            borderColor: "divider",
-          },
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            p: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Avatar src={buclogo} sx={{ width: 32, height: 32 }} />
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontFamily: "'Audiowide', sans-serif",
-                fontWeight: 700,
-                color: "text.primary",
-              }}
+      {/* Premium Menu Trigger Wrapper */}
+      <div className="fixed top-10 right-10 z-[1001] flex items-center gap-6">
+        {/* Hover Side Label */}
+        <AnimatePresence>
+          {isHovered && (
+            <motion.span
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="font-heading text-sm tracking-[0.5em] text-copper uppercase select-none hidden md:block"
             >
-              Buc_India
-            </Typography>
-          </Box>
-          <IconButton onClick={() => setIsMenuOpen(false)} size="small">
-            <CloseIcon />
-          </IconButton>
-        </Box>
-
-        <Divider />
-
-        <List sx={{ px: 1, py: 2 }}>
-          {navigation.map((item) => (
-            <ListItemButton
-              key={item.name}
-              onClick={() => handleNavigation(item.path)}
-              selected={location.pathname === item.path}
-              sx={{ borderRadius: 1, mb: 0.5 }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 36,
-                  color:
-                    location.pathname === item.path
-                      ? "primary.main"
-                      : "text.secondary",
-                }}
-              >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.name}
-                primaryTypographyProps={{
-                  fontWeight: location.pathname === item.path ? 700 : 500,
-                  fontSize: "0.875rem",
-                }}
-              />
-            </ListItemButton>
-          ))}
-        </List>
-
-        <Divider />
-
-        <Box sx={{ p: 2 }}>
-          {isLoggedIn ? (
-            <>
-              <ListItemButton
-                onClick={() => handleNavigation("/profile")}
-                sx={{ borderRadius: 2, mb: 1 }}
-              >
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  <Avatar
-                    src={userProfile?.profileImage}
-                    sx={{
-                      width: 28,
-                      height: 28,
-                      bgcolor: "primary.main",
-                      fontSize: "0.7rem",
-                    }}
-                  >
-                    {getInitials(userProfile?.fullName)}
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText
-                  primary={userProfile?.fullName || "Member"}
-                  secondary="View Profile"
-                  primaryTypographyProps={{
-                    fontSize: "0.875rem",
-                    fontWeight: 600,
-                  }}
-                  secondaryTypographyProps={{ fontSize: "0.7rem" }}
-                />
-              </ListItemButton>
-              <ListItemButton
-                onClick={handleLogout}
-                sx={{ borderRadius: 2, color: "error.main" }}
-              >
-                <ListItemIcon sx={{ minWidth: 36, color: "error.main" }}>
-                  <LogoutIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Logout"
-                  primaryTypographyProps={{
-                    fontSize: "0.875rem",
-                    fontWeight: 600,
-                  }}
-                />
-              </ListItemButton>
-            </>
-          ) : (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<LoginIcon />}
-                onClick={() => handleNavigation("/login")}
-                sx={{ textTransform: "none" }}
-              >
-                Login
-              </Button>
-              <Button
-                variant="contained"
-                fullWidth
-                startIcon={<PersonAddIcon />}
-                onClick={() => handleNavigation("/signup")}
-                sx={{ textTransform: "none" }}
-              >
-                Sign Up
-              </Button>
-            </Box>
+              {isOpen ? "CLOSE" : "NAVIGATION"}
+            </motion.span>
           )}
-        </Box>
-      </Drawer>
+        </AnimatePresence>
 
-      <RegistrationForm
-        isOpen={showRegistrationForm}
-        onClose={() => setShowRegistrationForm(false)}
-        type="community"
-      />
+        {/* Premium Menu Trigger */}
+        <button
+          onClick={toggleMenu}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className={`p-2 flex flex-col items-center justify-center transition-all duration-500 group relative interactive-item ${
+            isOpen ? "text-copper" : "text-white"
+          }`}
+          aria-label="Toggle Menu"
+        >
+          {/* L Corners */}
+          <div className="absolute -inset-2">
+            <span
+              className={`absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 transition-colors duration-500 ${isOpen ? "border-copper" : "border-copper/40 group-hover:border-copper"}`}
+            ></span>
+            <span
+              className={`absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 transition-colors duration-500 ${isOpen ? "border-copper" : "border-copper/40 group-hover:border-copper"}`}
+            ></span>
+            <span
+              className={`absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 transition-colors duration-500 ${isOpen ? "border-copper" : "border-copper/40 group-hover:border-copper"}`}
+            ></span>
+            <span
+              className={`absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 transition-colors duration-500 ${isOpen ? "border-copper" : "border-copper/40 group-hover:border-copper"}`}
+            ></span>
+          </div>
+
+          {/* Animated Bike Component Icon (V-Twin Engine) */}
+          <div className="relative w-16 h-16 flex items-center justify-center shadow-2xl rounded-full bg-carbon-light/20 backdrop-blur-sm border border-white/5 transition-transform duration-500 group-hover:scale-110">
+            <motion.svg
+              viewBox="0 0 100 100"
+              className="w-12 h-12"
+              animate={{ rotate: isOpen ? 180 : 0 }}
+              transition={{ duration: 0.8, ease: "anticipate" }}
+            >
+              {/* Engine Block / Crankcase */}
+              <circle
+                cx="50"
+                cy="70"
+                r="12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <motion.circle
+                cx="50"
+                cy="70"
+                r="4"
+                fill="currentColor"
+                animate={
+                  isHovered
+                    ? {
+                        scale: [1, 1.8, 1],
+                        opacity: [0.8, 1, 0.8],
+                      }
+                    : {}
+                }
+                transition={{ duration: 0.1, repeat: Infinity }}
+              />
+
+              {/* Exhaust Particles Injection */}
+              <ExhaustParticles
+                x={35}
+                y={15}
+                angle={Math.PI * 1.2}
+                isHovered={isHovered}
+              />
+              <ExhaustParticles
+                x={65}
+                y={15}
+                angle={Math.PI * 1.8}
+                isHovered={isHovered}
+              />
+
+              {/* Left Cylinder */}
+              <g transform="rotate(-30 50 70)">
+                <rect
+                  x="35"
+                  y="20"
+                  width="30"
+                  height="40"
+                  rx="1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={isHovered ? 3 : 2}
+                  className="transition-all duration-300"
+                />
+                {/* Cooling Fins */}
+                {[...Array(5)].map((_, i) => (
+                  <line
+                    key={`l-fin-${i}`}
+                    x1="32"
+                    y1={25 + i * 7}
+                    x2="68"
+                    y2={25 + i * 7}
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    opacity="0.5"
+                  />
+                ))}
+                {/* Piston */}
+                <motion.rect
+                  x="38"
+                  y="22"
+                  width="24"
+                  height="10"
+                  rx="1"
+                  fill="currentColor"
+                  animate={{ y: [0, 20, 0] }}
+                  transition={{
+                    duration: isHovered ? 0.1 : 1.2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              </g>
+
+              {/* Right Cylinder */}
+              <g transform="rotate(30 50 70)">
+                <rect
+                  x="35"
+                  y="20"
+                  width="30"
+                  height="40"
+                  rx="1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={isHovered ? 3 : 2}
+                  className="transition-all duration-300"
+                />
+                {/* Cooling Fins */}
+                {[...Array(5)].map((_, i) => (
+                  <line
+                    key={`r-fin-${i}`}
+                    x1="32"
+                    y1={25 + i * 7}
+                    x2="68"
+                    y2={25 + i * 7}
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    opacity="0.5"
+                  />
+                ))}
+                {/* Piston */}
+                <motion.rect
+                  x="38"
+                  y="22"
+                  width="24"
+                  height="10"
+                  rx="1"
+                  fill="currentColor"
+                  animate={{ y: [20, 0, 20] }}
+                  transition={{
+                    duration: isHovered ? 0.1 : 1.2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              </g>
+            </motion.svg>
+          </div>
+        </button>
+      </div>
+
+      {/* Nav Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%" }}
+            transition={{ duration: 0.8, ease: [0.7, 0, 0.3, 1] }}
+            className="fixed inset-0 bg-carbon z-[1000] flex items-center justify-center overflow-hidden"
+          >
+            {/* Background Ghost Text */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
+              <span className="font-heading text-[25vw] text-white/[0.02] leading-none whitespace-nowrap">
+                BUC INDIA
+              </span>
+              <div className="absolute bottom-[10%] right-[-2%] font-heading text-[6vw] text-white/[0.1]">
+                RIDE
+              </div>
+            </div>
+
+            {/* Accent Elements */}
+            <div className="absolute left-[clamp(40px,6vw,80px)] top-0 bottom-0 w-[1px] bg-copper/10 hidden md:block" />
+            <div className="absolute left-[clamp(40px,6vw,80px)] top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-copper/40 rotate-45 hidden md:block" />
+            <div className="absolute top-0 left-0 w-32 h-32 border-t border-l border-copper/20" />
+            <div className="absolute bottom-0 right-0 w-32 h-32 border-b border-r border-copper/20" />
+
+            {/* Premium Animations Style */}
+            <style>{`
+              .nav-link-btn {
+                position: relative;
+                padding: 0.5rem 0;
+                transition: color 0.4s ease;
+              }
+              .nav-link-btn::before {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0;
+                height: 1px;
+                background: #C19A6B;
+                transition: width 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+              }
+              .nav-link-btn:hover::before, .nav-link-btn.active::before {
+                width: 100%;
+              }
+              .nav-link-btn.active {
+                text-shadow: 0 0 20px rgba(193, 154, 107, 0.3);
+              }
+            `}</style>
+
+            {/* Main Menu Grid */}
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-10 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+              {/* Navigation Links (Left Pane) */}
+              <nav className="md:col-span-7 flex flex-col items-start gap-4">
+                {navigation.map((item, index) => (
+                  <div
+                    key={item.name}
+                    ref={(el) => (linksRef.current[index] = el)}
+                    className="overflow-hidden"
+                  >
+                    <button
+                      onClick={() => handleNavigate(item.path)}
+                      className={`nav-link-btn group flex items-center gap-12 interactive-item ${
+                        location.pathname === item.path ? "active" : ""
+                      }`}
+                    >
+                      <span
+                        className={`font-heading text-5xl md:text-7xl transition-all duration-500 ease-[cubic-bezier(0.7,0,0.3,1)] ${
+                          location.pathname === item.path
+                            ? "text-copper tracking-[0.2em]"
+                            : "text-white/20 group-hover:text-white group-hover:tracking-[0.2em]"
+                        }`}
+                      >
+                        {item.name}
+                      </span>
+                      {/* Hover reveal sub-text */}
+                      <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 font-body text-[10px] tracking-[0.3em] text-copper uppercase">
+                        {item.label}
+                      </span>
+                    </button>
+                  </div>
+                ))}
+              </nav>
+
+              {/* Right Pane: Auth & Social */}
+              <div className="md:col-span-5 flex flex-col items-start md:items-end gap-12">
+                {/* Auth Section */}
+                <div className="flex flex-col items-start md:items-end gap-10 w-full mb-8">
+                  <button
+                    onClick={() => handleNavigate("/login")}
+                    className="group relative flex items-center gap-4 font-body text-xs tracking-ultra text-white/40 hover:text-white transition-colors py-2"
+                  >
+                    LOGIN
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1px] bg-copper group-hover:w-full transition-all duration-500"></span>
+                  </button>
+
+                  <div className="relative group">
+                    <GlareHover>
+                      <button
+                        onClick={() => handleNavigate("/signup")}
+                        className="px-10 py-4 bg-transparent border border-copper/30 text-copper font-heading text-xl tracking-widest relative overflow-hidden group/btn hover:border-copper transition-colors duration-500 interactive-item"
+                      >
+                        <span className="relative z-10 transition-colors duration-500 group-hover/btn:text-carbon">
+                          JOIN BROTHERHOOD
+                        </span>
+                        <div className="absolute inset-0 bg-copper translate-x-[-100%] group-hover/btn:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.7,0,0.3,1)] -z-0"></div>
+                      </button>
+                    </GlareHover>
+                  </div>
+                </div>
+
+                {/* Social Section */}
+                <div className="flex flex-col items-start md:items-end gap-6 w-full pt-12 border-t border-white/5">
+                  <span className="font-body text-[10px] tracking-[0.5em] text-white/20 uppercase">
+                    FOLLOW US
+                  </span>
+                  <div className="flex flex-col items-start md:items-end gap-3">
+                    {[
+                      { name: "INSTAGRAM", url: "#" },
+                      { name: "FACEBOOK", url: "#" },
+                      { name: "TWITTER", url: "#" },
+                      { name: "YOUTUBE", url: "#" },
+                    ].map((social) => (
+                      <a
+                        key={social.name}
+                        href={social.url}
+                        className="group relative font-heading text-lg text-white/30 hover:text-copper transition-all hover:tracking-widest py-1"
+                      >
+                        {social.name}
+                        <span className="absolute bottom-0 right-0 w-0 h-[1px] bg-copper/40 group-hover:w-full transition-all duration-500"></span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Quote */}
+            <div className="absolute bottom-10 left-0 w-full text-center px-6">
+              <div className="flex flex-col gap-2">
+                <div className="text-copper font-body tracking-[0.4em] text-[10px] uppercase opacity-60">
+                  Ride Together • Stand Together • BUC India
+                </div>
+                <div className="text-white/10 font-heading text-xs tracking-widest uppercase">
+                  Where Passion Meets the Pavement
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
