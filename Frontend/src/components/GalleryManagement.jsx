@@ -24,6 +24,7 @@ const categories = [
   { id: "events", label: "Events" },
   { id: "bikes", label: "Member Bikes" },
   { id: "rallies", label: "Rallies" },
+  { id: "highlights", label: "Ride Highlights (2–3s Clips)" },
 ];
 
 const GalleryManagement = () => {
@@ -41,7 +42,6 @@ const GalleryManagement = () => {
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     loadItems();
@@ -65,13 +65,13 @@ const GalleryManagement = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
+  const handleMediaChange = (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    setImageFile(file);
+    setMediaFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
-      setImagePreview(reader.result);
+      setMediaPreview(reader.result);
     };
     reader.readAsDataURL(file);
   };
@@ -82,8 +82,8 @@ const GalleryManagement = () => {
       eventDate: "",
       category: "all",
     });
-    setImageFile(null);
-    setImagePreview(null);
+    setMediaFile(null);
+    setMediaPreview(null);
     setIsEditing(false);
     setEditId(null);
     setShowForm(false);
@@ -106,7 +106,7 @@ const GalleryManagement = () => {
     e.preventDefault();
 
     if (!isEditing && !imageFile) {
-      toast.error("Visual artifact required for cataloging");
+      toast.error("Please select an image to upload");
       return;
     }
     if (!formData.eventName || !formData.eventDate) {
@@ -118,8 +118,8 @@ const GalleryManagement = () => {
     data.append("eventName", formData.eventName);
     data.append("eventDate", formData.eventDate);
     data.append("category", formData.category);
-    if (imageFile) {
-      data.append("image", imageFile);
+    if (mediaFile) {
+      data.append("media", mediaFile);
     }
 
     setSubmitting(true);
@@ -129,7 +129,7 @@ const GalleryManagement = () => {
         toast.success("Intelligence manifest updated");
       } else {
         await galleryService.create(data);
-        toast.success("Artifact archived successfully");
+        toast.success("Image added to gallery");
       }
       resetForm();
       loadItems();
@@ -186,69 +186,69 @@ const GalleryManagement = () => {
         </div>
       </div>
 
-      {/* Upload Form */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="bg-carbon-light border border-white/5 p-8 md:p-12 mb-12 shadow-2xl relative">
-              <button onClick={resetForm} className="absolute top-6 right-6 text-steel-dim hover:text-white transition-colors">
-                <X size={20} />
-              </button>
-              
-              <h3 className="font-heading text-2xl uppercase text-white mb-8 border-b border-white/5 pb-4">
-                {isEditing ? "Modify Archive Entry" : "Ingest New Artifact"}
-              </h3>
+      <div className="event-form-container">
+        <div className="event-form">
+          <h2>{isEditing ? "Edit Gallery Item" : "Add Image to BUC Gallery"}</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Event Name *</label>
+                <input
+                  type="text"
+                  name="eventName"
+                  value={formData.eventName}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter event name"
+                />
+              </div>
+              <div className="form-group">
+                <label>Event Date *</label>
+                <input
+                  type="date"
+                  name="eventDate"
+                  value={formData.eventDate}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
 
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Operation Designation</label>
-                    <input name="eventName" value={formData.eventName} onChange={handleChange} required className="w-full bg-carbon border border-white/10 p-4 font-body text-xs text-white outline-none focus:border-copper transition-colors" placeholder="EVENT NAME" />
+            <div className="form-row">
+              <div className="form-group">
+                <label>Category *</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Image {isEditing ? "(Leave blank to keep current)" : "*"}</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  required={!isEditing}
+                />
+                {imagePreview && (
+                  <div className="mt-2 relative w-full h-32 rounded-lg overflow-hidden border border-gray-700">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Temporal Stamp</label>
-                    <input name="eventDate" type="date" value={formData.eventDate} onChange={handleChange} required className="w-full bg-carbon border border-white/10 p-4 font-body text-xs text-white outline-none focus:border-copper transition-colors [color-scheme:dark]" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Category Sector</label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleChange}
-                      required
-                      className="w-full bg-carbon border border-white/10 p-4 font-body text-[10px] uppercase tracking-widest text-white outline-none focus:border-copper transition-colors appearance-none cursor-pointer"
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id} className="bg-carbon-light">
-                          {cat.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <label className="font-body text-[10px] uppercase tracking-widest text-steel-dim font-bold">Visual Asset {isEditing ? "(Override Required)" : "(Mandatory)"}</label>
-                    <label className="w-full border-2 border-dashed border-white/10 p-4 flex items-center justify-center gap-4 cursor-pointer hover:bg-white/5 transition-all group">
-                       <Upload size={20} className="text-steel-dim group-hover:text-copper" />
-                       <span className="font-body text-[10px] uppercase tracking-widest font-bold">Select Intelligence Interface</span>
-                       <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} required={!isEditing} />
-                    </label>
-                  </div>
-
-                  {imagePreview && (
-                    <div className="md:col-span-2 relative group rounded-sm overflow-hidden border border-white/10">
-                      <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                      <div className="absolute inset-0 bg-carbon/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                         <span className="font-body text-[10px] uppercase tracking-widest font-bold text-white">Buffered Artifact Preview</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
+              </div>
+            </div>
 
                 <div className="flex gap-4 border-t border-white/5 pt-8">
                   <button type="submit" disabled={submitting} className="btn-metallica px-12 disabled:opacity-50">

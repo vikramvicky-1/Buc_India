@@ -57,6 +57,11 @@ const Profile = () => {
     emergencyContactPhone: "",
     profileImage: "",
     licenseImage: "",
+    facebookUrl: "",
+    instagramUrl: "",
+    twitterUrl: "",
+    youtubeUrl: "",
+    websiteUrl: "",
   });
 
   const [originalData, setOriginalData] = useState({});
@@ -191,6 +196,11 @@ const Profile = () => {
       formData.append("licenseNumber", profileData.licenseNumber || "");
       formData.append("emergencyContactName", profileData.emergencyContactName || "");
       formData.append("emergencyContactPhone", profileData.emergencyContactPhone || "");
+      formData.append("facebookUrl", profileData.facebookUrl || "");
+      formData.append("instagramUrl", profileData.instagramUrl || "");
+      formData.append("twitterUrl", profileData.twitterUrl || "");
+      formData.append("youtubeUrl", profileData.youtubeUrl || "");
+      formData.append("websiteUrl", profileData.websiteUrl || "");
 
       if (profileImage) {
         formData.append("profileImage", profileImage);
@@ -630,7 +640,68 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Registeindigo Events Card */}
+              {/* Social Media Links Card */}
+              <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6 md:p-8 shadow-xl">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
+                    <Shield className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white">Social Presence</h2>
+                </div>
+                <p className="text-sm text-gray-400 mb-4">
+                  Add your social media handles so fellow BUC riders can discover your rides and stories.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ProfileField
+                    label="Facebook"
+                    icon={Mail}
+                    name="facebookUrl"
+                    value={profileData.facebookUrl}
+                    onChange={handleInputChange}
+                    isEditing={isEditing}
+                    placeholder="https://facebook.com/your-profile"
+                  />
+                  <ProfileField
+                    label="Instagram"
+                    icon={ImageIcon}
+                    name="instagramUrl"
+                    value={profileData.instagramUrl}
+                    onChange={handleInputChange}
+                    isEditing={isEditing}
+                    placeholder="https://instagram.com/your-handle"
+                  />
+                  <ProfileField
+                    label="Twitter / X"
+                    icon={Mail}
+                    name="twitterUrl"
+                    value={profileData.twitterUrl}
+                    onChange={handleInputChange}
+                    isEditing={isEditing}
+                    placeholder="https://x.com/your-handle"
+                  />
+                  <ProfileField
+                    label="YouTube"
+                    icon={ImageIcon}
+                    name="youtubeUrl"
+                    value={profileData.youtubeUrl}
+                    onChange={handleInputChange}
+                    isEditing={isEditing}
+                    placeholder="https://youtube.com/@your-channel"
+                  />
+                  <ProfileField
+                    label="Personal Website"
+                    icon={MapPin}
+                    name="websiteUrl"
+                    value={profileData.websiteUrl}
+                    onChange={handleInputChange}
+                    isEditing={isEditing}
+                    placeholder="https://your-website.com"
+                    fullWidth
+                  />
+                </div>
+              </div>
+
+              {/* Registered Events Card */}
               <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6 md:p-8 shadow-xl">
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">

@@ -98,6 +98,11 @@ export const userSignup = async (req, res) => {
       licenseNumber,
       emergencyContactName,
       emergencyContactPhone,
+      facebookUrl: req.body.facebookUrl || "",
+      instagramUrl: req.body.instagramUrl || "",
+      twitterUrl: req.body.twitterUrl || "",
+      youtubeUrl: req.body.youtubeUrl || "",
+      websiteUrl: req.body.websiteUrl || "",
     };
 
     if (req.files && req.files.profileImage) {
