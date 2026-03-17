@@ -14,31 +14,13 @@ const navigation = [
   { name: "INTERNATIONAL", path: "/international", label: "GLOBAL" },
 ];
 
-const ExhaustParticles = ({ x, y, angle, isHovered }) => {
-  const particleCount = isHovered ? 30 : 6;
-  return [...Array(particleCount)].map((_, i) => (
-    <motion.circle
-      key={i}
-      cx={x}
-      cy={y}
-      r={isHovered ? 1.2 : 0.8}
-      fill={isHovered ? (i % 2 === 0 ? "#FF8C00" : "#FFD700") : "#A1A1AA"}
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{
-        opacity: [0, 1, 0],
-        scale: [0, isHovered ? 2 : 1.2, 0.2],
-        x: [0, Math.cos(angle) * (isHovered ? 60 : 25)],
-        y: [0, Math.sin(angle) * (isHovered ? 60 : 25)],
-      }}
-      transition={{
-        duration: isHovered ? 0.5 : 0.8,
-        repeat: Infinity,
-        delay: i * (isHovered ? 0.01 : 0.12),
-        ease: "easeOut",
-      }}
-    />
-  ));
-};
+// Animated Menu Bar — a single line of the hamburger
+const MenuBar = ({ variants, className = "" }) => (
+  <motion.span
+    variants={variants}
+    className={`block h-[2px] bg-current rounded-full ${className}`}
+  />
+);
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -106,18 +88,18 @@ const Header = () => {
           )}
         </AnimatePresence>
 
-        {/* Premium Menu Trigger */}
+        {/* Animated Hamburger Menu Button */}
         <button
           onClick={toggleMenu}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          className={`p-2 flex flex-col items-center justify-center transition-all duration-500 group relative interactive-item ${
+          className={`relative flex flex-col items-end justify-center gap-[7px] w-12 h-12 interactive-item group ${
             isOpen ? "text-copper" : "text-white"
           }`}
           aria-label="Toggle Menu"
         >
           {/* L Corners */}
-          <div className="absolute -inset-2">
+          <div className="absolute -inset-3">
             <span
               className={`absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 transition-colors duration-500 ${isOpen ? "border-copper" : "border-copper/40 group-hover:border-copper"}`}
             ></span>
@@ -132,140 +114,47 @@ const Header = () => {
             ></span>
           </div>
 
-          {/* Animated Bike Component Icon (V-Twin Engine) */}
-          <div className="relative w-16 h-16 flex items-center justify-center shadow-2xl rounded-full bg-carbon-light/20 backdrop-blur-sm border border-white/5 transition-transform duration-500 group-hover:scale-110">
-            <motion.svg
-              viewBox="0 0 100 100"
-              className="w-12 h-12"
-              animate={{ rotate: isOpen ? 180 : 0 }}
-              transition={{ duration: 0.8, ease: "anticipate" }}
-            >
-              {/* Engine Block / Crankcase */}
-              <circle
-                cx="50"
-                cy="70"
-                r="12"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <motion.circle
-                cx="50"
-                cy="70"
-                r="4"
-                fill="currentColor"
-                animate={
-                  isHovered
-                    ? {
-                        scale: [1, 1.8, 1],
-                        opacity: [0.8, 1, 0.8],
-                      }
-                    : {}
-                }
-                transition={{ duration: 0.1, repeat: Infinity }}
-              />
+          {/* Top bar */}
+          <motion.span
+            animate={isOpen
+              ? { rotateZ: 45, y: 9, width: "100%", backgroundColor: "#C19A6B" }
+              : isHovered
+              ? { width: "100%", x: 0 }
+              : { width: "100%", x: 0 }
+            }
+            initial={false}
+            transition={{ duration: 0.45, ease: [0.7, 0, 0.3, 1] }}
+            className="block h-[2px] bg-current rounded-full origin-center"
+            style={{ width: "100%" }}
+          />
 
-              {/* Exhaust Particles Injection */}
-              <ExhaustParticles
-                x={35}
-                y={15}
-                angle={Math.PI * 1.2}
-                isHovered={isHovered}
-              />
-              <ExhaustParticles
-                x={65}
-                y={15}
-                angle={Math.PI * 1.8}
-                isHovered={isHovered}
-              />
+          {/* Middle bar */}
+          <motion.span
+            animate={isOpen
+              ? { opacity: 0, scaleX: 0 }
+              : isHovered
+              ? { width: "65%", opacity: 1, scaleX: 1 }
+              : { width: "75%", opacity: 1, scaleX: 1 }
+            }
+            initial={false}
+            transition={{ duration: 0.35, ease: "easeInOut", delay: isOpen ? 0 : 0.05 }}
+            className="block h-[2px] bg-current rounded-full self-end"
+            style={{ width: "75%" }}
+          />
 
-              {/* Left Cylinder */}
-              <g transform="rotate(-30 50 70)">
-                <rect
-                  x="35"
-                  y="20"
-                  width="30"
-                  height="40"
-                  rx="1"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={isHovered ? 3 : 2}
-                  className="transition-all duration-300"
-                />
-                {/* Cooling Fins */}
-                {[...Array(5)].map((_, i) => (
-                  <line
-                    key={`l-fin-${i}`}
-                    x1="32"
-                    y1={25 + i * 7}
-                    x2="68"
-                    y2={25 + i * 7}
-                    stroke="currentColor"
-                    strokeWidth="1"
-                    opacity="0.5"
-                  />
-                ))}
-                {/* Piston */}
-                <motion.rect
-                  x="38"
-                  y="22"
-                  width="24"
-                  height="10"
-                  rx="1"
-                  fill="currentColor"
-                  animate={{ y: [0, 20, 0] }}
-                  transition={{
-                    duration: isHovered ? 0.1 : 1.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-              </g>
-
-              {/* Right Cylinder */}
-              <g transform="rotate(30 50 70)">
-                <rect
-                  x="35"
-                  y="20"
-                  width="30"
-                  height="40"
-                  rx="1"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={isHovered ? 3 : 2}
-                  className="transition-all duration-300"
-                />
-                {/* Cooling Fins */}
-                {[...Array(5)].map((_, i) => (
-                  <line
-                    key={`r-fin-${i}`}
-                    x1="32"
-                    y1={25 + i * 7}
-                    x2="68"
-                    y2={25 + i * 7}
-                    stroke="currentColor"
-                    strokeWidth="1"
-                    opacity="0.5"
-                  />
-                ))}
-                {/* Piston */}
-                <motion.rect
-                  x="38"
-                  y="22"
-                  width="24"
-                  height="10"
-                  rx="1"
-                  fill="currentColor"
-                  animate={{ y: [20, 0, 20] }}
-                  transition={{
-                    duration: isHovered ? 0.1 : 1.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-              </g>
-            </motion.svg>
-          </div>
+          {/* Bottom bar */}
+          <motion.span
+            animate={isOpen
+              ? { rotateZ: -45, y: -9, width: "100%", backgroundColor: "#C19A6B" }
+              : isHovered
+              ? { width: "50%" }
+              : { width: "50%" }
+            }
+            initial={false}
+            transition={{ duration: 0.45, ease: [0.7, 0, 0.3, 1] }}
+            className="block h-[2px] bg-current rounded-full origin-center self-end"
+            style={{ width: "50%" }}
+          />
         </button>
       </div>
 
